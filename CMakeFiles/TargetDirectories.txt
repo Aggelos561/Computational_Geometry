@@ -1,3 +1,0 @@
-/mnt/c/Users/Angel/Documents/UOA/Ανάπτυξη Λογισμικού για Αλγοριθμικά Προβλήματα/Projects/Project_1/Code/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/Angel/Documents/UOA/Ανάπτυξη Λογισμικού για Αλγοριθμικά Προβλήματα/Projects/Project_1/Code/CMakeFiles/edit_cache.dir
-/mnt/c/Users/Angel/Documents/UOA/Ανάπτυξη Λογισμικού για Αλγοριθμικά Προβλήματα/Projects/Project_1/Code/CMakeFiles/main.dir
