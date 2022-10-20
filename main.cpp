@@ -70,9 +70,6 @@ int main() {
   // Create A Starting Triangle
   initializeTriangle(polygLine, points, remainingPoints);
 
-  // Must be 3 (Segments Of Triangle)
-  int polygLineLength = polygLine.size();
-
   // Main Loop Calculate Convex Hull
   // Find Red segments
   // Find visible segments
@@ -82,7 +79,8 @@ int main() {
     std::cout << "Remaining --> " << p << std::endl;
   }
 
-  while (remainingPoints.size() > 0) {
+  bool repeat = true;
+  while (repeat) {
 
     std::cout << std::endl;
 
@@ -90,23 +88,79 @@ int main() {
     std::vector<Point> polygLinePoints = getPolyLinePoints(polygLine);
 
     // Vector Instance To Store Convex Hull Result
-    std::vector<std::size_t> indices(polygLinePoints.size()), convexHullPoints;
+    std::vector<std::size_t> indices(polygLinePoints.size()), out;
     std::iota(indices.begin(), indices.end(), 0);
 
     // Find Complex Hull
     CGAL::convex_hull_2(
-        indices.begin(), indices.end(), std::back_inserter(convexHullPoints),
+        indices.begin(), indices.end(), std::back_inserter(out),
         Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
 
+    std::vector<Point> convexHullPoints;
+    for (int i = 0; i < out.size(); i++) {
+      convexHullPoints.push_back(polygLinePoints[i]);
+    }
+
+    // for (int i = 0; i < convexHullPoints.size(); i++) {
+    //   std::cout << "convexHullPoints[" << i << "] = " << convexHullPoints[i]
+    //             << std::endl;
+    // }
+
+    std::vector<Segment_2> redSegments;
     for (int i = 0; i < convexHullPoints.size(); i++) {
-      std::cout << "points[" << i << "] = " << convexHullPoints[i] << std::endl;
+
+      Segment_2 seg;
+
+      if (i == convexHullPoints.size() - 1) {
+        seg = Segment_2(convexHullPoints[i], convexHullPoints[0]);
+      } else {
+        seg = Segment_2(convexHullPoints[i], convexHullPoints[i + 1]);
+      }
+
+      redSegments.push_back(seg);
     }
 
     Point nextPoint = remainingPoints[0];
     std::cout << "New Point: " << nextPoint << std::endl;
 
-    // const auto result = CGAL::intersection();
+    for (int i = 0; i < redSegments.size(); i++) {
+      Segment_2 edgeSegment1 = Segment_2(nextPoint, redSegments[i].point(0));
+      Segment_2 edgeSegment2 = Segment_2(nextPoint, redSegments[i].point(1));
+      Segment_2 midSegment = Segment_2(
+          nextPoint,
+          Point(
+              ((redSegments[i].point(0).x() + redSegments[i].point(1).x()) / 2),
+              ((redSegments[i].point(0).y() + redSegments[i].point(1).y()) /
+               2)));
 
+      Segment_2 segmentsArray[] = {edgeSegment1, edgeSegment2, midSegment};
+
+      for (int j = 0; j < redSegments.size(); j++) {
+        if (j == i)
+          continue;
+
+        for (int k = 0; k < 3; k++) {
+          const auto result = intersection(segmentsArray[k], redSegments[j]);
+
+          if (result) {
+
+            const Point *p = boost::get<Point>(&*result);
+            std::cout << *p << std::endl;
+
+            if (*p == redSegments[j].point(0) ||
+                *p == redSegments[j].point(1)) {
+              continue;
+            } else {
+              redSegments.erase(redSegments.begin() + j);
+            }
+          }
+        }
+      }
+    }
+
+    for (int i = 0; i < redSegments.size(); i++) {
+      std::cout << "Red Segment Points: " << redSegments[i] << std::endl;
+    }
     remainingPoints.erase(remainingPoints.begin());
 
     // Push 2 New Segments To Create the Expand
@@ -114,8 +168,7 @@ int main() {
 
     // polygLine.push_back(Segment_2());
     // polygLine.push_back(Segment_2());
-
-    polygLineLength = polygLine.size();
+    repeat = false;
   }
 
   return 0;
