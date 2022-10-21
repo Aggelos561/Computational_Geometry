@@ -70,22 +70,18 @@ bool counterClockWise(Point p1, Point p2){
 std::vector<Segment_2> getConvexHull(std::vector<Point> &polygLinePoints) {
 
   // Vector Instance To Store Convex Hull Mapping
-  std::vector<std::size_t> indices(polygLinePoints.size()), out;
-  std::iota(indices.begin(), indices.end(), 0);
-
-  // Find Complex Hull Points
-  CGAL::convex_hull_2(
-      indices.begin(), indices.end(), std::back_inserter(out),
-      Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
 
   std::vector<Point> convexHullPoints;
-
-  for (int i = 0; i < out.size() ; i++) {
-    convexHullPoints.push_back(polygLinePoints[i]);
-  }
+  // Find Complex Hull Points
+  CGAL::convex_hull_2(polygLinePoints.begin(), polygLinePoints.end(),
+                      std::back_inserter(convexHullPoints));
 
   // Needs to be counterclockwise sorted so the segments of convex hull are in right order
-  std::sort(convexHullPoints.begin(), convexHullPoints.end(), counterClockWise);
+  // std::sort(convexHullPoints.begin(), convexHullPoints.end(), counterClockWise);
+
+  for (int i = 0; i < convexHullPoints.size(); i++) {
+    std::cout << "Order! " << convexHullPoints[i] << std::endl;
+  }
 
   std::vector<Segment_2> convexHullSegments;
 
@@ -95,9 +91,9 @@ std::vector<Segment_2> getConvexHull(std::vector<Point> &polygLinePoints) {
     Segment_2 seg;
 
     if (i == convexHullPoints.size() - 1) {
-      seg = Segment_2(convexHullPoints[i], convexHullPoints[0]);
+      seg = Segment_2(convexHullPoints[0], convexHullPoints[i]);
     } else {
-      seg = Segment_2(convexHullPoints[i], convexHullPoints[i + 1]);
+      seg = Segment_2(convexHullPoints[i+1], convexHullPoints[i]);
     }
 
     convexHullSegments.push_back(seg);
@@ -125,84 +121,121 @@ std::vector<Segment_2> getRedSegments(std::vector<Segment_2>& currConvexHullSegm
   return convexRedSegments;
 }
 
-  int main() {
+bool chain(Segment_2& a, Segment_2& b){
+  if (a.point(1) == b.point(0))
+    return true;
+  
+  return false;
+}
+void createResultsFile(std::vector<Segment_2> &polygLine){
+  
+  std::ofstream outdata;              
+  
+  int i;                         
 
-    // Read Points
-    std::vector<Point> points = readPoints();
-
-    // Get Total Points From Read
-    int total_points = points.size();
-
-    // Sort points in Descending Order
-    sortPoints(points);
-
-    std::vector<Point> remainingPoints = points;
-
-    // Polygon Line Vector
-    std::vector<Segment_2> polygLine;
-
-    // Create A Starting Triangle
-    initializeTriangle(polygLine, points, remainingPoints);
-
-    // Main Loop Calculate Convex Hull
-    // Find Red segments
-    // Find visible segments
-    // Expand the polygon line
-
-    for (const Point &p : remainingPoints) {
-      std::cout << "Remaining --> " << p << std::endl;
-    }
-
-    // Loop until there are no remaining points left
-    while (remainingPoints.size() > 0) {
-
-      std::cout << std::endl;
-
-      // Get Polygon Line Points To Compute Convex Hull
-      std::vector<Point> polygLinePoints = getPolyLinePoints(polygLine);
-
-      // Calculate current convex hull
-      std::vector<Segment_2> currConvexHullSegments = getConvexHull(polygLinePoints);
-
-      // Get next point and delete it from remaining
-      Point nextPoint = remainingPoints[0];
-      std::cout << "New Point: " << nextPoint << std::endl;
-      remainingPoints.erase(remainingPoints.begin());
-
-      // Push next point
-      polygLinePoints.push_back(nextPoint);
-
-      // Calculate convex hull with the new point inside 
-      std::vector<Segment_2> nextConvexHullSegments = getConvexHull(polygLinePoints);
-
-      for (int i = 0; i < nextConvexHullSegments.size(); i++) {
-        std::cout << "New Convex Segment: " << nextConvexHullSegments[i] << std::endl;
-      }
-
-      // To get red segments compare current convex hull and convex hull with the new point
-      // if the new novex hull DOES NOT have any segments from the current convex hull then these segments are RED
-      std::vector<Segment_2> redSegments = getRedSegments(currConvexHullSegments, nextConvexHullSegments);
-      
-      for (int i = 0; i < redSegments.size(); i++){
-        std::cout << "Red Segment: " << redSegments[i] << std::endl;
-      }
-     
-      //Pick Random red segment
-      int randomRedIndex = rand() % redSegments.size();
-      
-      //Delete previous segment and connect the two new segments with the new point
-      Segment_2 redSegmentRemoved = redSegments[randomRedIndex];
-      polygLine.erase(std::remove(polygLine.begin(), polygLine.end(), redSegmentRemoved), polygLine.end());
-      polygLine.push_back(Segment_2(redSegmentRemoved.point(0), nextPoint));
-      polygLine.push_back(Segment_2(nextPoint, redSegmentRemoved.point(1)));
-      
-      // Print all segments of the current polygon
-      for (Segment_2 line : polygLine){
-        std::cout << "Line -> " << line << std::endl;
-      }
-
-      std::cout <<  std::endl;
-    }
-
-    return 0;
+  outdata.open("results.txt"); 
+  
+  if (!outdata) {               
+    std::cerr << "Error: file could not be opened" << std::endl;
+    exit(1);
   }
+
+  std::sort(polygLine.begin(), polygLine.end(), chain);
+  for (i = 0; i < polygLine.size(); ++i)
+    outdata << polygLine[i] << std::endl;
+  
+  outdata.close();
+
+}
+
+int main() {
+
+  // Read Points
+  std::vector<Point> points = readPoints();
+
+  // Get Total Points From Read
+  int total_points = points.size();
+
+  // Sort points in Descending Order
+  sortPoints(points);
+
+  std::vector<Point> remainingPoints = points;
+
+  // Polygon Line Vector
+  std::vector<Segment_2> polygLine;
+
+  // Create A Starting Triangle
+  initializeTriangle(polygLine, points, remainingPoints);
+
+  // Main Loop Calculate Convex Hull
+  // Find Red segments
+  // Find visible segments
+  // Expand the polygon line
+
+  for (const Point &p : remainingPoints) {
+    std::cout << "Remaining --> " << p << std::endl;
+  }
+
+  // Loop until there are no remaining points left
+  while (remainingPoints.size() > 0) {
+
+    std::cout << std::endl;
+
+    // Get Polygon Line Points To Compute Convex Hull
+    std::vector<Point> polygLinePoints = getPolyLinePoints(polygLine);
+
+    // Calculate current convex hull
+    std::vector<Segment_2> currConvexHullSegments =
+        getConvexHull(polygLinePoints);
+
+    // Get next point and delete it from remaining
+    Point nextPoint = remainingPoints[0];
+    std::cout << "New Point: " << nextPoint << std::endl;
+    remainingPoints.erase(remainingPoints.begin());
+
+    // Push next point
+    polygLinePoints.push_back(nextPoint);
+
+    // Calculate convex hull with the new point inside
+    std::vector<Segment_2> nextConvexHullSegments =
+        getConvexHull(polygLinePoints);
+
+    for (int i = 0; i < nextConvexHullSegments.size(); i++) {
+      std::cout << "New Convex Segment: " << nextConvexHullSegments[i]
+                << std::endl;
+    }
+
+    // To get red segments compare current convex hull and convex hull with the
+    // new point if the new novex hull DOES NOT have any segments from the
+    // current convex hull then these segments are RED
+    std::vector<Segment_2> redSegments =
+        getRedSegments(currConvexHullSegments, nextConvexHullSegments);
+
+    for (int i = 0; i < redSegments.size(); i++) {
+      std::cout << "Red Segment: " << redSegments[i] << std::endl;
+    }
+
+    // Pick Random red segment
+    int randomRedIndex = rand() % redSegments.size();
+
+    // Delete previous segment and connect the two new segments with the new
+    // point
+    Segment_2 redSegmentRemoved = redSegments[randomRedIndex];
+    polygLine.erase(
+        std::remove(polygLine.begin(), polygLine.end(), redSegmentRemoved),
+        polygLine.end());
+    polygLine.push_back(Segment_2(redSegmentRemoved.point(0), nextPoint));
+    polygLine.push_back(Segment_2(nextPoint, redSegmentRemoved.point(1)));
+
+    // Print all segments of the current polygon
+    for (Segment_2 line : polygLine) {
+      std::cout << "Line -> " << line << std::endl;
+    }
+
+    std::cout << std::endl;
+  }
+
+  createResultsFile(polygLine);
+
+  return 0;
+}
