@@ -9,9 +9,11 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
+#include <exception>
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <stdexcept>
 #include <vector>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
@@ -23,8 +25,8 @@ typedef CGAL::Convex_hull_traits_adapter_2<K, CGAL::Pointer_property_map<Point>:
 std::vector<Point> readPoints() {
 
   std::vector<Point> points{
-      Point(5, 1),   Point(8, 2),   Point(23, 4),  Point(0, 6),   Point(50, 6),
-      Point(10, 4),  Point(-10, 2), Point(-20, 3)};
+      Point(5, 1),  Point(8, 2),   Point(23, 4),  Point(0, 6),  Point(50, 6),
+      Point(10, 4), Point(-10, 2), Point(-20, 3), Point(9, 10), Point(-15, 7), Point(-50, 100), Point(-60, -100)};
   return points;
   
 }
@@ -167,15 +169,16 @@ Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &conve
     }
   }
 
+  std::vector<Segment_2> visibleSegments2 = visibleSegments;
   for (Segment_2 vSeg : visibleSegments){
     std::cout << "Visible ==> " << vSeg << std::endl; 
   }
 
   for (Segment_2 vSeg : visibleSegments) {
 
-    Segment_2 segmentsArray[] = {Segment_2(vSeg.point(0), nextPoint),
+    Segment_2 segmentsArray[] = {Segment_2(nextPoint, vSeg.point(0)),
                                  Segment_2(nextPoint, vSeg.point(1)),
-                                 Segment_2(nextPoint, Point(((vSeg.point(0).x() + vSeg.point(1).x()) / 2), ((vSeg.point(0).y() + vSeg.point(1).y()) /2)))
+                                 Segment_2(nextPoint, Point(((vSeg.point(0).x() + vSeg.point(1).x()) / 2.0), ((vSeg.point(0).y() + vSeg.point(1).y()) /2.0)))
                                 };
 
     for (Segment_2 polygSeg : polygLine){
@@ -192,7 +195,8 @@ Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &conve
             if (*p == polygSeg.point(0) || *p == polygSeg.point(1)) {
               continue;
             } else {
-              visibleSegments.erase(std::remove(visibleSegments.begin(), visibleSegments.end(), vSeg), visibleSegments.end());
+              visibleSegments2.erase(std::remove(visibleSegments2.begin(), visibleSegments2.end(), vSeg), visibleSegments2.end());
+              break;
             }
           }
 
@@ -200,9 +204,14 @@ Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &conve
     }
 
   }
+  
   srand(time(NULL));
-  int randomIndex = rand() % (visibleSegments.size() - 1 - 0 + 1) + 0;
-  return visibleSegments[randomIndex];
+  int randomIndex = rand() % (visibleSegments2.size() - 1 - 0 + 1) + 0;
+  for (Segment_2 seg : visibleSegments2) {
+    std::cout << "The visible segment is " << seg << std::endl;
+  }
+
+  return visibleSegments2[randomIndex];
 }
 
 void createResultsFile(std::vector<Segment_2> &polygLine){
