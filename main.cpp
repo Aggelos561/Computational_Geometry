@@ -21,8 +21,9 @@ typedef CGAL::Convex_hull_traits_adapter_2<K, CGAL::Pointer_property_map<Point>:
 
 std::vector<Point> readPoints() {
 
-  std::vector<Point> points{Point(2, 1), Point(1, 2), Point(3, 4), Point(2, 6),
-                            Point(3, 6), Point(0, 4), Point(-1, 2)};
+  std::vector<Point> points{Point(2, 1),  Point(1, 2), Point(3, 4),
+                            Point(2, 6),  Point(3, 6), Point(0, 4),
+                            Point(-1, 2), Point(-2, 3)};
   return points;
   
 }
@@ -69,7 +70,7 @@ std::vector<Segment_2> getConvexHull(std::vector<Point> &polygLinePoints) {
 
 //Compares current convex hull with a convex hull that has the new point inserted
 // Returns a vector with all the red segments inserted
-std::vector<Segment_2> getRedSegments(std::vector<Segment_2>& currConvexHullSegments, std::vector<Segment_2>& nextConvexHullSegments) {
+std::vector<Segment_2> getRedSegments(std::vector<Segment_2> &currConvexHullSegments, std::vector<Segment_2> &nextConvexHullSegments) {
 
   std::vector<Segment_2> convexRedSegments;
 
@@ -99,35 +100,73 @@ void initializeTriangle(std::vector<Segment_2> &polygLine, std::vector<Point> &p
   polygLine = getConvexHull(trianglePoints);
 }
 
-Segment_2 pickRandomRedSegment(std::vector<Segment_2> &redSegments) {
+Segment_2 pickRandomRedSegment(std::vector<Segment_2> &visibleSegment) {
   // Pick Random red segment
-  int randomRedIndex = rand() % redSegments.size();
+  int randomRedIndex = rand() % visibleSegment.size();
 
-  return redSegments[randomRedIndex];
+  return visibleSegment[randomRedIndex];
 }
 
-void deletePolygonLineSegment(std::vector<Segment_2> &polygLine, Segment_2 &redSegment){
-   polygLine.erase(std::remove(polygLine.begin(), polygLine.end(), redSegment), polygLine.end());
+void deletePolygonLineSegment(std::vector<Segment_2> &polygLine, Segment_2 &visibleSegment){
+   polygLine.erase(std::remove(polygLine.begin(), polygLine.end(), visibleSegment), polygLine.end());
 }
 
-void expandPolygonLine(std::vector<Segment_2> &polygLine, Segment_2 &redSegment, Point &nextPoint){
+void expandPolygonLine(std::vector<Segment_2> &polygLine, Segment_2 &visibleSegment, Point &nextPoint){
   // Insert the two new segments in the right place in polygon line
   int index = 0;
   for (int i = 0; i < polygLine.size(); i++) {
-    if (polygLine[i].point(1) == redSegment.point(0)){
+    if (polygLine[i].point(1) == visibleSegment.point(0)){
       
-      polygLine.insert(polygLine.begin() + index + 1,Segment_2(redSegment.point(0), nextPoint));
-      polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, redSegment.point(1)));
+      polygLine.insert(polygLine.begin() + index + 1,Segment_2(visibleSegment.point(0), nextPoint));
+      polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, visibleSegment.point(1)));
       break;
       
     } 
-    else if (polygLine[i].point(1) == redSegment.point(1)) {
-      polygLine.insert(polygLine.begin() + index + 1,Segment_2(redSegment.point(1), nextPoint));
-      polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, redSegment.point(0)));
+    else if (polygLine[i].point(1) == visibleSegment.point(1)) {
+      polygLine.insert(polygLine.begin() + index + 1,Segment_2(visibleSegment.point(1), nextPoint));
+      polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, visibleSegment.point(0)));
       break;
     }
     index++;
   }
+}
+
+Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &convexSegment) {
+
+  int segmentExists = std::count(polygLine.begin(), polygLine.end(), convexSegment);
+
+  // Convex hull segment == polygon line segment
+  if (segmentExists) {
+    return convexSegment;
+  }
+
+  // Convex hull segment not on polygon line segment
+  Segment_2 segment = convexSegment;
+
+  int index = 0;
+  
+  for (int i = 0; i < polygLine.size(); i++){
+    if (polygLine[0].point(0) == segment.point(0)){
+      index = i;
+      break;
+    }
+  }
+  
+  std::vector<Segment_2> visibleSegments;
+
+  for (int i = index; i < polygLine.size(); i++){
+    
+    if (polygLine[i].point(1) != segment.point(1)){
+      visibleSegments.push_back(polygLine[i]);
+    }
+    else{
+      visibleSegments.push_back(polygLine[i]);
+      break;
+    }
+  }
+
+  return visibleSegments[4];
+
 }
 
 void createResultsFile(std::vector<Segment_2> &polygLine){
@@ -213,12 +252,13 @@ int main() {
       std::cout << "Red Segment: " << redSegments[i] << std::endl;
     }
 
-    // Delete previous segment and connect the two new segments with the new point
-    Segment_2 redSegment = pickRandomRedSegment(redSegments);
-
-    deletePolygonLineSegment(polygLine, redSegment);
+    Segment_2 visibleConvexSegment = pickRandomRedSegment(redSegments);
     
-    expandPolygonLine(polygLine, redSegment, nextPoint);
+    Segment_2 visibleSegment = findVisibleSegment(polygLine, visibleConvexSegment);
+
+    deletePolygonLineSegment(polygLine, visibleSegment);
+    
+    expandPolygonLine(polygLine, visibleSegment, nextPoint);
 
     // Print all segments of the current polygon
     std::cout << std::endl;
