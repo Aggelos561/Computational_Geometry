@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <functional>
 #include <iostream>
 #include <iterator>
@@ -21,9 +22,9 @@ typedef CGAL::Convex_hull_traits_adapter_2<K, CGAL::Pointer_property_map<Point>:
 
 std::vector<Point> readPoints() {
 
-  std::vector<Point> points{Point(2, 1),  Point(1, 2), Point(3, 4),
-                            Point(2, 6),  Point(3, 6), Point(0, 4),
-                            Point(-1, 2), Point(-2, 3)};
+  std::vector<Point> points{
+      Point(5, 1),   Point(8, 2),   Point(23, 4),  Point(0, 6),   Point(50, 6),
+      Point(10, 4),  Point(-10, 2), Point(-20, 3)};
   return points;
   
 }
@@ -131,7 +132,7 @@ void expandPolygonLine(std::vector<Segment_2> &polygLine, Segment_2 &visibleSegm
   }
 }
 
-Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &convexSegment) {
+Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &convexSegment, Point &nextPoint) {
 
   int segmentExists = std::count(polygLine.begin(), polygLine.end(), convexSegment);
 
@@ -142,12 +143,13 @@ Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &conve
 
   // Convex hull segment not on polygon line segment
   Segment_2 segment = convexSegment;
-
+  std::cout << "convex segment is " << segment << std::endl;
   int index = 0;
   
   for (int i = 0; i < polygLine.size(); i++){
-    if (polygLine[0].point(0) == segment.point(0)){
+    if (polygLine[i].point(0) == segment.point(0)){
       index = i;
+      std::cout <<" IM AT -> " << polygLine[i] << std::endl;
       break;
     }
   }
@@ -165,8 +167,42 @@ Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &conve
     }
   }
 
-  return visibleSegments[4];
+  for (Segment_2 vSeg : visibleSegments){
+    std::cout << "Visible ==> " << vSeg << std::endl; 
+  }
 
+  for (Segment_2 vSeg : visibleSegments) {
+
+    Segment_2 segmentsArray[] = {Segment_2(vSeg.point(0), nextPoint),
+                                 Segment_2(nextPoint, vSeg.point(1)),
+                                 Segment_2(nextPoint, Point(((vSeg.point(0).x() + vSeg.point(1).x()) / 2), ((vSeg.point(0).y() + vSeg.point(1).y()) /2)))
+                                };
+
+    for (Segment_2 polygSeg : polygLine){
+
+      if (vSeg == polygSeg) continue;
+
+        for (int k = 0; k < 3; k++) {
+          const auto result = intersection(segmentsArray[k], polygSeg);
+
+          if (result) {
+
+            const Point *p = boost::get<Point>(&*result);
+
+            if (*p == polygSeg.point(0) || *p == polygSeg.point(1)) {
+              continue;
+            } else {
+              visibleSegments.erase(std::remove(visibleSegments.begin(), visibleSegments.end(), vSeg), visibleSegments.end());
+            }
+          }
+
+        }
+    }
+
+  }
+  srand(time(NULL));
+  int randomIndex = rand() % (visibleSegments.size() - 1 - 0 + 1) + 0;
+  return visibleSegments[randomIndex];
 }
 
 void createResultsFile(std::vector<Segment_2> &polygLine){
@@ -254,7 +290,7 @@ int main() {
 
     Segment_2 visibleConvexSegment = pickRandomRedSegment(redSegments);
     
-    Segment_2 visibleSegment = findVisibleSegment(polygLine, visibleConvexSegment);
+    Segment_2 visibleSegment = findVisibleSegment(polygLine, visibleConvexSegment, nextPoint);
 
     deletePolygonLineSegment(polygLine, visibleSegment);
     
