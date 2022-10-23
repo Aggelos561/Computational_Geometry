@@ -111,23 +111,23 @@ void deletePolygonLineSegment(std::vector<Segment_2> &polygLine, Segment_2 &redS
 }
 
 void expandPolygonLine(std::vector<Segment_2> &polygLine, Segment_2 &redSegment, Point &nextPoint){
-    // Insert the two new segments in the right place in polygon line
-    int index = 0;
-    for (int i = 0; i < polygLine.size(); i++) {
-      if (polygLine[i].point(1) == redSegment.point(0)){
-        
-        polygLine.insert(polygLine.begin() + index + 1,Segment_2(redSegment.point(0), nextPoint));
-        polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, redSegment.point(1)));
-        break;
-        
-      } 
-      else if (polygLine[i].point(1) == redSegment.point(1)) {
-        polygLine.insert(polygLine.begin() + index + 1,Segment_2(redSegment.point(1), nextPoint));
-        polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, redSegment.point(0)));
-        break;
-      }
-      index++;
+  // Insert the two new segments in the right place in polygon line
+  int index = 0;
+  for (int i = 0; i < polygLine.size(); i++) {
+    if (polygLine[i].point(1) == redSegment.point(0)){
+      
+      polygLine.insert(polygLine.begin() + index + 1,Segment_2(redSegment.point(0), nextPoint));
+      polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, redSegment.point(1)));
+      break;
+      
+    } 
+    else if (polygLine[i].point(1) == redSegment.point(1)) {
+      polygLine.insert(polygLine.begin() + index + 1,Segment_2(redSegment.point(1), nextPoint));
+      polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, redSegment.point(0)));
+      break;
     }
+    index++;
+  }
 }
 
 void createResultsFile(std::vector<Segment_2> &polygLine){
