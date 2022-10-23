@@ -99,6 +99,36 @@ void initializeTriangle(std::vector<Segment_2> &polygLine, std::vector<Point> &p
   polygLine = getConvexHull(trianglePoints);
 }
 
+Segment_2 pickRandomRedSegment(std::vector<Segment_2> &redSegments) {
+  // Pick Random red segment
+  int randomRedIndex = rand() % redSegments.size();
+
+  return redSegments[randomRedIndex];
+}
+
+void deletePolygonLineSegment(std::vector<Segment_2> &polygLine, Segment_2 &redSegment){
+   polygLine.erase(std::remove(polygLine.begin(), polygLine.end(), redSegment), polygLine.end());
+}
+
+void expandPolygonLine(std::vector<Segment_2> &polygLine, Segment_2 &redSegment, Point &nextPoint){
+    // Insert the two new segments in the right place in polygon line
+    int index = 0;
+    for (int i = 0; i < polygLine.size(); i++) {
+      if (polygLine[i].point(1) == redSegment.point(0)){
+        
+        polygLine.insert(polygLine.begin() + index + 1,Segment_2(redSegment.point(0), nextPoint));
+        polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, redSegment.point(1)));
+        break;
+        
+      } 
+      else if (polygLine[i].point(1) == redSegment.point(1)) {
+        polygLine.insert(polygLine.begin() + index + 1,Segment_2(redSegment.point(1), nextPoint));
+        polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, redSegment.point(0)));
+        break;
+      }
+      index++;
+    }
+}
 
 void createResultsFile(std::vector<Segment_2> &polygLine){
   
@@ -168,8 +198,7 @@ int main() {
     polygLinePoints.push_back(nextPoint);
 
     // Calculate convex hull with the new point inside
-    std::vector<Segment_2> nextConvexHullSegments =
-        getConvexHull(polygLinePoints);
+    std::vector<Segment_2> nextConvexHullSegments = getConvexHull(polygLinePoints);
 
     for (int i = 0; i < nextConvexHullSegments.size(); i++) {
       std::cout << "New Convex Segment: " << nextConvexHullSegments[i] << std::endl;
@@ -184,32 +213,12 @@ int main() {
       std::cout << "Red Segment: " << redSegments[i] << std::endl;
     }
 
-     // Pick Random red segment
-    int randomRedIndex = rand() % redSegments.size();
-
     // Delete previous segment and connect the two new segments with the new point
-    Segment_2 redSegmentRemoved = redSegments[randomRedIndex];
-    
-    polygLine.erase(std::remove(polygLine.begin(), polygLine.end(), redSegmentRemoved), polygLine.end());
+    Segment_2 redSegment = pickRandomRedSegment(redSegments);
 
+    deletePolygonLineSegment(polygLine, redSegment);
     
-    // Insert the two new segments in the right place in polygon line
-    int index = 0;
-    for (int i = 0; i < polygLine.size(); i++) {
-      if (polygLine[i].point(1) == redSegmentRemoved.point(0)){
-        
-        polygLine.insert(polygLine.begin() + index + 1,Segment_2(redSegmentRemoved.point(0), nextPoint));
-        polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, redSegmentRemoved.point(1)));
-        break;
-        
-      } 
-      else if (polygLine[i].point(1) == redSegmentRemoved.point(1)) {
-          polygLine.insert(polygLine.begin() + index + 1,Segment_2(redSegmentRemoved.point(1), nextPoint));
-          polygLine.insert(polygLine.begin() + index + 2, Segment_2(nextPoint, redSegmentRemoved.point(0)));
-          break;
-      }
-      index++;
-    }
+    expandPolygonLine(polygLine, redSegment, nextPoint);
 
     // Print all segments of the current polygon
     std::cout << std::endl;
