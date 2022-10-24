@@ -30,7 +30,8 @@ std::vector<Point> readPoints() {
       Point(10, 4),   Point(-10, 2),   Point(-20, 3),  Point(9, 10),
       Point(-15, 7),  Point(-15, 10),  Point(-15, 15), Point(1, 19),
       Point(1, 30),   Point(1, 50),    Point(40, 100), Point(40, 200),
-      Point(40, 250), Point(-40, 250), Point(50, 250), Point(60, 250)};
+      Point(40, 250), Point(-40, 250), Point(50, 250), Point(60, 250),
+      Point(80, 250), Point(112, 300), Point(98, 300), Point(76, 300)};
 
   // std::vector<Point> points{
   //     Point(1, 2),  Point(1, 5),  Point(3, 5),  Point(4, 3), Point(3, 1),
@@ -195,7 +196,15 @@ Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &conve
   std::vector<Segment_2> visibleSegments2 = visibleSegments;
 
   for (Segment_2 vSeg : visibleSegments){
-    std::cout << "Visible ==> " << vSeg << std::endl; 
+    std::cout << "Visible ==> " << vSeg << std::endl;
+    
+    if (nextPoint.y() == vSeg.point(0).y() && vSeg.point(0).y() == vSeg.point(1).y()){
+      visibleSegments2.erase(std::remove(visibleSegments2.begin(), visibleSegments2.end(), vSeg), visibleSegments2.end());
+    }
+
+    if (nextPoint.x() == vSeg.point(0).x() && vSeg.point(0).x() == vSeg.point(1).x()){
+      visibleSegments2.erase(std::remove(visibleSegments2.begin(), visibleSegments2.end(), vSeg), visibleSegments2.end());
+    }
   }
 
   for (Segment_2 vSeg : visibleSegments) {
@@ -204,6 +213,8 @@ Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &conve
                                  Segment_2(nextPoint, vSeg.point(1)),
                                  Segment_2(nextPoint, Point(((vSeg.point(0).x() + vSeg.point(1).x()) / 2), ((vSeg.point(0).y() + vSeg.point(1).y()) /2)))
                                 };
+
+    int collisions = 0;
 
     for (Segment_2 polygSeg : polygLine){
 
