@@ -16,6 +16,12 @@
 #include <stdexcept>
 #include <vector>
 
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+#include <string.h>
+
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
 typedef CGAL::Polygon_2<K> Polygon_2;
@@ -23,16 +29,44 @@ typedef K::Segment_2 Segment_2;
 typedef CGAL::Convex_hull_traits_adapter_2<K, CGAL::Pointer_property_map<Point>::type> Convex_hull_traits_2;
 
 std::vector<Point> readPoints() {
-
-  std::vector<Point> points{
-      Point(5, 1),    Point(8, 2),     Point(23, 4),   Point(0, 6),
-      Point(50, 50),  Point(50, 6),    Point(50, 20),  Point(30, 6),
-      Point(10, 4),   Point(-10, 2),   Point(-20, 3),  Point(9, 10),
-      Point(-15, 7),  Point(-15, 10),  Point(-15, 15), Point(1, 19),
-      Point(1, 30),   Point(1, 50),    Point(40, 100), Point(40, 200),
-      Point(40, 250), Point(-40, 250), Point(50, 250), Point(60, 250),
-      Point(80, 250), Point(112, 300), Point(98, 300), Point(76, 300)};
-
+  ifstream inFile("data.in");
+  string strInput;
+  printf("ok!");
+  std::vector<Point> points;
+  while (inFile){ 
+    int counter = 0;
+    getline(inFile, strInput);
+    if (strInput[0] == '#')
+      continue;
+    int n = strInput.length();
+    char cstring[n + 1];
+    strcpy(cstring, strInput.c_str());
+    char * pointerch;
+    pointerch = strtok (cstring,"	");
+    while (pointerch != NULL){
+      double x,y;
+      if (counter == 0){
+        pointerch = strtok (NULL, "	");
+        counter++;
+        continue;
+      }
+      else{
+        if (counter == 1)
+          x = atof(pointerch);
+        else{
+          y = atof(pointerch);
+          cout << x << "  " << y << endl;
+          points.push_back(Point(x,y));
+          std::cout << points.back().x() << " " << points.back().y() << std::endl;
+        }  
+      }
+      pointerch = strtok (NULL, "	");
+      counter++;
+    }
+  }
+  points.pop_back();
+  inFile.close();
+  return points;  
   // std::vector<Point> points{
   //     Point(1, 2),  Point(1, 5),  Point(3, 5),  Point(4, 3), Point(3, 1),
   //     Point(2, 1),  Point(2, 2),  Point(3, 3),  Point(2, 5), Point(0, 5),
@@ -41,7 +75,6 @@ std::vector<Point> readPoints() {
   // std::vector<Point> points{Point(3, 6), Point(3, 4),  Point(3, 2), Point(5, 4),
   //                           Point(0, 4), Point(-1, 7), Point(-1, -5)};
 
-  return points;
   
 }
 
