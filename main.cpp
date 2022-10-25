@@ -18,6 +18,12 @@
 #include <string>
 #include <vector>
 
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+#include <string.h>
+
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
 typedef CGAL::Polygon_2<K> Polygon_2;
@@ -365,6 +371,8 @@ int main() {
   std::vector<Point> polygLinePoints = getPolyLinePoints(polygLine);
 
   // Loop until there are no remaining points left
+
+    std::cout << std::endl;
 
   int counter = 0;
 
