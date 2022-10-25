@@ -17,12 +17,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
 #include <iostream>
 #include <fstream>
 #include <string>
-using namespace std;
-#include <string.h>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
