@@ -1,10 +1,9 @@
 #include <CGAL/Convex_hull_traits_adapter_2.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Kernel/global_functions_2.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/convex_hull_2.h>
-#include <CGAL/enum.h>
 #include <CGAL/intersections.h>
-#include <CGAL/property_map.h>
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -17,7 +16,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <iostream>
 #include <fstream>
 #include <string>
 
@@ -34,14 +32,16 @@ std::vector<Point> readPoints() {
 
   std::vector<Point> points;
   
+  int currentIndex= 0;
+
   while (inFile){ 
 
     getline(inFile, strInput);
     
     if (strInput[0] == '#' || strInput.size() < 2)
       continue;
-
-    int x,y;
+    
+    int fileIndex, x, y;
     
     std::vector<std::string> strings;
     std::string s;
@@ -50,15 +50,20 @@ std::vector<Point> readPoints() {
     while (std::getline(f, s, '\t')) {
       strings.push_back(s);
     }
+
+    fileIndex = stoi(strings[0]);
+    
+    if (fileIndex != currentIndex)
+      break;
     
     x = stoi(strings[1]);
     y = stoi(strings[2]);
+    currentIndex++;
 
     points.push_back(Point(x,y));
-    // std::cout << points.back().x() << " " << points.back().y() << std::endl;
+    std::cout << points.back().x() << " " << points.back().y() << std::endl;
   }
 
-  points.pop_back();
   inFile.close();
 
   return points;  
@@ -185,12 +190,8 @@ std::vector<Segment_2> getRedSegments(std::vector<Segment_2> &currConvexHullSegm
 
 
 Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &convexSegment, Point &nextPoint) {
-
-  if (nextPoint.y() == convexSegment.point(0).y() && convexSegment.point(0).y() == convexSegment.point(1).y()){
-    throw std::runtime_error("No Visible Segment Available");
-  }
-
-  if (nextPoint.x() == convexSegment.point(0).x() && convexSegment.point(0).x() == convexSegment.point(1).x()){
+      
+  if (CGAL::collinear(nextPoint, convexSegment.point(0), convexSegment.point(1))){
     throw std::runtime_error("No Visible Segment Available");
   }
 
@@ -232,14 +233,7 @@ Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &conve
     auto indexing = it;
     indexing++;
 
-    if (nextPoint.y() == (*it).point(0).y() && (*it).point(0).y() == (*it).point(1).y()){
-      int prevSize = visibleSegments.size();
-      visibleSegments.erase(it);
-      if (visibleSegments.size() != prevSize)
-        indexing--;
-    }
-
-    if (nextPoint.x() == (*it).point(0).x() && (*it).point(0).x() == (*it).point(1).x()){
+    if (CGAL::collinear(nextPoint, (*it).point(0), (*it).point(1))) {
       int prevSize = visibleSegments.size();
       visibleSegments.erase(it);
       if (visibleSegments.size() != prevSize)
@@ -276,25 +270,19 @@ Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &conve
               continue;
             }
             else {
-              int prevSize = visibleSegments.size();
-              if (at >= visibleSegments.begin() && at <=visibleSegments.end())
-                visibleSegments.erase(at);
+              visibleSegments.erase(at);
 
-              if (visibleSegments.size() < prevSize)
-                indexing--;
+              indexing--;
               
               flag = true;
               break;
             }
           }
           else {
-            int prevSize = visibleSegments.size();
-            if (at >= visibleSegments.begin() && at <= visibleSegments.end())
-              visibleSegments.erase(at);
+            visibleSegments.erase(at);
+           
+            indexing--;
 
-            if (visibleSegments.size() < prevSize)
-              indexing--;
-            
             flag = true;
             break;
           }
@@ -369,7 +357,7 @@ int main() {
 
   // Loop until there are no remaining points left
 
-    std::cout << std::endl;
+  std::cout << std::endl;
 
   int counter = 0;
 
@@ -438,9 +426,10 @@ int main() {
 
     // std::cout << std::endl;
   }
+
   Polygon_2 pol_result = Polygon_2();
-  
-  for (Segment_2 segment : polygLine){
+
+  for (Segment_2 segment : polygLine) {
     pol_result.push_back(segment.point(0));
   }
 
