@@ -191,13 +191,14 @@ std::vector<Segment_2> getRedSegments(std::vector<Segment_2> &currConvexHullSegm
 
 Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &convexSegment, Point &nextPoint) {
       
-  if (CGAL::collinear(nextPoint, convexSegment.point(0), convexSegment.point(1))){
-    throw std::runtime_error("No Visible Segment Available");
-  }
-
-  // Convex hull segment == polygon line segment
-  if (std::find(polygLine.begin(), polygLine.end(), convexSegment) != polygLine.end()) {
-    return convexSegment;
+  // Convex hull segment == polygon line segment and not collinear check
+  if ((std::find(polygLine.begin(), polygLine.end(), convexSegment) != polygLine.end())){ 
+    
+    if (!CGAL::collinear(nextPoint, convexSegment.point(0), convexSegment.point(1)))
+      return convexSegment;
+    else 
+      throw std::runtime_error("No Visible Segment Available");
+  
   }
 
   // Convex hull segment not on polygon line segment
@@ -228,7 +229,7 @@ Segment_2 findVisibleSegment(std::vector<Segment_2> &polygLine, Segment_2 &conve
 
   auto it = visibleSegments.begin();
 
-   while(it != visibleSegments.end()) {
+  while(it != visibleSegments.end()) {
     // std::cout << "Visible ==> " << vSeg << std::endl;
     auto indexing = it;
     indexing++;
