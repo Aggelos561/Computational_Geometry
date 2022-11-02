@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 # pip install matplotlib
 
-
+plt.pcolor="red"
 file1 = open('results.txt', 'r')
 Lines = file1.readlines()
 
@@ -35,5 +35,6 @@ plt.xlabel('x - axis')
 plt.ylabel('y - axis')
 
 plt.title('Polygon')
-  
+
+plt.scatter(x ,y, color = 'red')
 plt.show()

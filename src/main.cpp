@@ -2,8 +2,11 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
-#include "../include/dataio.hpp"
 #include "../include/polygonization.hpp"
+#include "../include/convexHull.hpp"
+#include "../include/dataio.hpp"
+#include "../include/incremental.hpp"
+
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
@@ -16,11 +19,17 @@ int main() {
   
   std::vector<Point> points = dataio::readPoints();
 
-  Polygonization pol = Polygonization(points);
+  convexHull pol = convexHull(points);
 
-  pol.convexHullAlg();
+  auto start = std::chrono::high_resolution_clock::now();
 
-  dataio::createResultsFile(pol.getPolygonLine(), pol.getArea(), pol.getDuration(), pol.getRatio());
+  pol.start();
+  
+  auto stop = std::chrono::high_resolution_clock::now();
+
+  std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+  dataio::createResultsFile(pol.getPolygonLine(), pol.getArea(), duration, pol.getRatio());
 
   return 0;
 }
