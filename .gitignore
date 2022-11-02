@@ -1,9 +1,8 @@
 .vscode/
 CMakeFiles/
 main
-CMakeCache.txt
-CMakeLists.txt
 Makefile
 cmake_install.cmake
-results.txt
+*.txt
 data.in
+to_polygon
