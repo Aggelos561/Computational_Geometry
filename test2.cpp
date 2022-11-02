@@ -535,6 +535,7 @@ void insertBestPoint(std::vector<pair> bestPoints,std::vector<Point>& remainingP
         }
     }
     else{
+        printf("size:%d\n",remainingPoints.size());
         printf("at least here!\n");
         int rindex = ( rand() % (bestPoints.size() - 1));
         pair bestPair;
@@ -574,7 +575,20 @@ int main(){
 
   std::vector<Segment_2> currConvexHullSegments = getConvexHull(polygLinePoints,remainingPoints);
   initialRun(currConvexHullSegments, remainingPoints, polygLine);
+  printf("size before:%d",remainingPoints.size());
+  for (int i = 0; i < remainingPoints.size(); i++){
+          printf("i=%d remeaing size:%d\n",i,remainingPoints.size());
+          if (forceInsertPoint(polygLine, remainingPoints[i])) {
+            printf("seg!%d\n",i);
+            std::cout << "Point " << remainingPoints[i] << std::endl;
+            remainingPoints.erase(remainingPoints.begin() + i);
+            i--;
+            printf("insert reamainging,%d!\n",remainingPoints.size());
+          }
+  }
+  printf("going for second part!\n");
   while(remainingPoints.size() > 0){
+    printf("second run!\n");
     std::vector<pair> bestPoints;
     for(int i = 0; i < polygLine.size(); i++){
       std::vector<visPoint> visPoints;
