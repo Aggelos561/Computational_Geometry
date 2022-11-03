@@ -18,7 +18,7 @@ typedef K::Segment_2 Segment_2;
 typedef CGAL::Convex_hull_traits_adapter_2<K, CGAL::Pointer_property_map<Point>::type> Convex_hull_traits_2;
 typedef CGAL::Epick::FT ft;
 
-convexHull::convexHull(std::vector<Point> &points) : Polygonization(points) {
+convexHull::convexHull(std::vector<Point> &points,int mode) : Polygonization(points,mode) {
 }
 
 void convexHull::start(){
@@ -71,7 +71,7 @@ void convexHull::start(){
         pair best = {bestPoint,bestSeg};
         bestPoints.push_back(best);
     }
-    insertBestPoint(bestPoints,remainingPoints,polygLine,1);
+    insertBestPoint(bestPoints,remainingPoints,polygLine);
   }
 
   Polygon_2 pol_result = Polygon_2();
@@ -254,9 +254,9 @@ Point convexHull::findBestPoint(std::vector<visPoint> &visPoints, std::vector<Po
   return bestPoint;
 }
 
-void convexHull::insertBestPoint(std::vector<pair> &bestPoints, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine, int mode) {
+void convexHull::insertBestPoint(std::vector<pair> &bestPoints, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {
   
-	if (mode != 1) {
+	if (this->mode != 1) {
     std::vector<Segment_2> testPolyg = polygLine;
     deleteSegment(testPolyg, bestPoints[0].seg);
     expandPolygonLine(testPolyg, bestPoints[0].seg, bestPoints[0].cor);
@@ -276,12 +276,12 @@ void convexHull::insertBestPoint(std::vector<pair> &bestPoints, std::vector<Poin
       ft polArea = CGAL::polygon_area_2(
           polygLinePoints.begin(), polygLinePoints.end(),
           Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
-      if (mode == 2 && polArea > chosenArea) {
+      if (this->mode == 2 && polArea > chosenArea) {
         index = i;
         chosenArea = polArea;
         bestPair.cor = bestPoints[i].cor;
         bestPair.seg = bestPoints[i].seg;
-      } else if (mode == 3 && polArea < chosenArea) {
+      } else if (this->mode == 3 && polArea < chosenArea) {
         index = i;
         chosenArea = polArea;
         bestPair.cor = bestPoints[i].cor;

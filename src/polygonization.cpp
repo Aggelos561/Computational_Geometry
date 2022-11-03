@@ -20,9 +20,10 @@ typedef CGAL::Epick::FT ft;
 
 
 
-Polygonization::Polygonization(std::vector<Point>& points){
+Polygonization::Polygonization(std::vector<Point>& points,int mode){
 	this->points = points;
 	this->remainingPoints = points;
+  this->mode = mode;
 }
 
 

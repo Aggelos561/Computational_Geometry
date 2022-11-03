@@ -10,9 +10,9 @@ typedef K::Segment_2 Segment_2;
 typedef CGAL::Epick::FT ft;
 
 // Read from data.instance file
-std::vector<Point> dataio::readPoints() {
+std::vector<Point> dataio::readPoints(std::string name) {
 
-  std::ifstream inFile("data.in");
+  std::ifstream inFile(name.c_str());
   std::string strInput;
 
   std::vector<Point> points;
@@ -54,13 +54,13 @@ std::vector<Point> dataio::readPoints() {
 
 
 // Write resulta data into a spesific file
-void dataio::createResultsFile(const std::vector<Segment_2> &polygLine,const ft& area, const std::chrono::milliseconds& polygonizationDuration, const ft& ratio) {
+void dataio::createResultsFile(const std::vector<Segment_2> &polygLine,const ft& area, const std::chrono::milliseconds& polygonizationDuration, const ft& ratio,std::string output) {
 
   std::ofstream outdata;
 
   int i;
 
-  outdata.open("results.txt");
+  outdata.open(output.c_str());
 
   if (!outdata) {
     std::cerr << "Error: file could not be opened" << std::endl;

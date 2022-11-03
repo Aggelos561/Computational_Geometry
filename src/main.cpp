@@ -15,21 +15,54 @@ typedef CGAL::Epick::FT ft;
 
 
 
-int main() {
+int main(int argc,char** argv) {
+  std::string nameOfFile;
+  std::string outputFile;
+  std::string algorithm;
+  int edge_selection;
+  std::string initialization;
+  for(int i = 0; i < argc; i++){
+    std::string temp(argv[i+1]);
+    if(!strcmp("-i",argv[i])){
+      nameOfFile = temp;
+    }
+    else if(!strcmp("-o",argv[i])){
+      outputFile = temp;
+    }
+    else if(!strcmp("-algorithm",argv[i])){
+      algorithm = temp;
+    }
+    else if(!strcmp("-edge_selection",argv[i])){
+      edge_selection = std::stoi(temp);
+    }
+    else if(!strcmp("initialization",argv[i])){
+      initialization = temp;
+    }
+  }
   
-  std::vector<Point> points = dataio::readPoints();
+  std::vector<Point> points = dataio::readPoints(nameOfFile);
+  if(algorithm == "incremental"){
+    Incremental pol = Incremental(points,edge_selection,initialization);
 
-  convexHull pol = convexHull(points);
+    auto start = std::chrono::high_resolution_clock::now();
 
-  auto start = std::chrono::high_resolution_clock::now();
+    pol.start();
 
-  pol.start();
-  
-  auto stop = std::chrono::high_resolution_clock::now();
+    auto stop = std::chrono::high_resolution_clock::now();
+    std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-  std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    dataio::createResultsFile(pol.getPolygonLine(), pol.getArea(), duration, pol.getRatio(),outputFile);
+  }
+  else if(algorithm == "convex_hull"){
+    convexHull pol = convexHull(points,edge_selection);
 
-  dataio::createResultsFile(pol.getPolygonLine(), pol.getArea(), duration, pol.getRatio());
+    auto start = std::chrono::high_resolution_clock::now();
 
+    pol.start();
+    auto stop = std::chrono::high_resolution_clock::now();
+    std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+    dataio::createResultsFile(pol.getPolygonLine(), pol.getArea(), duration, pol.getRatio(),outputFile);
+  }
   return 0;
 }

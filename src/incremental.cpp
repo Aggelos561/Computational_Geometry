@@ -19,7 +19,7 @@ typedef CGAL::Epick::FT ft;
 
 
 
-Incremental::Incremental(std::vector<Point> &points) : Polygonization(points) {
+Incremental::Incremental(std::vector<Point> &points,int mode) : Polygonization(points,mode) {
 }
 
 
@@ -118,7 +118,14 @@ bool Incremental::sortYDesc(Point &a, Point &b) {
 
 // Sort points in vector
 void Incremental::sortPoints(std::vector<Point> &points) {
-  std::sort(points.begin(), points.end(), this->sortYDesc);
+  if(this->modeOfSorting == "1a")
+    std::sort(points.begin(), points.end(),std::greater<Point>());
+  else if(this->modeOfSorting == "1b")
+    std::sort(points.begin(), points.end());
+  else if(this->modeOfSorting == "2a")
+    std::sort(points.begin(), points.end(),this->sortYDesc);
+  else if(this->modeOfSorting == "2b")
+    std::sort(points.begin(), points.end(),this->sortYAsc);
 }
 
 
