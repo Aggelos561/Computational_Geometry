@@ -9,8 +9,48 @@ typedef K::Point_2 Point;
 typedef K::Segment_2 Segment_2;
 typedef CGAL::Epick::FT ft;
 
+
+// Get parameters
+bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, int& edge_selection, std::string& initialization, int argc, char** argv) {
+  
+  for(int i = 0; i < argc- 1; i++){
+
+    std::string param = (argv[i]);
+    std::string mode = (argv[i+1]);
+
+    if(param == "-i"){
+      nameOfFile = mode;
+    }
+    else if(param == "-o"){
+      outputFile = mode;
+    }
+    else if(param == "-algorithm"){
+      algorithm = mode;
+    }
+    else if(param == "-edge_selection"){
+      edge_selection = std::stoi(mode);
+    }
+    else if(param == "-initialization"){
+      initialization = mode;
+    }
+  }
+
+  if ((algorithm != "incremental") && (algorithm != "convex_hull"))
+    return false;
+
+  if (edge_selection < 1 || edge_selection > 3)
+    return false;
+
+  if ((algorithm == "incremental") && (initialization != "1a") && (initialization != "1b") && (initialization != "2a") && (initialization != "2b"))
+    return false;
+
+  return true;
+}
+
+
+
 // Read from data.instance file
-std::vector<Point> dataio::readPoints(std::string name) {
+std::vector<Point> dataio::readPoints(const std::string& name) {
 
   std::ifstream inFile(name.c_str());
   std::string strInput;
@@ -44,7 +84,6 @@ std::vector<Point> dataio::readPoints(std::string name) {
     currentIndex++;
 
     points.push_back(Point(x,y));
-    std::cout << points.back().x() << " " << points.back().y() << std::endl;
   }
 
   inFile.close();
@@ -53,26 +92,18 @@ std::vector<Point> dataio::readPoints(std::string name) {
 }
 
 
+
 // Write resulta data into a spesific file
-void dataio::createResultsFile(const std::vector<Segment_2> &polygLine,const ft& area, const std::chrono::milliseconds& polygonizationDuration, const ft& ratio,std::string output) {
+void dataio::createResultsFile(const std::vector<Segment_2> &polygLine,const ft& area, const std::chrono::milliseconds& polygonizationDuration, const ft& ratio, const std::string& output, const std::string& algorithm, const int& edgeSelection, const std::string& initialization) {
 
   std::ofstream outdata;
-
-  int i;
 
   outdata.open(output.c_str());
 
   if (!outdata) {
-    std::cerr << "Error: file could not be opened" << std::endl;
+    std::cout << "Error: file could not be opened" << std::endl;
     exit(1);
   }
-
-  for (i = 0; i < polygLine.size(); ++i)
-    outdata << polygLine[i] << std::endl;
-
-  outdata.close();
-
-  outdata.open("Polygon_Results.txt");
 
   outdata << "Polygonization" << std::endl;
 
@@ -84,7 +115,12 @@ void dataio::createResultsFile(const std::vector<Segment_2> &polygLine,const ft&
 
   outdata << std::endl;
 
-  outdata << "Algorithm: "<< "incremental" << "_edge_selection_" << "1" "_initialization_" << "1a" << std::endl;
+  outdata << "Algorithm: "<< algorithm << "_edge_selection_" << edgeSelection;
+
+  if (algorithm == "incremental")
+    outdata << "_initialization_" << initialization << std::endl;
+  else
+   outdata << std::endl;
 
   outdata << "Area: " << (int)area << std::endl;
 

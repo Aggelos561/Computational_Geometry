@@ -18,16 +18,18 @@ typedef CGAL::Convex_hull_traits_adapter_2<K, CGAL::Pointer_property_map<Point>:
 typedef CGAL::Epick::FT ft;
 
 
-
-Incremental::Incremental(std::vector<Point> &points,int mode) : Polygonization(points,mode) {
+// Constructor for incremental class 
+Incremental::Incremental(std::vector<Point> &points, int edgeSelection, std::string& initialization) : 
+  Polygonization(points,edgeSelection), initialization(initialization) {
 }
 
-
+// incremental algorithm MAIN method
 void Incremental::start() {
 
   // Sort points in a spesific order
   this->sortPoints(points);
 
+  // Store remaining points
   remainingPoints = this->points;
 
   // Create A Starting Triangle
@@ -40,52 +42,53 @@ void Incremental::start() {
   totalArea = polygLinePoints.size() == 3 ? CGAL::area(polygLinePoints[0], polygLinePoints[1], polygLinePoints[2]): 0;
 
   // Calculate current convex hull
-  std::vector<Segment_2> currConvexHullSegments =
-      getConvexHull(polygLinePoints);
+  std::vector<Segment_2> currConvexHullSegments = getConvexHull(polygLinePoints);
 
   // Loop until there are no remaining points left
   while (remainingPoints.size() > 0) {
 
-    // Get next point and delete it from remaining
+    // Get next new point and delete it from remaining
     Point nextPoint = remainingPoints[0];
-    std::cout << "Next Point --> " << nextPoint << std::endl;
     remainingPoints.erase(remainingPoints.begin());
 
-    // Push next point
+    // Push next point into polygon line points
     polygLinePoints.push_back(nextPoint);
 
     // Calculate convex hull with the new point inside
-    std::vector<Segment_2> nextConvexHullSegments =
-        getConvexHull(polygLinePoints);
+    std::vector<Segment_2> nextConvexHullSegments = getConvexHull(polygLinePoints);
 
-    // To get red segments compare current convex hull and convex hull with the
-    // new point if the new novex hull DOES NOT have any segments from the
+    // To get red segments compare current convex hull and convex hull with the new point
+    // if the new novex hull DOES NOT have any segments from the
     // current convex hull then these segments are RED
     std::vector<Segment_2> redSegments = getRedSegments(currConvexHullSegments, nextConvexHullSegments, nextPoint);
 
+    // next iteration current convex hull will be next convex hull from the current iteration
     currConvexHullSegments = nextConvexHullSegments;
 
     while (true) {
 
       std::vector<Segment_2> visibleSegments = findVisibleSegments(polygLine, redSegments, nextPoint);
 
-      // if NO visible segments where found then the next point is ON the
-      // polygon
+      // if NO visible segments where found then the next point is ON the polygon
       if (visibleSegments.size() == 0) {
-
+        
+        // Must force insert point into polygon line
         forceInsertPoint(polygLine, nextPoint);
         break;
       }
 
-      Segment_2 visibleSegment =
-          chooseVisibleSegment(visibleSegments, nextPoint, totalArea);
+      // Returning a visible segment random, min area or max area
+      Segment_2 visibleSegment = chooseVisibleSegment(visibleSegments, nextPoint, totalArea);
 
+      // Deleting the previous segment and expanding the polygon line with 2 new segments with the new point inside
       deleteSegment(polygLine, visibleSegment);
       expandPolygonLine(polygLine, visibleSegment, nextPoint);
 
       break;
     }
   }
+
+  // Calculating ratio
   ratio = calcRatio(currConvexHullSegments, totalArea);
 
   Polygon_2 pol_result = Polygon_2();
@@ -118,14 +121,14 @@ bool Incremental::sortYDesc(Point &a, Point &b) {
 
 // Sort points in vector
 void Incremental::sortPoints(std::vector<Point> &points) {
-  if(this->modeOfSorting == "1a")
-    std::sort(points.begin(), points.end(),std::greater<Point>());
-  else if(this->modeOfSorting == "1b")
+  if(this->initialization == "1a")
+    std::sort(points.begin(), points.end(), std::greater<Point>());
+  else if (this->initialization == "1b")
     std::sort(points.begin(), points.end());
-  else if(this->modeOfSorting == "2a")
-    std::sort(points.begin(), points.end(),this->sortYDesc);
-  else if(this->modeOfSorting == "2b")
-    std::sort(points.begin(), points.end(),this->sortYAsc);
+  else if (this->initialization == "2a")
+    std::sort(points.begin(), points.end(), this->sortYDesc);
+  else if (this->initialization == "2b")
+    std::sort(points.begin(), points.end(), this->sortYAsc);
 }
 
 
@@ -163,7 +166,7 @@ void Incremental::initializeTriangle(std::vector<Segment_2> &polygLine, std::vec
     trianglePoints.push_back(points[i]);
   }
 
-  //Trying to create a convex hull triangle that contains 3 points  
+  //Trying to create a convex hull triangle that contains 3 points that are not collinear with each other 
   int index = 3;
   polygLine = getConvexHull(trianglePoints);
   while (polygLine.size() != 3){
@@ -174,6 +177,7 @@ void Incremental::initializeTriangle(std::vector<Segment_2> &polygLine, std::vec
     polygLine = getConvexHull(trianglePoints);
   }
 
+  // Removing them from remaining points
   for (int i = 0; i < polygLine.size(); i++){
 
     for (int j = 0; j < remainingPoints.size(); j++){
@@ -189,7 +193,7 @@ void Incremental::initializeTriangle(std::vector<Segment_2> &polygLine, std::vec
 
 
 
-// Get triangle area from 3 points: source, target and next point
+// Get triangle area from 3 points: segment source, segment target and next point
 ft Incremental::getTriangleArea(Segment_2& segment, Point& nextPoint){
 
   std::vector<Point>trianglePoints{segment.source(), segment.target(), nextPoint};
@@ -208,15 +212,18 @@ ft Incremental::getTriangleArea(Segment_2& segment, Point& nextPoint){
 
 
 
-// Pick Random red segment and delete from the vector
+// Pick Random visble segment and delete from the vector
 Segment_2 Incremental::chooseVisibleSegment(std::vector<Segment_2> &visibleSegments, Point &nextPoint, ft &area) {
 
-  srand(time(NULL));
-  // int randomRedIndex = rand() % visibleSegments.size();
+  if (edgeSelection == 1){
+    srand(time(NULL));
+    int randomRedIndex = rand() % visibleSegments.size();
 
-  // area += getTriangleArea(visibleSegments[randomRedIndex], nextPoint);
+    area += getTriangleArea(visibleSegments[randomRedIndex], nextPoint);
 
-  // return visibleSegments[randomRedIndex];
+    return visibleSegments[randomRedIndex];
+  }
+
 
   std::vector<std::pair<ft, Segment_2>> areaToSegment;
 
@@ -227,39 +234,42 @@ Segment_2 Incremental::chooseVisibleSegment(std::vector<Segment_2> &visibleSegme
     areaToSegment.push_back(std::pair<ft, Segment_2>(newArea, segment));
   }
 
-  // ft minArea = std::numeric_limits<ft>::max();
-  // Segment_2 chosenSegment;
+  if (edgeSelection == 2){
 
-  // for (std::pair<ft, Segment_2> i : areaToSegment)
-  //   if (i.first < minArea) {
-  //     minArea = i.first;
-  //     chosenSegment = i.second;
-  //   }
+    ft minArea = std::numeric_limits<ft>::max();
+    Segment_2 chosenSegment;
 
-  // area += minArea;
-  // return chosenSegment;
+    for (std::pair<ft, Segment_2> i : areaToSegment)
+      if (i.first < minArea) {
+        minArea = i.first;
+        chosenSegment = i.second;
+      }
 
-  ft maxArea = -1;
-  Segment_2 chosenSegment;
+    area += minArea;
+    return chosenSegment;
 
-  for (std::pair<ft, Segment_2> i : areaToSegment)
-    if (i.first > maxArea){
-      maxArea = i.first;
-      chosenSegment = i.second;
-    }
+  }
+  else {
+    ft maxArea = -1;
+    Segment_2 chosenSegment;
 
-  area += maxArea;
+    for (std::pair<ft, Segment_2> i : areaToSegment)
+      if (i.first > maxArea){
+        maxArea = i.first;
+        chosenSegment = i.second;
+      }
 
-  return chosenSegment;
+    area += maxArea;
+
+    return chosenSegment;
+  }
 }
 
 
 
-// Compares current convex hull with a convex hull that has the new point
-// inserted
+// Compares current convex hull with a convex hull that has the new point inserted
 //  Returns a vector with all the red segments inserted
-std::vector<Segment_2>
-Incremental::getRedSegments(std::vector<Segment_2> &currConvexHullSegments, std::vector<Segment_2> &nextConvexHullSegments, Point &nextPoint) {
+std::vector<Segment_2> Incremental::getRedSegments(std::vector<Segment_2> &currConvexHullSegments, std::vector<Segment_2> &nextConvexHullSegments, Point &nextPoint) {
 
   std::vector<Segment_2> convexRedSegments;
 
@@ -267,15 +277,14 @@ Incremental::getRedSegments(std::vector<Segment_2> &currConvexHullSegments, std:
 
     int segmentCounter = std::count(nextConvexHullSegments.begin(), nextConvexHullSegments.end(), seg);
 
-    // If the new convex hull does not have this segment then this segment is
-    // RED
+    // If the new convex hull does not have this segment then this segment is RED
     if (!segmentCounter) {
       convexRedSegments.push_back(seg);
     }
   }
 
-  // if no new convex hull segments found then red segment is the on that has
-  // the point on it
+  // if no new convex hull segments found then the red segment is the the segment 
+  //that has the new point on it
   if (convexRedSegments.size() == 0) {
     for (int i = 0; i < nextConvexHullSegments.size(); i++) {
       if (nextConvexHullSegments[i].has_on(nextPoint)) {
@@ -291,8 +300,7 @@ Incremental::getRedSegments(std::vector<Segment_2> &currConvexHullSegments, std:
 
 
 // Searching and finding all visible segments based on the new point
-std::vector<Segment_2>
-Incremental::findVisibleSegments(std::vector<Segment_2> &polygLine, std::vector<Segment_2> &redSegments, Point &nextPoint) {
+std::vector<Segment_2> Incremental::findVisibleSegments(std::vector<Segment_2> &polygLine, std::vector<Segment_2> &redSegments, Point &nextPoint) {
 
   std::vector<Segment_2> totalVisibleSegments;
 
@@ -352,11 +360,14 @@ Incremental::findVisibleSegments(std::vector<Segment_2> &polygLine, std::vector<
 
     iterator = visibleSegments.begin();
 
+
+    // Filtering visible segments based on if they are intersecting on the polygon line
     while (iterator != visibleSegments.end()) {
 
       auto indexing = iterator;
       indexing++;
 
+      // 3 segments with new point source to check visibility
       Segment_2 segmentsArray[] = {
           Segment_2(nextPoint, (*iterator).point(0)),
           Segment_2(nextPoint, (*iterator).point(1)),
@@ -392,6 +403,7 @@ Incremental::findVisibleSegments(std::vector<Segment_2> &polygLine, std::vector<
             }
           }
         }
+        // if intersection found then no need to check the rest polyon line segments
         if (intersectionFound)
           break;
       }

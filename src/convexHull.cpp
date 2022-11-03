@@ -18,60 +18,66 @@ typedef K::Segment_2 Segment_2;
 typedef CGAL::Convex_hull_traits_adapter_2<K, CGAL::Pointer_property_map<Point>::type> Convex_hull_traits_2;
 typedef CGAL::Epick::FT ft;
 
-convexHull::convexHull(std::vector<Point> &points,int mode) : Polygonization(points,mode) {
+// Constructor for convex hull class
+convexHull::convexHull(std::vector<Point> &points, int edgeSelection) : Polygonization(points, edgeSelection) {
 }
 
+
+// convex hull algorithm MAIN method
 void convexHull::start(){
 
   srand(time(NULL));
 
+  //Store remaining points
   remainingPoints = points;
 
+  // Store init convex hull into polygon line
   initializeConvexHull(polygLine, points, remainingPoints);
 
-  std::cout << "Size of remainig " << remainingPoints.size() << std::endl;
-
-  for(int i = 0; i < remainingPoints.size(); i++)
-    std::cout << "Point " << remainingPoints[i] << std::endl;
-
+  // Get polygon lone points
  	polygLinePoints = getPolyLinePoints(polygLine);
 
+  // Get current convex hull segments
   std::vector<Segment_2> currConvexHullSegments = getConvexHull(polygLinePoints,remainingPoints);
 
+  // Run to find the first next new point
   initialRun(currConvexHullSegments, remainingPoints, polygLine);
-  printf("size before:%lu",remainingPoints.size());
 
+  // if new point on convex hull then force insert it into polygon line
   for (int i = 0; i < remainingPoints.size(); i++){
-          printf("i=%d remeaing size:%lu\n",i,remainingPoints.size());
-          if (forceInsertPoint(polygLine, remainingPoints[i])) {
-            printf("seg!%d\n",i);
-            std::cout << "Point " << remainingPoints[i] << std::endl;
-            remainingPoints.erase(remainingPoints.begin() + i);
-            i--;
-            printf("insert reamainging,%lu!\n",remainingPoints.size());
-          }
+
+    if (forceInsertPoint(polygLine, remainingPoints[i])) {
+      remainingPoints.erase(remainingPoints.begin() + i);
+      i--;
+    }
+  
   }
 
-  printf("going for second part!\n");
   while(remainingPoints.size() > 0){
-    printf("second run!\n");
+
     std::vector<pair> bestPoints;
+
+    //For every polyon line segment find visible and shortest point
     for(int i = 0; i < polygLine.size(); i++){
+      
       std::vector<visPoint> visPoints;
+
       for(int j = 0; j < remainingPoints.size(); j++){
-        findVisiblePoints(visPoints,remainingPoints[j],polygLine[i],polygLine);
+        findVisiblePoints(visPoints, remainingPoints[j], polygLine[i], polygLine);
       }
       
       if(visPoints.size() == 0){
         continue;
       }
 
-        Point bestPoint = findBestPoint(visPoints, remainingPoints, polygLine, polygLine[i]);
-        Segment_2 bestSeg = polygLine[i];
-        pair best = {bestPoint,bestSeg};
-        bestPoints.push_back(best);
+      Point bestPoint = findBestPoint(visPoints, remainingPoints, polygLine, polygLine[i]);
+      
+      Segment_2 bestSeg = polygLine[i];
+      pair best = {bestPoint, bestSeg};
+      bestPoints.push_back(best);
     }
-    insertBestPoint(bestPoints,remainingPoints,polygLine);
+
+    insertBestPoint(bestPoints, remainingPoints, polygLine);
   }
 
   Polygon_2 pol_result = Polygon_2();
@@ -84,6 +90,8 @@ void convexHull::start(){
 
 }
 
+
+// Calculate convex hull
 std::vector<Segment_2> convexHull::getConvexHull(std::vector<Point> &polygLinePoints, std::vector<Point> &remainingPoints) {
 
   std::vector<Point> convexHullPoints;
@@ -95,9 +103,7 @@ std::vector<Segment_2> convexHull::getConvexHull(std::vector<Point> &polygLinePo
 
   for (auto it = convexHullPoints.begin(); it != convexHullPoints.end(); ++it) {
     convexHullPolygon.push_back(*it);
-    remainingPoints.erase(
-        std::remove(remainingPoints.begin(), remainingPoints.end(), *it),
-        remainingPoints.end());
+    remainingPoints.erase(std::remove(remainingPoints.begin(), remainingPoints.end(), *it), remainingPoints.end());
   }
 
   std::vector<Segment_2> convexHullSegments;
@@ -110,6 +116,7 @@ std::vector<Segment_2> convexHull::getConvexHull(std::vector<Point> &polygLinePo
   return convexHullSegments;
 }
 
+// Get first convex hull and return vector of segments
 void convexHull::initializeConvexHull(std::vector<Segment_2> &polygLine, std::vector<Point> &points, std::vector<Point> &remainingPoints) {
 
   std::vector<Point> convexPoints;
@@ -121,13 +128,16 @@ void convexHull::initializeConvexHull(std::vector<Segment_2> &polygLine, std::ve
 }
 
 void convexHull::initialRun(std::vector<Segment_2> &currConvexHullSegments, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {
+  
   bool done = false;
+
   for (int i = 0; i < currConvexHullSegments.size(); i++) {
+    
     std::vector<visPoint> visPoints;
-    if (done) {
-      printf("done\n");
+    
+    if (done) 
       return;
-    }
+    
     for (int j = 0; j < remainingPoints.size(); j++) {
       Segment_2 segmentsArray[] = {
           Segment_2(remainingPoints[j], currConvexHullSegments[i].point(0)),
@@ -135,7 +145,9 @@ void convexHull::initialRun(std::vector<Segment_2> &currConvexHullSegments, std:
           Segment_2(remainingPoints[j], Point((currConvexHullSegments[i].point(0).x() + currConvexHullSegments[i].point(1).x()) / 2, ((currConvexHullSegments[i].point(0).y() + currConvexHullSegments[i].point(1).y()) / 2)))};
       
 			bool flag = false;
+
       for (Segment_2 polygSeg : polygLine) {
+       
         if (currConvexHullSegments[i] == polygSeg)
           continue;
 
@@ -156,16 +168,17 @@ void convexHull::initialRun(std::vector<Segment_2> &currConvexHullSegments, std:
               flag = true;
               break;
             }
+
           }
         }
+        
         if (flag) {
           break;
         }
       }
+
       if (!flag) {
-        printf("inserted!\n");
-        double distance =
-            squared_distance(remainingPoints[j], currConvexHullSegments[i]);
+        double distance = squared_distance(remainingPoints[j], currConvexHullSegments[i]);
         Point insPoint = remainingPoints[j];
         visPoint inserted;
         inserted.cor = insPoint;
@@ -173,31 +186,38 @@ void convexHull::initialRun(std::vector<Segment_2> &currConvexHullSegments, std:
         visPoints.push_back(inserted);
         done = true;
       }
+
     }
+
     if (!visPoints.size())
       continue;
+    
     int index = 0;
     Point bestPoint = visPoints[0].cor;
     double bestDist = visPoints[0].distance;
+    
     for (int k = 0; k < visPoints.size(); k++) {
       if (bestDist > visPoints[i].distance) {
         bestPoint = visPoints[i].cor;
         bestDist = visPoints[i].distance;
       }
     }
+    
     for (int m = 0; m < remainingPoints.size(); m++) {
+      
       if (remainingPoints[m] == bestPoint) {
         remainingPoints.erase(remainingPoints.begin() + m);
         Segment_2 visSeg = currConvexHullSegments[i];
         deleteSegment(polygLine, visSeg);
         expandPolygonLine(polygLine, visSeg, bestPoint);
-        // printf("poped!%d\n",remainingPoints.size());
         break;
       }
     }
   }
 }
 
+
+// find visible points based on a vector of segments polygon line
 void convexHull::findVisiblePoints(std::vector<visPoint> &visPoints, Point &remainingPoint, Segment_2 &seg, std::vector<Segment_2> &polygLine) {
   Segment_2 segmentsArray[] = {
       Segment_2(remainingPoint, seg.point(0)),
@@ -240,6 +260,8 @@ void convexHull::findVisiblePoints(std::vector<visPoint> &visPoints, Point &rema
   }
 }
 
+
+// Find closest point
 Point convexHull::findBestPoint(std::vector<visPoint> &visPoints, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine, Segment_2 &visSeg) {
   int index = 0;
   Point bestPoint = visPoints[0].cor;
@@ -256,62 +278,67 @@ Point convexHull::findBestPoint(std::vector<visPoint> &visPoints, std::vector<Po
 
 void convexHull::insertBestPoint(std::vector<pair> &bestPoints, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {
   
-	if (this->mode != 1) {
+	if (this->edgeSelection != 1) {
+
     std::vector<Segment_2> testPolyg = polygLine;
     deleteSegment(testPolyg, bestPoints[0].seg);
     expandPolygonLine(testPolyg, bestPoints[0].seg, bestPoints[0].cor);
+    
     std::vector<Point> polygLinePoints = getPolyLinePoints(testPolyg);
-    ft chosenArea = CGAL::polygon_area_2(
-        polygLinePoints.begin(), polygLinePoints.end(),
-        Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
+    
+    ft chosenArea = CGAL::polygon_area_2(polygLinePoints.begin(), polygLinePoints.end(), Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
+    
     int index = 0;
     pair bestPair;
     bestPair.cor = bestPoints[0].cor;
     bestPair.seg = bestPoints[0].seg;
+    
     for (int i = 0; i < bestPoints.size(); i++) {
+      
       std::vector<Segment_2> testPolyg = polygLine;
       deleteSegment(testPolyg, bestPoints[i].seg);
       expandPolygonLine(testPolyg, bestPoints[i].seg, bestPoints[i].cor);
       std::vector<Point> polygLinePoints = getPolyLinePoints(testPolyg);
-      ft polArea = CGAL::polygon_area_2(
-          polygLinePoints.begin(), polygLinePoints.end(),
-          Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
-      if (this->mode == 2 && polArea > chosenArea) {
+      
+      ft polArea = CGAL::polygon_area_2(polygLinePoints.begin(), polygLinePoints.end(), Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
+      
+      if (this->edgeSelection == 2 && polArea > chosenArea) {
         index = i;
         chosenArea = polArea;
         bestPair.cor = bestPoints[i].cor;
         bestPair.seg = bestPoints[i].seg;
-      } else if (this->mode == 3 && polArea < chosenArea) {
+      } 
+      else if (this->edgeSelection == 3 && polArea < chosenArea) {
         index = i;
         chosenArea = polArea;
         bestPair.cor = bestPoints[i].cor;
         bestPair.seg = bestPoints[i].seg;
       }
     }
+    
     for (int m = 0; m < remainingPoints.size(); m++) {
       if (remainingPoints[m] == bestPair.cor) {
 
         remainingPoints.erase(remainingPoints.begin() + m);
-        printf("erased!\n");
         deleteSegment(polygLine, bestPair.seg);
         expandPolygonLine(polygLine, bestPair.seg, bestPair.cor);
         break;
+        
       }
     }
   } else {
-    printf("size:%lu\n", remainingPoints.size());
-    printf("at least here!\n");
-    int rindex = (rand() % (bestPoints.size() - 1));
+    
+    int rindex = rand() % bestPoints.size();
     pair bestPair;
-    printf("RAND:%lu\n", bestPoints.size());
+
     bestPair.cor = bestPoints[rindex].cor;
     bestPair.seg = bestPoints[rindex].seg;
+    
     for (int m = 0; m < remainingPoints.size(); m++) {
       if (remainingPoints[m] == bestPair.cor) {
         remainingPoints.erase(remainingPoints.begin() + m);
         deleteSegment(polygLine, bestPair.seg);
         expandPolygonLine(polygLine, bestPair.seg, bestPair.cor);
-        printf("here!\n");
         break;
       }
     }

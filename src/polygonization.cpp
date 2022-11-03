@@ -6,7 +6,6 @@
 #include <CGAL/Polygon_2_algorithms.h>
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/intersections.h>
-#include <chrono>
 #include <iostream>
 #include <vector>
 #include "../include/polygonization.hpp"
@@ -19,24 +18,27 @@ typedef CGAL::Convex_hull_traits_adapter_2<K, CGAL::Pointer_property_map<Point>:
 typedef CGAL::Epick::FT ft;
 
 
-
-Polygonization::Polygonization(std::vector<Point>& points,int mode){
+// Contructor for base polygonization class
+Polygonization::Polygonization(std::vector<Point>& points, int edgeSelection){
 	this->points = points;
 	this->remainingPoints = points;
-  this->mode = mode;
+  this->edgeSelection = edgeSelection;
+  this->totalArea = 0;
+  this->ratio = 0;
 }
 
-
+// Return total area of polygon
 const ft& Polygonization::getArea(){
 	return totalArea;
 }
 
+// Return ratio for results file
 const ft& Polygonization::getRatio(){
 	return ratio;
 }
 
 
-
+// Return polygon line vector
 const std::vector<Segment_2>& Polygonization::getPolygonLine(){
 	return polygLine;
 }
@@ -56,15 +58,15 @@ std::vector<Point> Polygonization::getPolyLinePoints(std::vector<Segment_2> &pol
 }
 
 
-//Deletes a spesific segment value from a vector of segments
+
+// Deletes a spesific segment value from a vector of segments
 void Polygonization::deleteSegment(std::vector<Segment_2> &polygLine, Segment_2 &visibleSegment){
   polygLine.erase(std::remove(polygLine.begin(), polygLine.end(), visibleSegment), polygLine.end());
 }
 
 
 
-
-// if new point already on polygon line the force insert into polygon line
+// if new point already on polygon line the force insert into polygon line because no visible segment exists
 bool Polygonization::forceInsertPoint(std::vector<Segment_2> &polygLine, Point &nextPoint) {
 
   bool forceInserted = false;
@@ -79,6 +81,7 @@ bool Polygonization::forceInsertPoint(std::vector<Segment_2> &polygLine, Point &
     }
   }
 
+  // Check if point was force inserted
   if (forceInserted) {
     return true;
   }
@@ -86,7 +89,8 @@ bool Polygonization::forceInsertPoint(std::vector<Segment_2> &polygLine, Point &
 }
 
 
-// Insert the two new segments in the right place in polygon line
+
+// Insert the two new segments in the right place in polygon line for the new point
 void Polygonization::expandPolygonLine(std::vector<Segment_2> &polygLine, Segment_2 &visibleSegment, Point &nextPoint){
 
   int index = 0;
@@ -109,11 +113,13 @@ void Polygonization::expandPolygonLine(std::vector<Segment_2> &polygLine, Segmen
 }
 
 
-// Calculating area / convex hull area ratio
+
+// Calculating area / convex hull area ratio for results
 ft Polygonization::calcRatio(std::vector<Segment_2> &convexHull, ft &area){
 
   std::vector<Point> convexHullPoints = getPolyLinePoints(convexHull);
 
+  // Calculating convex hull area and divide with total polygon area
   ft convexHullArea = CGAL::polygon_area_2(convexHullPoints.begin(), convexHullPoints.end(), Convex_hull_traits_2(CGAL::make_property_map(convexHullPoints)));
 
   return area/convexHullArea;

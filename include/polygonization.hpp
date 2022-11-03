@@ -21,11 +21,13 @@ typedef struct pairPointSeg {
 } pair;
 
 
+// Base class polygonization.
+// Used as base class for Incremental and convexHull classes
 
 class Polygonization{
 
     protected:
-        int mode;
+        int edgeSelection;
         std::vector<Point> points;
         std::vector<Point> remainingPoints;
         std::vector<Segment_2> polygLine;

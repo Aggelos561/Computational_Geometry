@@ -10,6 +10,9 @@ typedef K::Point_2 Point;
 typedef K::Segment_2 Segment_2;
 typedef CGAL::Epick::FT ft;
 
+// Class for convexHull algorithm
+// Inherits from polygonization base class
+
 class convexHull : public Polygonization{
 
     private:      
@@ -28,6 +31,6 @@ class convexHull : public Polygonization{
 
     
     public:
-        convexHull(std::vector<Point>&,int );
+        convexHull(std::vector<Point>&, int );
         void start();
 };

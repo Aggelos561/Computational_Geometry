@@ -3,6 +3,7 @@
 #include "polygonization.hpp"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <iostream>
+#include <string>
 #include <vector>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
@@ -10,13 +11,19 @@ typedef K::Point_2 Point;
 typedef K::Segment_2 Segment_2;
 typedef CGAL::Epick::FT ft;
 
+
+// Class for incremental algorithm
+// Inherits from polygonization base class
+
 class Incremental: public Polygonization{
 
 	private:
-		std::string modeOfSorting;
+		std::string initialization;
+
 		static bool sortYAsc(Point &, Point &);
 		static bool sortYDesc(Point &, Point &);
 		void sortPoints(std::vector<Point> &);
+		
 
 		std::vector<Segment_2> getConvexHull(std::vector<Point>&);
 
@@ -32,6 +39,6 @@ class Incremental: public Polygonization{
 
 
 	public:
-		Incremental(std::vector<Point>&,int);
+		Incremental(std::vector<Point>&, int, std::string&);
 		void start();
 };

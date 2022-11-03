@@ -9,10 +9,13 @@ typedef K::Point_2 Point;
 typedef K::Segment_2 Segment_2;
 typedef CGAL::Epick::FT ft;
 
+// Namespace dataio is used to read the file input and write result files
 
 namespace dataio{
 
-    std::vector<Point> readPoints(std::string );
+    bool getParameters(std::string&, std::string&, std::string&, int&, std::string&, int, char**);
 
-    void createResultsFile(const std::vector<Segment_2>&, const ft&, const std::chrono::milliseconds&, const ft& ,std::string );
+    std::vector<Point> readPoints(const std::string& );
+
+    void createResultsFile(const std::vector<Segment_2>&, const ft&, const std::chrono::milliseconds&, const ft& ,const std::string&, const std::string&, const int&, const std::string&);
 }
