@@ -25,6 +25,7 @@ typedef struct pairPointSeg {
 class Polygonization{
 
     protected:
+        int mode;
         std::vector<Point> points;
         std::vector<Point> remainingPoints;
         std::vector<Segment_2> polygLine;
@@ -44,7 +45,7 @@ class Polygonization{
         ft calcRatio(std::vector<Segment_2>&, ft&);
     
     public:
-        Polygonization(std::vector<Point>&);
+        Polygonization(std::vector<Point>&,int);
         
         const ft& getArea();
         const ft& getRatio();

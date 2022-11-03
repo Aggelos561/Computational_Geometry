@@ -13,14 +13,13 @@ typedef CGAL::Epick::FT ft;
 class convexHull : public Polygonization{
 
     private:      
-        
         std::vector<Segment_2> getConvexHull(std::vector<Point> &,std::vector<Point> &);
         
         void initialRun(std::vector<Segment_2>& ,std::vector<Point>& ,std::vector<Segment_2>& );
        
         void initializeConvexHull(std::vector<Segment_2>&, std::vector<Point>&, std::vector<Point>&);
         
-        void insertBestPoint(std::vector<pair>&, std::vector<Point>&,std::vector<Segment_2>& , int );
+        void insertBestPoint(std::vector<pair>&, std::vector<Point>&,std::vector<Segment_2>&);
         
         void findVisiblePoints(std::vector<visPoint>&, Point&, Segment_2&, std::vector<Segment_2>& );
 
@@ -29,6 +28,6 @@ class convexHull : public Polygonization{
 
     
     public:
-        convexHull(std::vector<Point>&);
+        convexHull(std::vector<Point>&,int );
         void start();
 };

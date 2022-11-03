@@ -12,7 +12,7 @@ typedef CGAL::Epick::FT ft;
 
 namespace dataio{
 
-    std::vector<Point> readPoints();
+    std::vector<Point> readPoints(std::string );
 
-    void createResultsFile(const std::vector<Segment_2>&, const ft&, const std::chrono::milliseconds&, const ft& );
+    void createResultsFile(const std::vector<Segment_2>&, const ft&, const std::chrono::milliseconds&, const ft& ,std::string );
 }

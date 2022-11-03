@@ -13,6 +13,7 @@ typedef CGAL::Epick::FT ft;
 class Incremental: public Polygonization{
 
 	private:
+		std::string modeOfSorting;
 		static bool sortYAsc(Point &, Point &);
 		static bool sortYDesc(Point &, Point &);
 		void sortPoints(std::vector<Point> &);
@@ -31,6 +32,6 @@ class Incremental: public Polygonization{
 
 
 	public:
-		Incremental(std::vector<Point>&);
+		Incremental(std::vector<Point>&,int);
 		void start();
 };
