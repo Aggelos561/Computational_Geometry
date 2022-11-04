@@ -94,7 +94,7 @@ std::vector<Point> dataio::readPoints(const std::string& name) {
 
 
 // Write resulta data into a spesific file
-void dataio::createResultsFile(const std::vector<Segment_2> &polygLine,const ft& area, const std::chrono::milliseconds& polygonizationDuration, const ft& ratio, const std::string& output, const std::string& algorithm, const int& edgeSelection, const std::string& initialization) {
+void dataio::createResultsFile(const std::vector<Segment_2> &polygLine, const ft& area, const std::chrono::milliseconds& polygonizationDuration, const ft& ratio, const std::string& output, const std::string& algorithm, const int& edgeSelection, const std::string& initialization) {
 
   std::ofstream outdata;
 
@@ -107,10 +107,10 @@ void dataio::createResultsFile(const std::vector<Segment_2> &polygLine,const ft&
 
   outdata << "Polygonization" << std::endl;
 
-  for (Segment_2 line : polygLine)
+  for (const Segment_2& line : polygLine)
     outdata << line.source() << std::endl;
 
-  for (Segment_2 line : polygLine)
+  for (const Segment_2& line : polygLine)
     outdata << line << std::endl;
 
   outdata << std::endl;
@@ -122,7 +122,7 @@ void dataio::createResultsFile(const std::vector<Segment_2> &polygLine,const ft&
   else
    outdata << std::endl;
 
-  outdata << "Area: " << (int)area << std::endl;
+  outdata << "Area: " << (long int)area << std::endl;
 
   outdata << "ratio: " << ratio << std::endl;
 

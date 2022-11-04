@@ -36,18 +36,18 @@ class Polygonization{
         ft ratio;
 
         
-        std::vector<Point> getPolyLinePoints(std::vector<Segment_2>&);
+        std::vector<Point> getPolyLinePoints(const std::vector<Segment_2>&);
     
-        void deleteSegment(std::vector<Segment_2>&, Segment_2&);  
+        void deleteSegment(std::vector<Segment_2>&, const Segment_2&);  
         
-        bool forceInsertPoint(std::vector<Segment_2> &, Point &);
+        bool forceInsertPoint(std::vector<Segment_2> &, const Point &);
 
-        void expandPolygonLine(std::vector<Segment_2>&, Segment_2&, Point&);   
+        void expandPolygonLine(std::vector<Segment_2>&, const Segment_2&, const Point&);   
 
-        ft calcRatio(std::vector<Segment_2>&, ft&);
+        ft calcRatio(const std::vector<Segment_2>&, const ft&);
     
     public:
-        Polygonization(std::vector<Point>&,int);
+        Polygonization(const std::vector<Point>&, int);
         
         const ft& getArea();
         const ft& getRatio();

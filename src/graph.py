@@ -27,5 +27,5 @@ plt.ylabel('y - axis')
 
 plt.title('Polygon')
 
-plt.scatter(x ,y, color = 'red')
+plt.scatter(x, y, color = 'red')
 plt.show()

@@ -19,7 +19,7 @@ typedef CGAL::Convex_hull_traits_adapter_2<K, CGAL::Pointer_property_map<Point>:
 typedef CGAL::Epick::FT ft;
 
 // Constructor for convex hull class
-convexHull::convexHull(std::vector<Point> &points, int edgeSelection) : Polygonization(points, edgeSelection) {
+convexHull::convexHull(const std::vector<Point> &points, int edgeSelection) : Polygonization(points, edgeSelection) {
 }
 
 
@@ -70,7 +70,7 @@ void convexHull::start(){
         continue;
       }
 
-      Point bestPoint = findBestPoint(visPoints, remainingPoints, polygLine, polygLine[i]);
+      Point bestPoint = findBestPoint(visPoints);
       
       Segment_2 bestSeg = polygLine[i];
       pair best = {bestPoint, bestSeg};
@@ -82,17 +82,19 @@ void convexHull::start(){
 
   Polygon_2 pol_result = Polygon_2();
 
-  for (Segment_2 segment : polygLine) {
+  for (const Segment_2& segment : polygLine) {
     pol_result.push_back(segment.point(0));
   }
 
   std::cout << "Polygon Is Simple: " << pol_result.is_simple() << std::endl;
 
+  totalArea = calcArea(polygLine);
+  ratio = calcRatio(initialConvexHull, totalArea);
 }
 
 
 // Calculate convex hull
-std::vector<Segment_2> convexHull::getConvexHull(std::vector<Point> &polygLinePoints, std::vector<Point> &remainingPoints) {
+std::vector<Segment_2> convexHull::getConvexHull(const std::vector<Point> &polygLinePoints, std::vector<Point> &remainingPoints) {
 
   std::vector<Point> convexHullPoints;
 
@@ -109,7 +111,7 @@ std::vector<Segment_2> convexHull::getConvexHull(std::vector<Point> &polygLinePo
   std::vector<Segment_2> convexHullSegments;
 
   // Create A Vector That Stores Convex Hull segments
-  for (Segment_2 seg : convexHullPolygon.edges()) {
+  for (const Segment_2& seg : convexHullPolygon.edges()) {
     convexHullSegments.push_back(seg);
   }
 
@@ -117,7 +119,7 @@ std::vector<Segment_2> convexHull::getConvexHull(std::vector<Point> &polygLinePo
 }
 
 // Get first convex hull and return vector of segments
-void convexHull::initializeConvexHull(std::vector<Segment_2> &polygLine, std::vector<Point> &points, std::vector<Point> &remainingPoints) {
+void convexHull::initializeConvexHull(std::vector<Segment_2> &polygLine, const std::vector<Point> &points, std::vector<Point> &remainingPoints) {
 
   std::vector<Point> convexPoints;
 
@@ -128,7 +130,7 @@ void convexHull::initializeConvexHull(std::vector<Segment_2> &polygLine, std::ve
   this->initialConvexHull = polygLine;
 }
 
-void convexHull::initialRun(std::vector<Segment_2> &currConvexHullSegments, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {
+void convexHull::initialRun(const std::vector<Segment_2> &currConvexHullSegments, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {
   
   bool done = false;
 
@@ -147,7 +149,7 @@ void convexHull::initialRun(std::vector<Segment_2> &currConvexHullSegments, std:
       
 			bool flag = false;
 
-      for (Segment_2 polygSeg : polygLine) {
+      for (const Segment_2& polygSeg : polygLine) {
        
         if (currConvexHullSegments[i] == polygSeg)
           continue;
@@ -158,8 +160,7 @@ void convexHull::initialRun(std::vector<Segment_2> &currConvexHullSegments, std:
           if (result) {
 
             if (const Point *p = boost::get<Point>(&*result)) {
-              if (*p == currConvexHullSegments[i].point(0) ||
-                  *p == currConvexHullSegments[i].point(1)) {
+              if (*p == currConvexHullSegments[i].point(0) || *p == currConvexHullSegments[i].point(1)) {
                 continue;
               } else {
                 flag = true;
@@ -219,14 +220,15 @@ void convexHull::initialRun(std::vector<Segment_2> &currConvexHullSegments, std:
 
 
 // find visible points based on a vector of segments polygon line
-void convexHull::findVisiblePoints(std::vector<visPoint> &visPoints, Point &remainingPoint, Segment_2 &seg, std::vector<Segment_2> &polygLine) {
+void convexHull::findVisiblePoints(std::vector<visPoint> &visPoints, const Point &remainingPoint, const Segment_2 &seg, const std::vector<Segment_2> &polygLine) {
+  
   Segment_2 segmentsArray[] = {
       Segment_2(remainingPoint, seg.point(0)),
       Segment_2(remainingPoint, seg.point(1)),
       Segment_2(remainingPoint, Point((seg.point(0).x() + seg.point(1).x()) / 2, ((seg.point(0).y() + seg.point(1).y()) / 2)))};
   
 	bool flag = false;
-  for (Segment_2 polygSeg : polygLine) {
+  for (const Segment_2& polygSeg : polygLine) {
 
     for (int k = 0; k < 3; k++) {
       const auto result = intersection(segmentsArray[k], polygSeg);
@@ -263,7 +265,7 @@ void convexHull::findVisiblePoints(std::vector<visPoint> &visPoints, Point &rema
 
 
 // Find closest point
-Point convexHull::findBestPoint(std::vector<visPoint> &visPoints, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine, Segment_2 &visSeg) {
+Point convexHull::findBestPoint(const std::vector<visPoint> &visPoints) {
   int index = 0;
   Point bestPoint = visPoints[0].cor;
   double bestDist = visPoints[0].distance;
@@ -277,7 +279,7 @@ Point convexHull::findBestPoint(std::vector<visPoint> &visPoints, std::vector<Po
   return bestPoint;
 }
 
-void convexHull::insertBestPoint(std::vector<pair> &bestPoints, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {
+void convexHull::insertBestPoint(const std::vector<pair> &bestPoints, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {
   
 	if (this->edgeSelection != 1) {
 
@@ -303,13 +305,13 @@ void convexHull::insertBestPoint(std::vector<pair> &bestPoints, std::vector<Poin
       
       ft polArea = CGAL::polygon_area_2(polygLinePoints.begin(), polygLinePoints.end(), Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
       
-      if (this->edgeSelection == 2 && polArea > chosenArea) {
+      if (this->edgeSelection == 2 && polArea < chosenArea) {
         index = i;
         chosenArea = polArea;
         bestPair.cor = bestPoints[i].cor;
         bestPair.seg = bestPoints[i].seg;
       } 
-      else if (this->edgeSelection == 3 && polArea < chosenArea) {
+      else if (this->edgeSelection == 3 && polArea > chosenArea) {
         index = i;
         chosenArea = polArea;
         bestPair.cor = bestPoints[i].cor;
@@ -346,16 +348,9 @@ void convexHull::insertBestPoint(std::vector<pair> &bestPoints, std::vector<Poin
   }
 }
 
-void convexHull::calcArea(){
-  polygLinePoints = this->getPolyLinePoints(this->polygLine);
-  this->totalArea = CGAL::polygon_area_2(polygLinePoints.begin(), this->polygLinePoints.end(), Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
-}
+ft convexHull::calcArea(const std::vector<Segment_2>& polygLine) {
+  polygLinePoints = this->getPolyLinePoints(polygLine);
+  ft totalArea = CGAL::polygon_area_2(polygLinePoints.begin(), this->polygLinePoints.end(), Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
 
-void convexHull::calcRatio(){
-  std::vector<Point> convexHullPoints = getPolyLinePoints(this->initialConvexHull);
-
-  // Calculating convex hull area and divide with total polygon area
-  ft convexHullArea = CGAL::polygon_area_2(convexHullPoints.begin(), convexHullPoints.end(), Convex_hull_traits_2(CGAL::make_property_map(convexHullPoints)));
-
-  this->ratio = this->totalArea/convexHullArea;
+  return totalArea;
 }

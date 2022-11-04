@@ -25,20 +25,20 @@ class Incremental: public Polygonization{
 		void sortPoints(std::vector<Point> &);
 		
 
-		std::vector<Segment_2> getConvexHull(std::vector<Point>&);
+		std::vector<Segment_2> getConvexHull(const std::vector<Point>&);
 
-		void initializeTriangle(std::vector<Segment_2>&, std::vector<Point>&, std::vector<Point>&);
+		void initializeTriangle(std::vector<Segment_2>&, const std::vector<Point>&, std::vector<Point>&);
 
-		ft getTriangleArea(Segment_2&, Point&);
+		ft getTriangleArea(const Segment_2&, const Point&);
 
-		Segment_2 chooseVisibleSegment(std::vector<Segment_2>&, Point&, ft&);
+		Segment_2 chooseVisibleSegment(const std::vector<Segment_2>&, const Point&, ft&);
 
-		std::vector<Segment_2> getRedSegments(std::vector<Segment_2>&, std::vector<Segment_2>&, Point&);
+		std::vector<Segment_2> getRedSegments(const std::vector<Segment_2>&, const std::vector<Segment_2>&, const Point&);
 
-		std::vector<Segment_2> findVisibleSegments(std::vector<Segment_2>&, std::vector<Segment_2>&, Point&);
+		std::vector<Segment_2> findVisibleSegments(const std::vector<Segment_2>&, const std::vector<Segment_2>&, const Point&);
 
 
 	public:
-		Incremental(std::vector<Point>&, int, std::string&);
+		Incremental(const std::vector<Point>&, int, const std::string&);
 		void start();
 };

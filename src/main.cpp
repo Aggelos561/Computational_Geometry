@@ -60,13 +60,14 @@ int main(int argc, char** argv) {
 
     // Convex hull algorithm begins
     pol.start();
+
     auto stop = std::chrono::high_resolution_clock::now();
 
     // Calulating duration of algorithm
     std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
     // Write data into result file
-    pol.calcArea();
+
     dataio::createResultsFile(pol.getPolygonLine(), pol.getArea(), duration, pol.getRatio(), outputFile, algorithm, edge_selection, initialization);
   }
 

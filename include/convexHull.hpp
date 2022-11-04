@@ -15,23 +15,25 @@ typedef CGAL::Epick::FT ft;
 
 class convexHull : public Polygonization{
 
-    private:      
-        std::vector<Segment_2> getConvexHull(std::vector<Point> &,std::vector<Point> &);
-        
-        void initialRun(std::vector<Segment_2>& ,std::vector<Point>& ,std::vector<Segment_2>& );
-       
-        void initializeConvexHull(std::vector<Segment_2>&, std::vector<Point>&, std::vector<Point>&);
-        
-        void insertBestPoint(std::vector<pair>&, std::vector<Point>&,std::vector<Segment_2>&);
-        
-        void findVisiblePoints(std::vector<visPoint>&, Point&, Segment_2&, std::vector<Segment_2>& );
-
-        Point findBestPoint(std::vector<visPoint>& ,std::vector<Point>&, std::vector<Segment_2>&, Segment_2&);
-        
+    private:
         std::vector<Segment_2> initialConvexHull;
+
+        std::vector<Segment_2> getConvexHull(const std::vector<Point> &,std::vector<Point> &);
+        
+        void initialRun(const std::vector<Segment_2>& ,std::vector<Point>& ,std::vector<Segment_2>& );
+       
+        void initializeConvexHull(std::vector<Segment_2>&, const std::vector<Point>&, std::vector<Point>&);
+        
+        void insertBestPoint(const std::vector<pair>&, std::vector<Point>&,std::vector<Segment_2>&);
+        
+        void findVisiblePoints(std::vector<visPoint>&, const Point&, const Segment_2&, const std::vector<Segment_2>& );
+
+        Point findBestPoint(const std::vector<visPoint>&);
+
+        ft calcArea(const std::vector<Segment_2> &);
+
+        
     public:
-        void calcArea();
-        void calcRatio();
-        convexHull(std::vector<Point>&, int );
+        convexHull(const std::vector<Point>&, int );
         void start();
 };
