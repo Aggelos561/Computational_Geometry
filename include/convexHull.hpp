@@ -28,9 +28,10 @@ class convexHull : public Polygonization{
 
         Point findBestPoint(std::vector<visPoint>& ,std::vector<Point>&, std::vector<Segment_2>&, Segment_2&);
         
-
-    
+        std::vector<Segment_2> initialConvexHull;
     public:
+        void calcArea();
+        void calcRatio();
         convexHull(std::vector<Point>&, int );
         void start();
 };

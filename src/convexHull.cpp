@@ -125,6 +125,7 @@ void convexHull::initializeConvexHull(std::vector<Segment_2> &polygLine, std::ve
     convexPoints.push_back(points[i]);
 
   polygLine = getConvexHull(convexPoints, remainingPoints);
+  this->initialConvexHull = polygLine;
 }
 
 void convexHull::initialRun(std::vector<Segment_2> &currConvexHullSegments, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {
@@ -343,4 +344,18 @@ void convexHull::insertBestPoint(std::vector<pair> &bestPoints, std::vector<Poin
       }
     }
   }
+}
+
+void convexHull::calcArea(){
+  polygLinePoints = this->getPolyLinePoints(this->polygLine);
+  this->totalArea = CGAL::polygon_area_2(polygLinePoints.begin(), this->polygLinePoints.end(), Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
+}
+
+void convexHull::calcRatio(){
+  std::vector<Point> convexHullPoints = getPolyLinePoints(this->initialConvexHull);
+
+  // Calculating convex hull area and divide with total polygon area
+  ft convexHullArea = CGAL::polygon_area_2(convexHullPoints.begin(), convexHullPoints.end(), Convex_hull_traits_2(CGAL::make_property_map(convexHullPoints)));
+
+  this->ratio = this->totalArea/convexHullArea;
 }
