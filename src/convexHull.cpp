@@ -61,7 +61,7 @@ void convexHull::start(){
     for(int i = 0; i < polygLine.size(); i++){
       
       std::vector<visPoint> visPoints;
-
+      //Find visible points on this segment
       for(int j = 0; j < remainingPoints.size(); j++){
         findVisiblePoints(visPoints, remainingPoints[j], polygLine[i], polygLine);
       }
@@ -76,17 +76,9 @@ void convexHull::start(){
       pair best = {bestPoint, bestSeg};
       bestPoints.push_back(best);
     }
-
+    //Select best segmnent,point for insertion in polygon
     insertBestPoint(bestPoints, remainingPoints, polygLine);
   }
-
-  Polygon_2 pol_result = Polygon_2();
-
-  for (const Segment_2& segment : polygLine) {
-    pol_result.push_back(segment.point(0));
-  }
-
-  std::cout << "Polygon Is Simple: " << pol_result.is_simple() << std::endl;
 
   totalArea = calcArea(polygLine);
   ratio = calcRatio(initialConvexHull, totalArea);

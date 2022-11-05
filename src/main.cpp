@@ -33,7 +33,6 @@ int main(int argc, char** argv) {
 
   // Reading points from the input file
   std::vector<Point> points = dataio::readPoints(nameOfFile);
-
   // Calling incremental algorithm
   if(algorithm == "incremental"){
     Incremental pol = Incremental(points, edge_selection, initialization);

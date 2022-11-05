@@ -93,14 +93,6 @@ void Incremental::start() {
   // Calculating ratio
   ratio = calcRatio(currConvexHullSegments, totalArea);
 
-  Polygon_2 pol_result = Polygon_2();
-
-  for (const Segment_2& segment : polygLine) {
-    pol_result.push_back(segment.point(0));
-  }
-
-  std::cout << "Polygon Is Simple: " << pol_result.is_simple() << std::endl;
-
 }
 
 
