@@ -45,53 +45,88 @@
 • make
 
 
+• Εκτέλεση του προγράμματος όπως παρακάτω
+
+
 Παραδείγματα εκτέλεσης προγράμματος:
+
 
     -- Για τον αυξητικό αλγόριθμο --
     
  •   ./to_polygon -i euro-night-0000050.instance -o results_file.txt -algorithm incremental -edge_selection 1 -initialization 1a
-      Algorithm: incremental_edge_selection_1_initialization_1a
-      Area: 45615704
-      ratio: 0.697328
-      Construction time: 0
- •   ./to_polygon -i protein-0020000.instance -o results_file.txt -algorithm incremental -edge_selection 3 -initialization 2b
-      Algorithm: incremental_edge_selection_3_initialization_2b
-      Area: 75886700638
-      ratio: 0.685471
-      Construction time: 151085
+     Algorithm: incremental_edge_selection_1_initialization_1a
+     Area: 45615704
+     ratio: 0.697328
+     Construction time: 0
+
  •   ./to_polygon -i london-0000100.instance -o results_file.txt -algorithm incremental -edge_selection 2 -initialization 1b
-      Algorithm: incremental_edge_selection_2_initialization_1b
-      Area: 100211210
-      ratio: 0.263031
-      Construction time: 5
+     Algorithm: incremental_edge_selection_2_initialization_1b
+     Area: 100211210
+     ratio: 0.263031
+     Construction time: 5
+
+•   ./to_polygon -i uniform-0000200-1.instance -o results_file.txt -algorithm incremental -edge_selection 2 -initialization 2a
+     Algorithm: incremental_edge_selection_2_initialization_2a
+     Area: 37363878
+     ratio: 0.278152
+     Construction time: 8
+
+•   ./to_polygon -i protein-0020000.instance -o results_file.txt -algorithm incremental -edge_selection 3 -initialization 2b
+     Algorithm: incremental_edge_selection_3_initialization_2b
+     Area: 75886700638
+     ratio: 0.685471
+     Construction time: 151085
+
+•   ./to_polygon -i paris-0000200.instance -o results_file.txt -algorithm incremental -edge_selection 3 -initialization 2b
+     Algorithm: incremental_edge_selection_3_initialization_1a
+     Area: 197092256
+     ratio: 0.724213
+     Construction time: 5
+
+•   ./to_polygon -i euro-night-0100000.instance -o results_file.txt -algorithm incremental -edge_selection 1 -initialization 1b
+     Algorithm: incremental_edge_selection_1_initialization_1b
+     Area: 2332581614
+     ratio: 0.407177
+     Construction time: 4199035
 
 
 
     -- Για τον αλγόριθμο με βάση το ΚΠ --
 
  •   ./to_polygon -i stars-0000200.instance -o results_file.txt -algorithm convex_hull -edge_selection 1
-      Algorithm: convex_hull_edge_selection_1
-      Area: 159720393928
-      ratio: 0.48022
-      Construction time: 2020
-
- •   ./to_polygon -i euro-night-0000050.instance euro -o results_file.txt -algorithm convex_hull -edge_selection 2
-      Algorithm: convex_hull_edge_selection_2
-      Area: 18837314
-      ratio: 0.287966
-      Construction time: 13
+     Algorithm: convex_hull_edge_selection_1
+     Area: 159720393928
+     ratio: 0.48022
+     Construction time: 2020
 
  •   ./to_polygon -i london-0000100.instance  -o results_file.txt -algorithm convex_hull -edge_selection 2
-      Algorithm: convex_hull_edge_selection_2
-      Area: 91436178
-      ratio: 0.239999
-      Construction time: 192
+     Algorithm: convex_hull_edge_selection_2
+     Area: 91436178
+     ratio: 0.239999
+     Construction time: 192
 
-    -i το input file (.instance με κατάλληλη δομή με tabs)
+ •   ./to_polygon -i euro-night-0000050.instance euro -o results_file.txt -algorithm convex_hull -edge_selection 2
+     Algorithm: convex_hull_edge_selection_2
+     Area: 18837314
+     ratio: 0.287966
+     Construction time: 13
+
+
+•    ./to_polygon -i paris-0000200.instance -o results_file.txt -algorithm convex_hull -edge_selection 3
+     Algorithm: convex_hull_edge_selection_3
+     Area: 242592482
+     ratio: 0.891403
+     Construction time: 1742
+
+
+    -i το input file (.instance με κατάλληλη δομή με tabs ανάμεσα)
     -o το output file που θα εκτυπωθούν τα δεδομένα όπως αναφέρει η εκφώνηση
     - algorithm για την εκτέλεση συγκεκριμένου αλγορίθμου (incremental or convex_hull)
     - edge_selection για την επιλογή κατάλληλης ακμής/σημείου (random ή πρόσθεση ελάσχιστου/μέγιστου εμβαδού)
     - initialization για τον αυξητικό αλγόριθμο για την επιλογή του sorting των σημείων (1a , 1b, 2a, 2b)
 
+
     -- Παρατηρήσεις --
-Η κεντρική διαφορά μεταξύ των αλγορίθμων είναι ότι ο αυξητικός περιορίζει ανά επανάληψη τον έλεγχο των ακμών που θα προστεθούν και μάλιστα επιλέγει ένα σημείο με βάση το αρχικό sorting που έχει γίνει.Σε αντίθεση με τον αλγόριθμο με βάση το ΚΠ ο οποιος ελέγχει σε καθε επανάληψη όλες τις ακμές του πολυγώνου και όλα τα υπολοιπόμενα σημεία για την εύρεση ορατότητας και εγγύτητας.Τα παραπάνω τεκμαίρωνται και από τον χρόνο εκτέλεσης του προγράμματος χρησιμοποιώντας τους παραπάνω αλγορίθμους.
+• Η κεντρική διαφορά μεταξύ των αλγορίθμων είναι ότι ο αυξητικός περιορίζει ανά επανάληψη τον έλεγχο των ακμών που θα προστεθούν και μάλιστα επιλέγει ένα σημείο με βάση το αρχικό sorting που έχει γίνει.Σε αντίθεση με τον αλγόριθμο με βάση το ΚΠ ο οποιος ελέγχει σε καθε επανάληψη όλες τις ακμές του πολυγώνου και όλα τα υπολοιπόμενα σημεία για την εύρεση ορατότητας και εγγύτητας.Τα παραπάνω τεκμαίρωνται και από τον χρόνο εκτέλεσης του προγράμματος χρησιμοποιώντας τους παραπάνω αλγορίθμους.
+
+• Επιπλέον, παρατηρείται οτι κατά την εκτέλεση εύρεσης τοπικού μέγιστου και τοπικού ελάχιστου πολύγωνου ο αλγόριθμος με βάση το ΚΠ αν και πιο αργός βρίσκει πολύγωνα με μικρότερο/μεγαλύτερο τοπικό ελάχιστο/μέγιστο εμβαδό σε σχέση με τον αυξητικό αλγόριθμο.
