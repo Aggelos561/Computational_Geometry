@@ -125,6 +125,12 @@ ft Polygonization::calcRatio(const std::vector<Segment_2> &convexHull, const ft 
   return area/convexHullArea;
 }
 
+std::vector<Point> Polygonization::getPath(std::vector<Segment_2>& polygLine ,std::vector<Point>& pointsOfPolygon,int k){
+  std::vector<Point> path;
+  for(int m = 0,a = 0; m < pointsOfPolygon.size(), a < k; m++,a++){
+    path.push_back(pointsOfPolygon[m]);
+  }
+}
 
 void Polygonization::optimizeLocalSearch(std::vector<Segment_2>& polygLine){
   std::vector<Changes> vecOfChanges;
@@ -133,12 +139,11 @@ void Polygonization::optimizeLocalSearch(std::vector<Segment_2>& polygLine){
     //while ∆A ≥ threshold do
     //for every edge e ∈ S do
     for (int i = 0; i < polygLine.size(); i++) {
-        std::vector<Point> path;
         for(int k = 1; k <= this->L; k++){
           for(int j = 0; j < k ; j++){
             std::vector<Point> pointsOfPolygon = getPolyLinePoints(polygLine);
-            for(int m = 0,a = 0; m < pointsOfPolygon.size(), a < k; m++,a++)
-              path.push_back(pointsOfPolygon[m]);
+            // for(int m = 0,a = 0; m < pointsOfPolygon.size(), a < k; m++,a++)
+            //   path.push_back(pointsOfPolygon[m]);
           }
             if V moving to e increases area and retains simplicity then
               list T ← [e, V ]

@@ -49,9 +49,8 @@ class Polygonization{
 
         void expandPolygonLine(std::vector<Segment_2>&, const Segment_2&, const Point&);   
 
-        ft calcRatio(const std::vector<Segment_2>&, const ft&);
-
-        void optimizeLocalSearch(std::vector<Segment_2>&);
+        ft calcRatio(const std::vector<Segment_2>&, const ft&);        
+        std::vector<Point> getPath(std::vector<Segment_2>&,std::vector<Point>&,int);
     
     public:
         Polygonization(const std::vector<Point>&, int);
@@ -59,7 +58,7 @@ class Polygonization{
         const ft& getArea();
         const ft& getRatio();
         const std::vector<Segment_2>& getPolygonLine();
-
+        void optimizeLocalSearch(std::vector<Segment_2>&);
 };
 
 
