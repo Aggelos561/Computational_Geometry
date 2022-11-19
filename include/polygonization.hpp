@@ -20,6 +20,10 @@ typedef struct pairPointSeg {
   Segment_2 seg;
 } pair;
 
+typedef struct changes {
+  std::vector<Point> path;
+  Segment_2 segToRemove;
+} Changes;
 
 // Base class polygonization.
 // Used as base class for Incremental and convexHull classes
@@ -34,7 +38,8 @@ class Polygonization{
         std::vector<Point> polygLinePoints;
         ft totalArea;
         ft ratio;
-
+        int L;
+        double threshold;
         
         std::vector<Point> getPolyLinePoints(const std::vector<Segment_2>&);
     
@@ -45,6 +50,8 @@ class Polygonization{
         void expandPolygonLine(std::vector<Segment_2>&, const Segment_2&, const Point&);   
 
         ft calcRatio(const std::vector<Segment_2>&, const ft&);
+
+        void optimizeLocalSearch(std::vector<Segment_2>&);
     
     public:
         Polygonization(const std::vector<Point>&, int);
