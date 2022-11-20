@@ -24,6 +24,7 @@ typedef struct pairPointSeg {
 typedef struct changes {
   std::pair<Point, Point> pairPointsSeq;
   std::vector<Point> path;
+  ft areaDiff;
   Segment_2 segToRemove;
 } Changes;
 
@@ -64,6 +65,12 @@ class Polygonization{
         ft calculateAddedArea(std::vector<Point>, const std::pair<Point, Point>&);
 
         void findChanges(std::vector<Changes>&, std::vector<Point>&, const Segment_2&, const std::pair<Point, Point>&);
+
+        void applyChanges(std::vector<Segment_2>&, std::vector<Changes>&);
+
+        static bool sortAreaChanges(const Changes& a, const Changes& b);
+
+        void applyBlueRemoval(std::vector<Segment_2>&, Changes&);
 
         bool isValidPath(const std::vector<Point>&, const Segment_2&);
 

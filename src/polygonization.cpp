@@ -6,6 +6,7 @@
 #include <CGAL/Polygon_2_algorithms.h>
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/intersections.h>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <utility>
@@ -223,12 +224,56 @@ void Polygonization::findChanges(std::vector<Changes>& possibleChanges, std::vec
     change.pairPointsSeq = pairSequencePoints;
     change.path = points;
     change.segToRemove = e;
+    change.areaDiff = addedArea - removedArea;
 
     possibleChanges.push_back(change);
   }
 
 }
 
+bool sortAreaChanges(const Changes& a, const Changes& b){
+  
+  if (a.areaDiff > b.areaDiff)
+    return true;
+
+  return false;
+  
+}
+
+void Polygonization::applyBlueRemoval(std::vector<Segment_2>& polygLine, Changes& change){
+
+  for (int i = 0; i < polygLine.size(); i++){
+    if (polygLine[i] == change.segToRemove){
+      Segment_2 blueSeg = polygLine[i];
+      polygLine.erase(polygLine.begin() + i);
+
+      if (L == 1){
+        polygLine.insert(polygLine.begin() + i + 1, Segment_2(polygLine[i].source(), change.path[0]));
+        polygLine.insert(polygLine.begin() + i + 2, Segment_2(change.path[0], polygLine[i].target()));
+        polygLine.erase(polygLine.begin() + i);
+      }
+      else{
+        polygLine.insert(polygLine.begin() + i + 1, Segment_2(polygLine[i].source(), change.path[0]));
+        polygLine.insert(polygLine.begin() + i + 2, Segment_2(change.path[change.path.size() - 1], polygLine[i].target()));
+        polygLine.erase(polygLine.begin() + i);
+      }
+    }
+  }
+}
+
+
+
+
+void Polygonization::applyChanges(std::vector<Segment_2>& polygLine, std::vector<Changes>& possibleChanges){
+
+  std::sort(possibleChanges.begin(), possibleChanges.end(), this->sortAreaChanges);
+
+
+  for (Changes& change : possibleChanges){
+
+  }
+
+}
 
 
 void Polygonization::localSearch(std::vector<Segment_2>& polygLine){
