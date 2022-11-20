@@ -47,6 +47,10 @@ int main(int argc, char** argv) {
     //calculating duration of algorithm
     std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
+    std::vector<Segment_2> polygonLine = pol.getPolygonLine();
+
+    pol.localSearch(polygonLine);
+
     // Write data into result file
     dataio::createResultsFile(pol.getPolygonLine(), pol.getArea(), duration, pol.getRatio(), outputFile, algorithm, edge_selection, initialization);
   }

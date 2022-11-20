@@ -339,10 +339,3 @@ void convexHull::insertBestPoint(const std::vector<pair> &bestPoints, std::vecto
     }
   }
 }
-
-ft convexHull::calcArea(const std::vector<Segment_2>& polygLine) {
-  polygLinePoints = this->getPolyLinePoints(polygLine);
-  ft totalArea = CGAL::polygon_area_2(polygLinePoints.begin(), this->polygLinePoints.end(), Convex_hull_traits_2(CGAL::make_property_map(polygLinePoints)));
-
-  return totalArea;
-}
