@@ -145,15 +145,15 @@ void Polygonization::optimizeLocalSearch(std::vector<Segment_2>& polygLine){
             // for(int m = 0,a = 0; m < pointsOfPolygon.size(), a < k; m++,a++)
             //   path.push_back(pointsOfPolygon[m]);
           }
-            if V moving to e increases area and retains simplicity then
-              list T ← [e, V ]
-            end if
-          end for
-        end for
-        Apply all changes in T to S
-        Keep best solution S′; ∆A ← Area(S′) − Area(S)
-        end while
+        //     if V moving to e increases area and retains simplicity then
+        //       list T ← [e, V ]
+        //     end if
+        //   end for
+        // end for
+        // Apply all changes in T to S
+        // Keep best solution S′; ∆A ← Area(S′) − Area(S)
+        // end while
       }
     }
-  }while(Da >= threshold)
+  }while(Da >= threshold);
 }
