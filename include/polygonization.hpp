@@ -68,9 +68,13 @@ class Polygonization{
 
         void applyChanges(std::vector<Segment_2>&, std::vector<Changes>&);
 
-        static bool sortAreaChanges(const Changes& a, const Changes& b);
+        static bool sortAreaChanges(Changes& a, Changes& b);
 
         void applyBlueRemoval(std::vector<Segment_2>&, Changes&);
+
+        void applyKPathRemoval(std::vector<Segment_2>&, Changes&);
+
+        bool checkPolygonSimplicity(std::vector<Segment_2>&);
 
         bool isValidPath(const std::vector<Point>&, const Segment_2&);
 
