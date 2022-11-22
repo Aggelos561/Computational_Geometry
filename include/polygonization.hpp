@@ -70,7 +70,7 @@ class Polygonization{
 
         static bool sortAreaChanges(Changes& a, Changes& b);
 
-        void applyBlueRemoval(std::vector<Segment_2>&, Changes&);
+        bool applyBlueRemoval(std::vector<Segment_2>&, Changes&);
 
         void applyKPathRemoval(std::vector<Segment_2>&, Changes&);
 
