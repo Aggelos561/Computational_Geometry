@@ -54,7 +54,7 @@ class Polygonization{
 
         ft calcArea(const std::vector<Segment_2> &);
 
-        ft calcPointsArea(std::vector<Point>&);
+        ft calcPointsArea(std::vector<Point>);
 
         ft calcRatio(const std::vector<Segment_2>&, const ft&);        
 

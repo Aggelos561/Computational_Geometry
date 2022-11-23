@@ -123,7 +123,8 @@ ft Polygonization::calcArea(const std::vector<Segment_2>& polygLine) {
   return totalArea;
 }
 
-ft Polygonization::calcPointsArea(std::vector<Point>& polygPoints) {
+ft Polygonization::calcPointsArea(std::vector<Point> polygPoints) {
+
   ft totalArea = abs(CGAL::polygon_area_2(polygPoints.begin(), polygPoints.end(), Convex_hull_traits_2(CGAL::make_property_map(polygPoints))));
 
   return totalArea;
@@ -166,7 +167,7 @@ std::vector<Point> Polygonization::getPathK(std::vector<Segment_2>& polygLine, i
     kPairSequence.first = polygLine[segmentIndex - 1].source();
   }
   
-  kPairSequence.second = polygLine[segIndex].target();
+  kPairSequence.second = polygLine[segIndex < 0 ? 0 : segIndex].target();
   
 
  return k_path;
@@ -201,7 +202,7 @@ ft Polygonization::calculateAddedArea(std::vector<Point> points, const std::pair
 
   points.push_back(pairSequencePoints.second);
   points.push_back(pairSequencePoints.first);
-  
+
   return calcPointsArea(points);
 
 }
@@ -213,18 +214,18 @@ void Polygonization::findChanges(std::vector<Changes>& possibleChanges, std::vec
   
   ft addedArea = calculateAddedArea(points, pairSequencePoints);
 
-  if (addedArea > removedArea){
+  
 
-    // std::cout << "Deleted Area = " << (long int) removedArea << " , Added Area = " << (long int) addedArea << ", Area Diff = " << (long int) addedArea - removedArea << std::endl;
-    Changes change = Changes();
+  // std::cout << "Deleted Area = " << (long int) removedArea << " , Added Area = " << (long int) addedArea << ", Area Diff = " << (long int) addedArea - removedArea << std::endl;
+  Changes change = Changes();
 
-    change.pairPointsSeq = pairSequencePoints;
-    change.path = points;
-    change.segToRemove = e;
-    change.areaDiff = addedArea - removedArea;
+  change.pairPointsSeq = pairSequencePoints;
+  change.path = points;
+  change.segToRemove = e;
+  change.areaDiff = addedArea - removedArea;
 
-    possibleChanges.push_back(change);
-  }
+  possibleChanges.push_back(change);
+
 
 }
 
@@ -245,16 +246,15 @@ bool Polygonization::applyBlueRemoval(std::vector<Segment_2>& polygLine, Changes
     if (polygLine[i] == change.segToRemove){
 
       segmentFound = true;
-      // std::cout << "FOUND SEGMENT!" << std::endl;
       Segment_2 blueSeg = polygLine[i];
 
       if (change.path.size() == 1) {
 
         polygLine.insert(polygLine.begin() + (i + 1) % polygLine.size(), Segment_2(polygLine[i].source(), change.path[0]));
         polygLine.insert(polygLine.begin() + (i + 2) % polygLine.size(), Segment_2(change.path[0], polygLine[i].target()));
-        polygLine.erase(polygLine.begin() + i);
+
       }
-      else {
+      else if (change.path.size() == 2){
         
         for (int j = 0; j < change.path.size(); j++){
           
@@ -262,7 +262,24 @@ bool Polygonization::applyBlueRemoval(std::vector<Segment_2>& polygLine, Changes
             polygLine.insert(polygLine.begin() + (i + 1) % polygLine.size(), Segment_2(polygLine[i].source(), change.path[0]));
           }
           else if (j == change.path.size() - 1){
+            polygLine.insert(polygLine.begin() + (i + j + 1) % polygLine.size(), Segment_2(change.path[j - 1], change.path[j]));
+            polygLine.insert(polygLine.begin() + (i + j + 2) % polygLine.size(), Segment_2(change.path[change.path.size() - 1], polygLine[i].target()));
+            
+          }
+        
+        }
+
+      }
+      else{
+
+        for (int j = 0; j < change.path.size(); j++){
+          
+          if (j == 0){
+            polygLine.insert(polygLine.begin() + (i + 1) % polygLine.size(), Segment_2(polygLine[i].source(), change.path[0]));
+          }
+          else if (j == change.path.size() - 1){
             polygLine.insert(polygLine.begin() + (i + j + 1) % polygLine.size(), Segment_2(change.path[change.path.size() - 1], polygLine[i].target()));
+            
           }
           else{
             polygLine.insert(polygLine.begin() + (i + j + 1) % polygLine.size(), Segment_2(change.path[j - 1], change.path[j]));
@@ -270,8 +287,9 @@ bool Polygonization::applyBlueRemoval(std::vector<Segment_2>& polygLine, Changes
         
         }
 
-        polygLine.erase(polygLine.begin() + i);
       }
+
+      polygLine.erase(polygLine.begin() + i);
       break;
     }
   }
@@ -280,6 +298,7 @@ bool Polygonization::applyBlueRemoval(std::vector<Segment_2>& polygLine, Changes
     return false;
   }
   return true;
+
 }
 
 
@@ -299,19 +318,20 @@ void Polygonization::applyKPathRemoval(std::vector<Segment_2>& polygLine, Change
   }
 
   int k = change.path.size() + 1;
+
   // std::cout << "a"<< std::endl;
 
   // std::cout << "index => " << startIndex << " max index => " << polygLine.size() - 1 << std::endl; 
   while(k != 0){
     
-    // std::cout << "k = " << k << std::endl;
     polygLine.erase(polygLine.begin() + startIndex);
     k--;
 
-    if (startIndex > polygLine.size() - 1)
+    if (startIndex >= polygLine.size() - 1)
       startIndex = 0;
   }
   
+
   // count = 1;
   // std::cout << std::endl;
   // for (Segment_2& segment : polygLine){
@@ -366,84 +386,74 @@ void Polygonization::applyChanges(std::vector<Segment_2>& polygLine, std::vector
   std::vector<Segment_2> changedPolygLine = polygLine, prevPolygon = polygLine;
 
   for (Changes& change : possibleChanges){
-    
-    // std::cout << "Test_0" << std::endl;
+
     applyKPathRemoval(changedPolygLine, change);
-    // std::cout << "Test_1" << std::endl;
+
     bool blueRemoved = applyBlueRemoval(changedPolygLine, change);
-    // std::cout << "Test_2" << std::endl;
-    
-    // int count = 1;
-    // for (Segment_2& segment : changedPolygLine){
-    //   std::cout << count << ". Changed --> " << segment << std::endl;
-    //   count++;
-    // }
 
     if (!checkPolygonSimplicity(changedPolygLine) || !blueRemoved){
       changedPolygLine = prevPolygon;
     }
     else{
+      
+      if (calcArea(changedPolygLine) < calcArea(polygLine)){
 
-      // count = 1;
-      // for (Segment_2& segment : changedPolygLine){
-      //   std::cout << count << ". SIMPLE --> " << segment << std::endl;
-      //   count++;
-      // }
+        prevPolygon = changedPolygLine;
+        polygLine = prevPolygon;
 
-      prevPolygon = changedPolygLine;
-      polygLine = prevPolygon;
+        ft newArea = calcArea(polygLine);
 
-      ft newArea = calcArea(polygLine);
 
-      std::cout << "New Polygon Area --> " << (long int) newArea << std::endl;
+        std::cout << "New Polygon Area --> " << (long int) newArea << std::endl;
+        std::cout << "Change Kpoint --> " << change.path[0] << std::endl;
+        std::cout << "Blue Segment --> " << change.segToRemove << std::endl;
 
-      break;
+        for (Segment_2& segment : changedPolygLine){
+          std::cout << "SIMPLE --> " << segment << std::endl;
+        }
+
+        std::cout << std::endl;
+
+        break;
+      }
     }
   }
 
-  // int count = 1;
-  // for (Segment_2& segment : polygLine){
-  //   std::cout << count << ". Previous --> " << segment << std::endl;
-  //   count ++;
-  // }
-  // std::cout << "-------------------------------------" << std::endl;
-
-  // count = 1;
-  // for (Segment_2& segment : changedPolygLine){
-  //   std::cout << "New --> " << segment << std::endl;
-  //   count++;
-  // }
-  // std::cout << "=====================================" << std::endl;
 
 }
 
 
 void Polygonization::localSearch(std::vector<Segment_2>& polygLine){
 
-  std::vector<Changes> possibleChanges;
-  ft Da = 1;
-  threshold = 10;
-  this->L = 1;
+  ft Da = 1000;
+  threshold = 1;
+  this->L = 3;
+
+  // polygLine = {Segment_2(Point(40, 20), Point(30, 30)), Segment_2(Point(30, 30), Point(22, 24)), Segment_2(Point(22, 24), Point(19, 22)),
+  //               Segment_2(Point(19, 22), Point(15, 26)), Segment_2(Point(15, 26), Point(0, 50)), Segment_2(Point(0, 50), Point(-2, 25)),
+  //               Segment_2(Point(-2, 25), Point(16, 4)), Segment_2(Point(16, 4), Point(25, 3)), Segment_2(Point(25, 3), Point(33, 13)),
+  //               Segment_2(Point(33, 13), Point(40, 20))};
 
   std::vector<Segment_2> test = polygLine;
 
   do{
 
+    std::vector<Changes> possibleChanges;
+    
     for (Segment_2& e : polygLine) {
-      
+ 
       int segmentIndex = 0;
       // std::cout << " Next segment is " << e << std::endl;
-        
+
       for (Segment_2& v : polygLine){
 
         for(int k = 1; k <= this->L; k++){
 
           std::pair<Point, Point> kPairSequence;
-          std::vector<Point> kPoints = getPathK(polygLine, segmentIndex, k, kPairSequence);  
+          std::vector<Point> kPoints = getPathK(polygLine, segmentIndex, k, kPairSequence);
 
-          if (!isValidPath(kPoints, e)){
-              break;
-          }
+          if (!isValidPath(kPoints, e))
+            break;
 
           findChanges(possibleChanges, kPoints, e, kPairSequence);
 
@@ -451,19 +461,20 @@ void Polygonization::localSearch(std::vector<Segment_2>& polygLine){
         segmentIndex++;
       }
 
-      applyChanges(polygLine, possibleChanges);
     }
+
+    applyChanges(polygLine, possibleChanges);
+
     threshold++;
+
   } while(Da >= threshold);
 
-  // for (const Changes& change: possibleChanges){
-  //   std::cout << "Blue --> " << change.segToRemove << " Pair --> (" << change.pairPointsSeq.first <<", " << change.pairPointsSeq.second << ")" << std::endl ;
-  // }
-  // for (Segment_2& e : test) {
 
-  //   std::cout << e << std::endl;
+  for (Segment_2& e : test) {
 
-  // }
+    std::cout << e << std::endl;
+
+  }
 
   std::cout << std::endl; 
   std::cout << "Area Before ==> " << (long int) calcArea(test) << std::endl;
