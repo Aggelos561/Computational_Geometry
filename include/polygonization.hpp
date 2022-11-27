@@ -41,6 +41,7 @@ class Polygonization{
         std::vector<Point> polygLinePoints;
         ft totalArea;
         ft ratio;
+        ft areaDiff;
         int L;
         double threshold;
         
@@ -56,7 +57,9 @@ class Polygonization{
 
         ft calcPointsArea(std::vector<Point>);
 
-        ft calcRatio(const std::vector<Segment_2>&, const ft&);        
+        ft calcRatio(const std::vector<Segment_2>&, const ft&);
+
+        std::vector<Segment_2> getConvexHull(const std::vector<Point>&);  
 
         std::vector<Point> getPathK(std::vector<Segment_2>&, int, int, std::pair<Point, Point>&);
 
@@ -72,11 +75,11 @@ class Polygonization{
 
         bool applyBlueRemoval(std::vector<Segment_2>&, Changes&);
 
-        void applyKPathRemoval(std::vector<Segment_2>&, Changes&);
+        bool applyKPathRemoval(std::vector<Segment_2>&, Changes&);
 
         bool checkPolygonSimplicity(std::vector<Segment_2>&);
 
-        bool isValidPath(const std::vector<Point>&, const Segment_2&);
+        bool isValidPath(const std::vector<Segment_2>&, const std::vector<Point>&, const Segment_2&, const std::pair<Point, Point>&);
 
     public:
         Polygonization(const std::vector<Point>&, int);

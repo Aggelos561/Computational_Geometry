@@ -23,9 +23,6 @@ class Incremental: public Polygonization{
 		static bool sortYAsc(Point &, Point &);
 		static bool sortYDesc(Point &, Point &);
 		void sortPoints(std::vector<Point> &);
-		
-
-		std::vector<Segment_2> getConvexHull(const std::vector<Point>&);
 
 		void initializeTriangle(std::vector<Segment_2>&, const std::vector<Point>&, std::vector<Point>&);
 

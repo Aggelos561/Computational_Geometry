@@ -127,30 +127,6 @@ void Incremental::sortPoints(std::vector<Point> &points) {
 
 
 
-// Find Complex Hull Points and rerurn a vector of segments
-std::vector<Segment_2> Incremental::getConvexHull(const std::vector<Point> &polygLinePoints) {
-
-  std::vector<Point> convexHullPoints;
-
-  CGAL::convex_hull_points_2(polygLinePoints.begin(), polygLinePoints.end(), std::back_inserter(convexHullPoints));
-
-  Polygon_2 convexHullPolygon = Polygon_2();
-
-  for (const Point& p : convexHullPoints) {
-    convexHullPolygon.push_back(p);
-  }
-
-  std::vector<Segment_2> convexHullSegments;
-
-  // Create A Vector That Stores Convex Hull segments
-  for (const Segment_2& seg : convexHullPolygon.edges()) {
-    convexHullSegments.push_back(seg);
-  }
-
-  return convexHullSegments;
-}
-
-
 // Initialize triangle 
 void Incremental::initializeTriangle(std::vector<Segment_2> &polygLine, const std::vector<Point> &points, std::vector<Point> &remainingPoints) {
 
