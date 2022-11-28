@@ -558,7 +558,7 @@ ft Polygonization::energyCalc(const ft& convexHullArea, const ft& totalArea){
 
   int n = polygLine.size();
   
-  return n * (totalArea / convexHullArea);
+  return n * (1 - totalArea / convexHullArea);
   //Minimization
   // if(edgeSelection == 2){
   //   return n * (totalArea / convexHullArea);
@@ -593,7 +593,7 @@ void Polygonization::replace(const Segment_2& prevPolygonPrevSeg, const Segment_
 
 }
 
-localTrans Polygonization::localTransition(std::vector<Segment_2>& polygLine, const ft& convexHullArea, ft& energyPrev){
+localTrans Polygonization::localTransition(std::vector<Segment_2>& polygLine){
 
   Tree tree;
   KdTreeInit(polygLine, tree);
@@ -653,6 +653,78 @@ localTrans Polygonization::localTransition(std::vector<Segment_2>& polygLine, co
 }
 
 
+
+localTrans Polygonization::globalTransition(std::vector<Segment_2>& polygLine){
+
+  int k = 1;
+  std::vector<Changes> possibleChanges;
+
+  localTrans localStruct;
+  
+  Segment_2 e;
+  std::pair<Point, Point> kPairSequence;
+  std::vector<Point> kPoints;
+
+
+  do {
+    
+    kPoints.clear();
+
+    int s_index = rand() % polygLine.size();
+
+    e =  polygLine[s_index];
+
+    int segmentIndex =  rand() % polygLine.size();
+
+    kPoints = getPathK(polygLine, segmentIndex, k, kPairSequence);
+  
+  } while(!isValidPath(polygLine, kPoints, e, kPairSequence));
+
+  findChanges(possibleChanges, kPoints, e, kPairSequence);
+  
+  return applyGlobalChanges(polygLine, possibleChanges);
+
+}
+
+
+
+
+localTrans Polygonization::applyGlobalChanges(std::vector<Segment_2>& polygLine, std::vector<Changes>& possibleChanges){
+
+  std::vector<Segment_2> changedPolygLine = polygLine;
+
+  localTrans localTransition;
+
+  if (possibleChanges.size() == 0){
+    localTransition.simple = false;
+    return localTransition;
+  }
+
+  Changes change = possibleChanges[0];
+
+  bool reductionFound = applyKPathRemoval(changedPolygLine, change);
+
+  bool blueRemoved = applyBlueRemoval(changedPolygLine, change);
+
+  if (!checkPolygonSimplicity(changedPolygLine) || !blueRemoved || reductionFound){
+    localTransition.simple = false;
+    return localTransition;
+  }
+  else{
+
+    localTransition.areaDiff = abs(this->totalArea + change.areaDiff - this->totalArea);
+    localTransition.newPolygLine = changedPolygLine;
+    localTransition.simple = true;
+
+    return localTransition;
+    
+  }
+
+
+}
+
+
+
 ft Polygonization::metropolis(const ft& DEnergy, const ft& T){
 
   return pow(exp(1), (-DEnergy)/T);
@@ -662,13 +734,22 @@ ft Polygonization::metropolis(const ft& DEnergy, const ft& T){
 
 void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
 
+  // Print initial polygon line
+  for (const Segment_2& segment : polygLine){
+    std::cout << segment << std::endl;
+  }
+
+  std::cout << std::endl << std::endl;
+
   srand(time(NULL));
 
   double T = 1;
 
   double R = (double)rand()/(double)RAND_MAX;
 
-  this->L = 10;
+  std::cout << "R = " << R << std::endl;
+
+  this->L = 100;
 
   totalArea = calcArea(polygLine); 
   std::vector<Segment_2> convexHullSegments = getConvexHull(getPolyLinePoints(polygLine));
@@ -679,21 +760,29 @@ void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
   while(T >= 0){
 
     //Local transition 
-    localTrans localTransStruct = this->localTransition(polygLine, convexHullArea, energyPrev);
+    // localTrans transitionStep = localTransition(polygLine);
 
-    if (localTransStruct.simple){
-      ft newEnergy = energyCalc(convexHullArea, totalArea + localTransStruct.areaDiff);
+    localTrans transitionStep = globalTransition(polygLine);
+
+    if (transitionStep.simple){
+      ft newEnergy = energyCalc(convexHullArea, totalArea + transitionStep.areaDiff);
       
-      if (newEnergy - energyPrev < 0 || metropolis(newEnergy - energyPrev, T) >= R){
+      if (newEnergy - energyPrev > 0 || metropolis(newEnergy - energyPrev, T) >= R){
         
-        std::cout << "World!" << std::endl;
+        std::cout << "Found Better Polygon!" << std::endl;
+
+        for (const Segment_2& segment : transitionStep.newPolygLine){
+          std::cout << segment << std::endl;
+       }
+        std::cout << std::endl;
+
         energyPrev = newEnergy;
-        polygLine = localTransStruct.newPolygLine;
-        totalArea += localTransStruct.areaDiff;
+        polygLine = transitionStep.newPolygLine;
+        totalArea += transitionStep.areaDiff;
       }
     }
     else{
-      std::cout << "Hello!" << std::endl;
+      std::cout << "Not Simple!" << std::endl;
       continue;
     }
 

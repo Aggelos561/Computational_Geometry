@@ -103,7 +103,11 @@ class Polygonization{
 
         ft energyCalc(const ft&, const ft&);
         
-        localTrans localTransition(std::vector<Segment_2>&, const ft&, ft&);  
+        localTrans localTransition(std::vector<Segment_2>&);  
+
+        localTrans globalTransition(std::vector<Segment_2>&);
+
+        localTrans applyGlobalChanges(std::vector<Segment_2>&, std::vector<Changes>&);
 
         void replace(const Segment_2&, const Segment_2&, const Segment_2&, const Segment_2&, const Segment_2&, std::vector<Segment_2>&, int, int, int);
 
