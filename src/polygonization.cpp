@@ -15,12 +15,22 @@
 #include <vector>
 #include "../include/polygonization.hpp"
 
+#include <CGAL/Kd_tree.h>
+#include <CGAL/Search_traits_2.h>
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Splitters.h>
+
+
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
 typedef CGAL::Polygon_2<K> Polygon_2;
 typedef K::Segment_2 Segment_2;
 typedef CGAL::Convex_hull_traits_adapter_2<K, CGAL::Pointer_property_map<Point>::type> Convex_hull_traits_2;
 typedef CGAL::Epick::FT ft;
+typedef CGAL::Epick Cartesian;
+typedef CGAL::Search_traits_2<Cartesian> TreeTraits;
+typedef CGAL::Kd_tree<TreeTraits> Kd_tree;
+typedef Kd_tree::Tree Tree;
 
 
 // Contructor for base polygonization class
@@ -508,4 +518,134 @@ void Polygonization::localSearch(std::vector<Segment_2>& polygLine){
 
   std::cout << std::endl << "Area After ==> " << (long int) calcArea(polygLine) << std::endl;
 
+
 }
+
+
+
+/*---------------------------------------------------------------------------------------------------------------------*/
+
+
+
+
+
+void Polygonization::KdTreeInit(const std::vector<Segment_2>& polygLine, Tree& tree){ 
+
+  for(const Point& point : getPolyLinePoints(polygLine)){
+    tree.insert(point);
+  }
+
+}
+
+bool Polygonization::validityCheck(const Tree& tree,const Segment_2& pr,const Segment_2& rq,const Segment_2& qs){
+  // tree.search(std::ostream_iterator<Point>(std::cout, "\n"));
+
+  return false;
+}
+
+void Polygonization::energyCalc(std::vector<Segment_2> &convexHull,std::vector<Segment_2>& polygLine){
+
+  ft totalArea = calcArea(polygLine); 
+  ft convexHullArea = calcArea(convexHull);
+  
+  int n = polygLine.size();
+
+  this->energy = 0;
+  
+  //Minimization
+  if(edgeSelection == 2){
+  
+  this->energy = n * (totalArea / convexHullArea);
+  }
+  //Maximization
+  else if(edgeSelection == 3){
+    this->energy = n * (1 - totalArea / convexHullArea);
+  }
+
+}
+
+void Polygonization::replace(const Segment_2& prevPolygonPrevSeg, const Segment_2& prevPolygonNextSeg, const Segment_2& middleSegment, const Segment_2& newPolygonNextSeg, const Segment_2& newPolygonPrevSeg,std::vector<Segment_2>& polygLine, int middleSegIndex, int prevPolygonPrevIndex, int prevPolygonNextIndex){
+  
+  // Insert Segment After Polygon
+  polygLine.insert(polygLine.begin() + (prevPolygonNextIndex + 1) % polygLine.size(), newPolygonNextSeg);
+  polygLine.erase(polygLine.begin() + prevPolygonNextIndex % polygLine.size());
+  
+
+  // Insert Segment Before Polygon
+  int insert_index = (prevPolygonPrevIndex + 1) > (polygLine.size() - 1) ? 0 : prevPolygonPrevIndex + 1;
+  
+  polygLine.insert(polygLine.begin() + insert_index % polygLine.size(), newPolygonPrevSeg);
+  polygLine.erase(polygLine.begin() + prevPolygonPrevIndex % polygLine.size());
+
+}
+
+void Polygonization::localTransition(std::vector<Segment_2>& polygLine){
+
+  Tree tree;
+  KdTreeInit(polygLine, tree);
+
+  std::vector<Point> points = getPolyLinePoints(polygLine);
+
+  int q_num = rand() % points.size();
+
+
+  std::vector<Segment_2> polygLine2 = polygLine;
+
+
+  for(int i = 0; i < polygLine2.size(); i++){
+
+    if(polygLine2[i].target() == points[q_num]){
+
+      Segment_2 middleSegment = polygLine2[i];
+      int prevPolygonPrevIndex = (i-1) < 0 ? polygLine2.size() - 1 : i - 1;
+
+      Segment_2 prevPolygonPrevSeg = polygLine2[prevPolygonPrevIndex];
+      Segment_2 prevPolygonNextSeg = polygLine2[(i+1) % polygLine2.size()];
+
+      Segment_2 newPolygonNextSeg(middleSegment.source(), prevPolygonNextSeg.target());
+      Segment_2 newPolygonPrevSeg(prevPolygonPrevSeg.source(), middleSegment.target());
+
+      replace(prevPolygonPrevSeg, prevPolygonNextSeg, middleSegment, newPolygonNextSeg, newPolygonPrevSeg, polygLine2, i, prevPolygonPrevIndex, (i+1) % polygLine2.size());
+
+    }
+
+  }   
+}
+
+
+
+void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
+
+  int T = 1;
+
+  this->L = 100;
+
+  std::vector<Segment_2> convexHullSegments = getConvexHull(getPolyLinePoints(polygLine));
+
+  energyCalc(convexHullSegments,polygLine);
+
+  std::cout << "ENERGY --> " << this->energy << std::endl;
+  
+
+  while(T >= 0){
+
+    //Local transition 
+    this->localTransition(polygLine);
+
+    T = T - 1.0/(double)L;
+  }
+
+}
+
+
+// Obtain greedy solution S as initial state; compute its "energy" E.
+// 2: T ← 1
+// 3: while T ≥ 0 do
+// Perform transition step: local xor global according to parameter.
+// 5:
+// Check validity. If not valid goto 4.
+// 6:
+// If ∆E < 0 or Metropolis criterion holds, apply the transition.
+// 7:
+// T =T−1/L
+// 8: end while

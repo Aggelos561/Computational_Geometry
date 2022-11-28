@@ -5,6 +5,17 @@
 #include <utility>
 #include <vector>
 
+#include <CGAL/Kd_tree.h>
+#include <CGAL/Search_traits_2.h>
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Splitters.h>
+
+typedef CGAL::Epick Cartesian;
+typedef CGAL::Search_traits_2<Cartesian> TreeTraits;
+typedef CGAL::Kd_tree<TreeTraits> Kd_tree;
+typedef Kd_tree::Tree Tree;
+
+
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
 typedef K::Segment_2 Segment_2;
@@ -44,6 +55,7 @@ class Polygonization{
         ft areaDiff;
         int L;
         double threshold;
+        ft energy;
         
         std::vector<Point> getPolyLinePoints(const std::vector<Segment_2>&);
     
@@ -81,6 +93,16 @@ class Polygonization{
 
         bool isValidPath(const std::vector<Segment_2>&, const std::vector<Point>&, const Segment_2&, const std::pair<Point, Point>&);
 
+        void energyCalc(std::vector<Segment_2>& ,std::vector<Segment_2>&);
+
+        void localTransition(std::vector<Segment_2>&);     
+
+        void replace(const Segment_2&, const Segment_2&, const Segment_2&, const Segment_2&, const Segment_2&, std::vector<Segment_2>&, int, int, int);
+
+        void KdTreeInit(const std::vector<Segment_2>&, Tree&);
+
+        bool validityCheck(const Tree&, const Segment_2&, const Segment_2&, const Segment_2&);
+
     public:
         Polygonization(const std::vector<Point>&, int);
         
@@ -88,6 +110,7 @@ class Polygonization{
         const ft& getRatio();
         const std::vector<Segment_2>& getPolygonLine();
         void localSearch(std::vector<Segment_2>&);
+        void simulatedAnnealing(std::vector<Segment_2>&);
 };
 
 

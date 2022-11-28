@@ -49,7 +49,10 @@ int main(int argc, char** argv) {
 
     std::vector<Segment_2> polygonLine = pol.getPolygonLine();
 
-    pol.localSearch(polygonLine);
+    // pol.localSearch(polygonLine);
+    
+    pol.simulatedAnnealing(polygonLine);
+
 
     // Write data into result file
     dataio::createResultsFile(pol.getPolygonLine(), pol.getArea(), duration, pol.getRatio(), outputFile, algorithm, edge_selection, initialization);
