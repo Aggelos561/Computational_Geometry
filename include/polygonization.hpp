@@ -39,6 +39,12 @@ typedef struct changes {
   Segment_2 segToRemove;
 } Changes;
 
+typedef struct localTransition {
+  std::vector<Segment_2> newPolygLine;
+  ft areaDiff;
+  bool simple;
+} localTrans;
+
 // Base class polygonization.
 // Used as base class for Incremental and convexHull classes
 
@@ -93,15 +99,19 @@ class Polygonization{
 
         bool isValidPath(const std::vector<Segment_2>&, const std::vector<Point>&, const Segment_2&, const std::pair<Point, Point>&);
 
-        void energyCalc(std::vector<Segment_2>& ,std::vector<Segment_2>&);
+        ft calcAreaDiff(const Point&, const Point&, const Point&, const Point&);
 
-        void localTransition(std::vector<Segment_2>&);     
+        ft energyCalc(const ft&, const ft&);
+        
+        localTrans localTransition(std::vector<Segment_2>&, const ft&, ft&);  
 
         void replace(const Segment_2&, const Segment_2&, const Segment_2&, const Segment_2&, const Segment_2&, std::vector<Segment_2>&, int, int, int);
 
         void KdTreeInit(const std::vector<Segment_2>&, Tree&);
 
         bool validityCheck(const Tree&, const Segment_2&, const Segment_2&, const Segment_2&);
+
+        ft metropolis(const ft&, const ft&);
 
     public:
         Polygonization(const std::vector<Point>&, int);

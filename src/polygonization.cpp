@@ -537,49 +537,63 @@ void Polygonization::KdTreeInit(const std::vector<Segment_2>& polygLine, Tree& t
 
 }
 
-bool Polygonization::validityCheck(const Tree& tree,const Segment_2& pr,const Segment_2& rq,const Segment_2& qs){
+bool Polygonization::validityCheck(const Tree& tree,const Segment_2& nextSegment,const Segment_2& middleSegment,const Segment_2& prevSegment){
   // tree.search(std::ostream_iterator<Point>(std::cout, "\n"));
+
+
 
   return false;
 }
 
-void Polygonization::energyCalc(std::vector<Segment_2> &convexHull,std::vector<Segment_2>& polygLine){
 
-  ft totalArea = calcArea(polygLine); 
-  ft convexHullArea = calcArea(convexHull);
-  
-  int n = polygLine.size();
+ft Polygonization::calcAreaDiff(const Point& PrevSegSource, const Point& PrevSegTarget, const Point& nextSegSource, const Point& nextSegTarget){
+  ft addedArea = abs(CGAL::area(PrevSegTarget, nextSegSource, nextSegTarget));
+  ft deletedArea = abs(CGAL::area(PrevSegSource, nextSegSource, PrevSegTarget));
 
-  this->energy = 0;
-  
-  //Minimization
-  if(edgeSelection == 2){
-  
-  this->energy = n * (totalArea / convexHullArea);
-  }
-  //Maximization
-  else if(edgeSelection == 3){
-    this->energy = n * (1 - totalArea / convexHullArea);
-  }
-
+  return addedArea - deletedArea;
 }
 
-void Polygonization::replace(const Segment_2& prevPolygonPrevSeg, const Segment_2& prevPolygonNextSeg, const Segment_2& middleSegment, const Segment_2& newPolygonNextSeg, const Segment_2& newPolygonPrevSeg,std::vector<Segment_2>& polygLine, int middleSegIndex, int prevPolygonPrevIndex, int prevPolygonNextIndex){
+
+ft Polygonization::energyCalc(const ft& convexHullArea, const ft& totalArea){
+
+  int n = polygLine.size();
   
+  return n * (totalArea / convexHullArea);
+  //Minimization
+  // if(edgeSelection == 2){
+  //   return n * (totalArea / convexHullArea);
+  // }
+  // //Maximization
+  // else if(edgeSelection == 3){
+  //   return n * (1 - totalArea / convexHullArea);
+  // }
+
+  return 0;
+}
+
+
+void Polygonization::replace(const Segment_2& prevPolygonPrevSeg, const Segment_2& prevPolygonNextSeg, const Segment_2& middleSegment, const Segment_2& newPolygonNextSeg, const Segment_2& newPolygonPrevSeg, std::vector<Segment_2>& polygLine, int middleSegIndex, int prevPolygonPrevIndex, int prevPolygonNextIndex){
+
   // Insert Segment After Polygon
   polygLine.insert(polygLine.begin() + (prevPolygonNextIndex + 1) % polygLine.size(), newPolygonNextSeg);
   polygLine.erase(polygLine.begin() + prevPolygonNextIndex % polygLine.size());
   
+  Segment_2 middleSeg =  polygLine[middleSegIndex];
+
+  Segment_2 newMiddleSeg(middleSeg.target(), middleSeg.source());
+
+  polygLine.insert(polygLine.begin() + middleSegIndex + 1, newMiddleSeg);
+  polygLine.erase(polygLine.begin() + middleSegIndex);
 
   // Insert Segment Before Polygon
   int insert_index = (prevPolygonPrevIndex + 1) > (polygLine.size() - 1) ? 0 : prevPolygonPrevIndex + 1;
   
-  polygLine.insert(polygLine.begin() + insert_index % polygLine.size(), newPolygonPrevSeg);
+  polygLine.insert(polygLine.begin() + insert_index, newPolygonPrevSeg);
   polygLine.erase(polygLine.begin() + prevPolygonPrevIndex % polygLine.size());
 
 }
 
-void Polygonization::localTransition(std::vector<Segment_2>& polygLine){
+localTrans Polygonization::localTransition(std::vector<Segment_2>& polygLine, const ft& convexHullArea, ft& energyPrev){
 
   Tree tree;
   KdTreeInit(polygLine, tree);
@@ -588,9 +602,7 @@ void Polygonization::localTransition(std::vector<Segment_2>& polygLine){
 
   int q_num = rand() % points.size();
 
-
   std::vector<Segment_2> polygLine2 = polygLine;
-
 
   for(int i = 0; i < polygLine2.size(); i++){
 
@@ -606,34 +618,89 @@ void Polygonization::localTransition(std::vector<Segment_2>& polygLine){
       Segment_2 newPolygonPrevSeg(prevPolygonPrevSeg.source(), middleSegment.target());
 
       replace(prevPolygonPrevSeg, prevPolygonNextSeg, middleSegment, newPolygonNextSeg, newPolygonPrevSeg, polygLine2, i, prevPolygonPrevIndex, (i+1) % polygLine2.size());
+      validityCheck(tree, newPolygonNextSeg, middleSegment, newPolygonNextSeg);
 
+      if (checkPolygonSimplicity(polygLine)){
+          
+          localTrans local;
+          local.newPolygLine = polygLine2;
+          local.areaDiff = calcAreaDiff(newPolygonPrevSeg.source(), newPolygonPrevSeg.target(), newPolygonNextSeg.source(), newPolygonNextSeg.target());
+          local.simple = true;
+
+          return local;
+        
+      }
+      else{
+          localTrans local;
+          local.newPolygLine = polygLine2;
+          local.areaDiff = 0;
+          local.simple = false;
+
+          return local;
+      }
+        
     }
 
   }   
+
+
+  localTrans local;
+  local.newPolygLine = polygLine2;
+  local.areaDiff = 0;
+  local.simple = false;
+
+  return local;
 }
 
+
+ft Polygonization::metropolis(const ft& DEnergy, const ft& T){
+
+  return pow(exp(1), (-DEnergy)/T);
+
+}
 
 
 void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
 
-  int T = 1;
+  srand(time(NULL));
 
-  this->L = 100;
+  double T = 1;
 
+  double R = (double)rand()/(double)RAND_MAX;
+
+  this->L = 10;
+
+  totalArea = calcArea(polygLine); 
   std::vector<Segment_2> convexHullSegments = getConvexHull(getPolyLinePoints(polygLine));
+  ft convexHullArea = calcArea(convexHullSegments);
 
-  energyCalc(convexHullSegments,polygLine);
-
-  std::cout << "ENERGY --> " << this->energy << std::endl;
-  
+  ft energyPrev = energyCalc(convexHullArea, totalArea);
 
   while(T >= 0){
 
     //Local transition 
-    this->localTransition(polygLine);
+    localTrans localTransStruct = this->localTransition(polygLine, convexHullArea, energyPrev);
 
+    if (localTransStruct.simple){
+      ft newEnergy = energyCalc(convexHullArea, totalArea + localTransStruct.areaDiff);
+      
+      if (newEnergy - energyPrev < 0 || metropolis(newEnergy - energyPrev, T) >= R){
+        
+        std::cout << "World!" << std::endl;
+        energyPrev = newEnergy;
+        polygLine = localTransStruct.newPolygLine;
+        totalArea += localTransStruct.areaDiff;
+      }
+    }
+    else{
+      std::cout << "Hello!" << std::endl;
+      continue;
+    }
+
+    
     T = T - 1.0/(double)L;
   }
+
 
 }
 
