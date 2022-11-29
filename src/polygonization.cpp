@@ -535,9 +535,10 @@ void Polygonization::KdTreeInit(const std::vector<Segment_2>& polygLine, Tree& t
     tree.insert(point);
   }
 
+  tree.build();
 }
 
-bool Polygonization::validityCheck(const Tree& tree,const Segment_2& nextSegment,const Segment_2& middleSegment,const Segment_2& prevSegment){
+bool Polygonization::validityCheck(const Tree& tree, const Segment_2& nextSegment, const Segment_2& middleSegment, const Segment_2& prevSegment){
   // tree.search(std::ostream_iterator<Point>(std::cout, "\n"));
 
 
@@ -593,10 +594,7 @@ void Polygonization::replace(const Segment_2& prevPolygonPrevSeg, const Segment_
 
 }
 
-transitionStep Polygonization::localTransition(std::vector<Segment_2>& polygLine){
-
-  Tree tree;
-  KdTreeInit(polygLine, tree);
+transitionStep Polygonization::localTransition(std::vector<Segment_2>& polygLine, const Tree& tree){
 
   std::vector<Point> points = getPolyLinePoints(polygLine);
 
@@ -759,6 +757,9 @@ void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
 
   srand(time(NULL));
 
+  Tree tree;
+  KdTreeInit(polygLine, tree);
+
   double T = 1;
 
   double R = (double)rand()/(double)RAND_MAX;
@@ -776,7 +777,7 @@ void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
   while(T >= 0){
 
     //Local transition 
-    transitionStep transitionStep = localTransition(polygLine);
+    transitionStep transitionStep = localTransition(polygLine, tree);
 
     // transitionStep transitionStep = globalTransition(polygLine);
 

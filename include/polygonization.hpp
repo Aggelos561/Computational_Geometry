@@ -103,7 +103,7 @@ class Polygonization{
 
         ft energyCalc(const ft&, const ft&);
         
-        transitionStep localTransition(std::vector<Segment_2>&);  
+        transitionStep localTransition(std::vector<Segment_2>&, const Tree&);  
 
         transitionStep globalTransition(std::vector<Segment_2>&);
 
