@@ -39,11 +39,11 @@ typedef struct changes {
   Segment_2 segToRemove;
 } Changes;
 
-typedef struct localTransition {
+typedef struct transitionStep {
   std::vector<Segment_2> newPolygLine;
   ft areaDiff;
   bool simple;
-} localTrans;
+} transitionStep;
 
 // Base class polygonization.
 // Used as base class for Incremental and convexHull classes
@@ -103,11 +103,13 @@ class Polygonization{
 
         ft energyCalc(const ft&, const ft&);
         
-        localTrans localTransition(std::vector<Segment_2>&);  
+        transitionStep localTransition(std::vector<Segment_2>&);  
 
-        localTrans globalTransition(std::vector<Segment_2>&);
+        transitionStep globalTransition(std::vector<Segment_2>&);
 
-        localTrans applyGlobalChanges(std::vector<Segment_2>&, std::vector<Changes>&);
+        void findGlobalChanges(std::vector<Changes>&, std::vector<Point>& , const Segment_2&, const std::pair<Point, Point>&);
+
+        transitionStep applyGlobalChanges(std::vector<Segment_2>&, std::vector<Changes>&);
 
         void replace(const Segment_2&, const Segment_2&, const Segment_2&, const Segment_2&, const Segment_2&, std::vector<Segment_2>&, int, int, int);
 
