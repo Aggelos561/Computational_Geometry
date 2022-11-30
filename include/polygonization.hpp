@@ -9,12 +9,13 @@
 #include <CGAL/Search_traits_2.h>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Splitters.h>
+#include <CGAL/Fuzzy_iso_box.h>
 
 typedef CGAL::Epick Cartesian;
 typedef CGAL::Search_traits_2<Cartesian> TreeTraits;
 typedef CGAL::Kd_tree<TreeTraits> Kd_tree;
 typedef Kd_tree::Tree Tree;
-
+typedef CGAL::Fuzzy_iso_box<TreeTraits> FuzzyBox;
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
@@ -89,7 +90,9 @@ class Polygonization{
 
         void applyChanges(std::vector<Segment_2>&, std::vector<Changes>&);
 
-        static bool sortAreaChanges(Changes& a, Changes& b);
+        static bool sortAreaChanges(Changes&, Changes&);
+
+        static bool pointsYAscending(const Point&, const Point&);
 
         bool applyBlueRemoval(std::vector<Segment_2>&, Changes&);
 
@@ -99,7 +102,7 @@ class Polygonization{
 
         bool isValidPath(const std::vector<Segment_2>&, const std::vector<Point>&, const Segment_2&, const std::pair<Point, Point>&);
 
-        ft calcAreaDiff(const Point&, const Point&, const Point&, const Point&);
+        ft calcAreaDiff(const std::vector<Segment_2>&, const Point&, const Point&, const Point&, const Point&);
 
         ft energyCalc(const ft&, const ft&);
         
@@ -115,7 +118,9 @@ class Polygonization{
 
         void KdTreeInit(const std::vector<Segment_2>&, Tree&);
 
-        bool validityCheck(const Tree&, const Segment_2&, const Segment_2&, const Segment_2&);
+        bool validityCheck(const Tree&, const std::vector<Segment_2>&, const Segment_2&, const Segment_2&, const Segment_2&);
+
+        FuzzyBox getRectangeBox(std::vector<Point>&);
 
         ft metropolis(const ft&, const ft&);
 

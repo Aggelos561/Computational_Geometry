@@ -1,6 +1,9 @@
 #include "../include/dataio.hpp"
+#include <CGAL/Bbox_2.h>
 #include <CGAL/Convex_hull_traits_adapter_2.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Iso_rectangle_2.h>
+#include <CGAL/Kernel/global_functions.h>
 #include <CGAL/Kernel/global_functions_2.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_2_algorithms.h>
@@ -11,6 +14,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <iterator>
 #include <utility>
 #include <vector>
 #include "../include/polygonization.hpp"
@@ -19,7 +23,8 @@
 #include <CGAL/Search_traits_2.h>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Splitters.h>
-
+#include <CGAL/Fuzzy_iso_box.h>
+#include <CGAL/Kd_tree_rectangle.h>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
@@ -31,6 +36,7 @@ typedef CGAL::Epick Cartesian;
 typedef CGAL::Search_traits_2<Cartesian> TreeTraits;
 typedef CGAL::Kd_tree<TreeTraits> Kd_tree;
 typedef Kd_tree::Tree Tree;
+typedef CGAL::Fuzzy_iso_box<TreeTraits> FuzzyBox;
 
 
 // Contructor for base polygonization class
@@ -538,20 +544,122 @@ void Polygonization::KdTreeInit(const std::vector<Segment_2>& polygLine, Tree& t
   tree.build();
 }
 
-bool Polygonization::validityCheck(const Tree& tree, const Segment_2& nextSegment, const Segment_2& middleSegment, const Segment_2& prevSegment){
-  // tree.search(std::ostream_iterator<Point>(std::cout, "\n"));
 
 
+bool Polygonization::pointsYAscending(const Point& p1, const Point& p2){
 
+  if (p1.y() < p2.y())
+    return true;
+  
   return false;
+
+}
+
+FuzzyBox Polygonization::getRectangeBox(std::vector<Point>& points){
+
+  std::sort(points.begin(), points.end());
+
+  Point left = points[0], right = points[3];
+
+  std::sort(points.begin(), points.end(), pointsYAscending);
+
+  Point bottom = points[0], top = points[3];
+
+  return FuzzyBox(Point(left.x(),bottom.y()), Point(right.x(),top.y()));
+
 }
 
 
-ft Polygonization::calcAreaDiff(const Point& PrevSegSource, const Point& PrevSegTarget, const Point& nextSegSource, const Point& nextSegTarget){
+bool Polygonization::validityCheck(const Tree& tree, const std::vector<Segment_2>& polygLine, const Segment_2& nextSegment, const Segment_2& middleSegment, const Segment_2& prevSegment){
+
+  const auto result = intersection(nextSegment, prevSegment);
+
+  if (result)
+    return false;
+
+  std::cout << "Middle Segment is " << middleSegment << std::endl;
+
+
+  std::vector<Point> points = { prevSegment.source(), prevSegment.target(), nextSegment.source(), nextSegment.target() };
+
+  FuzzyBox box = getRectangeBox(points);
+
+  std::vector<Point> pointsResult;
+  tree.search(std::back_inserter(pointsResult), box);
+
+  std::vector<Point> intersectionPointsVector;
+  for (std::vector<Point>::iterator it = pointsResult.begin(); it!= pointsResult.end(); ++it){
+    
+    if (*it != nextSegment.target() && *it != nextSegment.source() && *it != prevSegment.target() && *it != prevSegment.source() && *it != middleSegment.target() && *it != middleSegment.target()){
+      intersectionPointsVector.push_back(*it);
+    }
+    std::cout << "==> " << *it << std::endl;
+  }
+  
+
+  std::vector<Segment_2> intersectionSegments;
+
+  for (int i = 0; i < polygLine.size(); i++){
+    for (int j = 0; j < intersectionPointsVector.size(); j++){
+
+      if (polygLine[i].source() == intersectionPointsVector[j] || polygLine[i].target() == intersectionPointsVector[j]){
+        if (std::find(intersectionSegments.begin(), intersectionSegments.end(), polygLine[i]) == intersectionSegments.end()){
+          intersectionSegments.push_back(polygLine[i]);
+        } 
+      }
+    }
+
+    if (polygLine[i].source() == nextSegment.target() || polygLine[i].target() == prevSegment.source())
+      intersectionSegments.push_back(polygLine[i]);
+  }
+
+
+  for (const Segment_2& segment : intersectionSegments){
+    
+    if (segment.target() != prevSegment.source()){
+      
+      auto prevInterResult = intersection(segment, prevSegment);
+      
+      if (prevInterResult){
+        return false;
+      }
+
+    }
+    
+    if (segment.source() != nextSegment.target()){
+      auto nextInterResult = intersection(segment, nextSegment);
+
+      if  (nextInterResult){
+        return false;
+      }
+    }
+  }
+
+  return true;
+
+}
+
+
+ft Polygonization::calcAreaDiff(const std::vector<Segment_2>& polygLine, const Point& PrevSegSource, const Point& PrevSegTarget, const Point& nextSegSource, const Point& nextSegTarget){
+  
   ft addedArea = abs(CGAL::area(PrevSegTarget, nextSegSource, nextSegTarget));
   ft deletedArea = abs(CGAL::area(PrevSegSource, nextSegSource, PrevSegTarget));
 
-  return addedArea - deletedArea;
+  Point triangleCenterP = CGAL::centroid (PrevSegSource, nextSegSource, PrevSegTarget);
+
+  std::vector<Point> points = getPolyLinePoints(polygLine);
+
+  K traits;
+  CGAL::Bounded_side result = CGAL::bounded_side_2(points.begin(), points.end(), triangleCenterP, traits);
+
+
+  if (result == CGAL::ON_BOUNDED_SIDE){
+     return addedArea - deletedArea;
+  }
+  else{
+    return deletedArea - addedArea;
+  }
+  
 }
 
 
@@ -559,7 +667,8 @@ ft Polygonization::energyCalc(const ft& convexHullArea, const ft& totalArea){
 
   int n = polygLine.size();
   
-  return n * (1 - totalArea / convexHullArea);
+  // return n * (1 - totalArea / convexHullArea);
+  return n * (totalArea / convexHullArea);
   //Minimization
   // if(edgeSelection == 2){
   //   return n * (totalArea / convexHullArea);
@@ -587,10 +696,10 @@ void Polygonization::replace(const Segment_2& prevPolygonPrevSeg, const Segment_
   polygLine.erase(polygLine.begin() + middleSegIndex);
 
   // Insert Segment Before Polygon
-  int insert_index = (prevPolygonPrevIndex + 1) > (polygLine.size() - 1) ? 0 : prevPolygonPrevIndex + 1;
+  int insert_index = (prevPolygonPrevIndex ) > (polygLine.size() - 1) ? 0 : prevPolygonPrevIndex + 1;
   
   polygLine.insert(polygLine.begin() + insert_index, newPolygonPrevSeg);
-  polygLine.erase(polygLine.begin() + prevPolygonPrevIndex % polygLine.size());
+  polygLine.erase(polygLine.begin() + prevPolygonPrevIndex);
 
 }
 
@@ -616,13 +725,16 @@ transitionStep Polygonization::localTransition(std::vector<Segment_2>& polygLine
       Segment_2 newPolygonPrevSeg(prevPolygonPrevSeg.source(), middleSegment.target());
 
       replace(prevPolygonPrevSeg, prevPolygonNextSeg, middleSegment, newPolygonNextSeg, newPolygonPrevSeg, polygLine2, i, prevPolygonPrevIndex, (i+1) % polygLine2.size());
-      validityCheck(tree, newPolygonNextSeg, middleSegment, newPolygonNextSeg);
-
-      if (checkPolygonSimplicity(polygLine2)){
+      
+      if (validityCheck(tree, polygLine2, newPolygonNextSeg, middleSegment, newPolygonPrevSeg)){
           
           transitionStep local;
           local.newPolygLine = polygLine2;
-          local.areaDiff = calcAreaDiff(newPolygonPrevSeg.source(), newPolygonPrevSeg.target(), newPolygonNextSeg.source(), newPolygonNextSeg.target());
+          local.areaDiff = calcAreaDiff(polygLine, newPolygonPrevSeg.source(), newPolygonPrevSeg.target(), newPolygonNextSeg.source(), newPolygonNextSeg.target());
+          std::cout << "Area before is " <<  totalArea << std::endl;
+          std::cout << "Area diff is " << local.areaDiff << std::endl;
+          std::cout << "Area step calc is " <<  totalArea + local.areaDiff << std::endl;
+          std::cout << "Area step real is " <<  calcArea(local.newPolygLine) << std::endl;
           local.simple = true;
 
           return local;
@@ -726,7 +838,7 @@ transitionStep Polygonization::applyGlobalChanges(std::vector<Segment_2>& polygL
   }
   else{
 
-    localTransition.areaDiff = abs(this->totalArea + change.areaDiff - this->totalArea);
+    localTransition.areaDiff = change.areaDiff;
     localTransition.newPolygLine = changedPolygLine;
     localTransition.simple = true;
 
@@ -755,6 +867,7 @@ void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
 
   std::cout << std::endl << std::endl;
 
+  long int areaBefore = calcArea(polygLine);
   srand(time(NULL));
 
   Tree tree;
@@ -766,7 +879,7 @@ void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
 
   std::cout << "R = " << R << std::endl;
 
-  this->L = 200;
+  this->L = 1000;
 
   totalArea = calcArea(polygLine); 
   std::vector<Segment_2> convexHullSegments = getConvexHull(getPolyLinePoints(polygLine));
@@ -784,7 +897,7 @@ void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
     if (transitionStep.simple){
       ft newEnergy = energyCalc(convexHullArea, totalArea + transitionStep.areaDiff);
       
-      if (newEnergy - energyPrev > 0 || metropolis(newEnergy - energyPrev, T) >= R){
+      if (newEnergy - energyPrev < 0 || metropolis(newEnergy - energyPrev, T) >= R){
         
         std::cout << "Found Better Polygon!" << std::endl;
 
@@ -806,7 +919,17 @@ void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
     T = T - 1.0/(double)L;
   }
 
+  Polygon_2 polygon;
 
+  for (const Segment_2& segment : polygLine){
+    polygon.push_back(segment.source());
+  }
+
+  std::cout << "Final Check Simplicity: " << polygon.is_simple() << std::endl;
+  long int areaAfter = calcArea(polygLine);  
+  std::cout << "Area Before ==> " << areaBefore << std::endl;
+  std::cout << " Real Area After ==> " << areaAfter << std::endl;
+  std::cout << " Calculated Area After ==> " << (long int)totalArea << std::endl;
 }
 
 
