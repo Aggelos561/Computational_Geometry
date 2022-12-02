@@ -885,77 +885,47 @@ void Polygonization::spatialSubdivision(std::vector<Point>& points, int edge_sel
     std::cout << p << std::endl;
   }
 
-  int m = 8;
+  int m = 10;
   int n = points.size();
 
   int k = std::ceil((double)(n - 1)/(double)(m - 1));
 
-  std::vector<std::vector<Point>> subPolPoints(k);
+  std::vector<std::vector<Point>> subPolPoints;
 
   std::cout << "K = " << k << std::endl;
 
   int threshold = 5;
-
   int pIndex = 0;
+
   for (int i = 0; i < k; i++){
+
+    if (pIndex == n) break;
+
+    std::vector<Point> vecInit;
+    vecInit.clear();
+    subPolPoints.push_back(vecInit);
+
     for (int j = 0; j < m; j++){
       subPolPoints[i].push_back(points[pIndex]);
       pIndex = j == m - 1 ? pIndex : pIndex + 1;
       if (pIndex == n) break;
     }
-  }
 
-
-  // condition checking
-  std::cout << "Sub Teams Size = " << subPolPoints.size() << std::endl;
-
-  int vecIndex = 0;
-  for (int i = 0; i < subPolPoints.size() - 1; i++){
-
-    std::cout << " i = " << i << std::endl;
-
-    int lastLastCurrentPointSetIndex = subPolPoints[i].size() - 2;
-    int sharedPointIndex = subPolPoints[i].size() - 1;
-    int nextPointSetFirstIndex = 1;
-
-    Point lastLastPoint = subPolPoints[i][lastLastCurrentPointSetIndex];
-    Point sharedPoint = subPolPoints[i][sharedPointIndex];
-    Point nextPoint = subPolPoints[i + 1][nextPointSetFirstIndex];
-
-    std::cout << "Last Last Point = " << lastLastPoint << ", " << "Shared Point = " << sharedPoint << ", Next Point = " << nextPoint << std::endl;
-
-    if (!(lastLastPoint.y() < sharedPoint.y() && sharedPoint.y() > nextPoint.y())){
-      
-      std::cout << "Condition Failed!" << std::endl;
-
-      do{
-        
-        if (subPolPoints[i + 1].size() == 1 && i + 2 > subPolPoints.size() - 1){
-          std::cout << "Error, Cannot Split Points into subsets." << std::endl;
-          std::exit(EXIT_FAILURE);
-        }
-        else if (subPolPoints[i + 1].size() == 1){
-          subPolPoints.erase(subPolPoints.begin() + i + 1);
-          k--;  
-        }
-
-        subPolPoints[i].push_back(subPolPoints[i + 1][nextPointSetFirstIndex]);
-        subPolPoints[i + 1].erase(subPolPoints[i + 1].begin());
-
-        lastLastCurrentPointSetIndex = subPolPoints[i].size() - 2;
-        sharedPointIndex = subPolPoints[i].size() - 1;
-
-        lastLastPoint = subPolPoints[i][lastLastCurrentPointSetIndex];
-        sharedPoint = subPolPoints[i][sharedPointIndex];
-        nextPoint = subPolPoints[i + 1][nextPointSetFirstIndex];
-
-      } while(!(lastLastPoint.y() < sharedPoint.y() && sharedPoint.y() > nextPoint.y()));
-    }
+    int lastIndex = subPolPoints[i].size() - 1;
     
+    while (pIndex < n - 1 && !(subPolPoints[i][lastIndex - 1].y() < subPolPoints[i][lastIndex].y() && subPolPoints[i][lastIndex].y() > points[pIndex + 1].y())){
+      pIndex++;
+      subPolPoints[i].push_back(points[pIndex]);
+      lastIndex = subPolPoints[i].size() - 1;
+    }
+
   }
 
+
+  // std::cout << "Sub Teams Size = " << subPolPoints.size() << std::endl;
 
   int lastPointsSetIndex = subPolPoints.size() - 1;
+  std::cout << "Last vector points size is " << subPolPoints[lastPointsSetIndex].size() << std::endl;
   if (subPolPoints[lastPointsSetIndex].size() < threshold){
     for (int i = 1; i < subPolPoints[lastPointsSetIndex].size(); i++){
       subPolPoints[lastPointsSetIndex - 1].push_back(subPolPoints[lastPointsSetIndex][i]);
@@ -964,12 +934,13 @@ void Polygonization::spatialSubdivision(std::vector<Point>& points, int edge_sel
     k--;
   }
 
-  for (int i = 0; i < k; i++){
-    for (int j = 0; j < subPolPoints[i].size(); j++){
-      std::cout << "p --> " << subPolPoints[i][j] << std::endl;
-    }
-    std::cout << std::endl;
-  }
+  // Prints points subsets
+  // for (int i = 0; i < subPolPoints.size(); i++){
+  //   for (int j = 0; j < subPolPoints[i].size(); j++){
+  //     std::cout << "p --> " << subPolPoints[i][j] << std::endl;
+  //   }
+  //   std::cout << std::endl;
+  // }
 
 }
 
