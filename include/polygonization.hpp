@@ -124,6 +124,8 @@ class Polygonization{
 
         ft metropolis(const ft&, const ft&);
 
+        static bool lexOrderPoints(const Point&, const Point&);
+
     public:
         Polygonization(const std::vector<Point>&, int);
         
@@ -132,6 +134,7 @@ class Polygonization{
         const std::vector<Segment_2>& getPolygonLine();
         void localSearch(std::vector<Segment_2>&);
         void simulatedAnnealing(std::vector<Segment_2>&);
+        void spatialSubdivision(std::vector<Point>&, int, const std::string&);
 };
 
 
