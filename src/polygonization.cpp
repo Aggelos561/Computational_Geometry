@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 #include "../include/polygonization.hpp"
+#include "../include/incremental.hpp"
 
 #include <CGAL/Kd_tree.h>
 #include <CGAL/Search_traits_2.h>
@@ -595,7 +596,7 @@ bool Polygonization::validityCheck(const Tree& tree, const std::vector<Segment_2
     }
     std::cout << "==> " << *it << std::endl;
   }
-  
+
 
   std::vector<Segment_2> intersectionSegments;
 
@@ -935,12 +936,99 @@ void Polygonization::spatialSubdivision(std::vector<Point>& points, int edge_sel
   }
 
   // Prints points subsets
-  // for (int i = 0; i < subPolPoints.size(); i++){
-  //   for (int j = 0; j < subPolPoints[i].size(); j++){
-  //     std::cout << "p --> " << subPolPoints[i][j] << std::endl;
-  //   }
-  //   std::cout << std::endl;
-  // }
+  for (int i = 0; i < subPolPoints.size(); i++){
+    for (int j = 0; j < subPolPoints[i].size(); j++){
+      std::cout << "p --> " << subPolPoints[i][j] << std::endl;
+    }
+    std::cout << std::endl;
+  }
+
+
+  std::vector<std::vector<Segment_2>> allPolygLines(subPolPoints.size());
+
+  for (int i = 0; i < subPolPoints.size(); i++){
+    Incremental incemental(subPolPoints[i], edge_selection, initialization);
+
+    incemental.start();
+    std::vector<Segment_2> vec = incemental.getPolygonLine();
+    allPolygLines[i] = vec;
+
+    for (const Segment_2& segment : incemental.getPolygonLine()){
+      std::cout << "Segment --> " << segment << std::endl;
+    }
+
+    std::cout << "-------------------------------------------" << std::endl;
+  }
+
+
+  for (int i = 0; i < allPolygLines.size(); i++){
+
+    
+    int indexStart;
+    int indexEnd;
+
+    for (int j = 0; j < allPolygLines[i].size(); j++){
+      
+      if (allPolygLines[i][j].source() == subPolPoints[i][1]){
+        indexStart = j;
+      }
+      else if (allPolygLines[i][j].target() == subPolPoints[i][subPolPoints[i].size() - 1]){
+         indexEnd = j;
+      }
+    }
+    
+     if (i != 0)
+      polygLine.push_back(Segment_2(allPolygLines[i - 1][allPolygLines[i - 1].size() - 2].target(), allPolygLines[i][indexStart].source()));
+
+    std::cout << "i = " << i << ", insexStart = " << indexStart << ", indexEnd = " << indexEnd << std::endl;
+    
+    int iteration = abs(indexEnd - indexStart) + 1;
+    while (iteration >=0){
+       polygLine.push_back(allPolygLines[i][indexStart]);
+       indexStart = indexStart + 1 > allPolygLines[i].size() - 1 ? 0 : indexStart + 1;
+       
+       iteration--;
+
+    }
+  }
+
+  for (int i = allPolygLines.size() - 1; i >= 0; i--){
+    
+    int indexStart;
+    int indexEnd;
+
+    for (int j = 0; j < allPolygLines[i].size(); j++){
+
+      if (allPolygLines[i][j].source() == subPolPoints[i][subPolPoints[i].size() - 1]){
+        indexStart = j;
+      }
+      else if (allPolygLines[i][j].target() == subPolPoints[i][0]){
+         indexEnd = j;
+      }
+    }
+    
+    if (i == allPolygLines.size() - 1)
+      polygLine.push_back(Segment_2(allPolygLines[i][allPolygLines[i].size() - 1].target(), allPolygLines[i][indexStart].source()));
+
+    else if (i == 0){
+      polygLine.push_back(Segment_2(allPolygLines[i][indexEnd].target(), allPolygLines[0][0].source()));
+    } 
+
+
+    std::cout << "i = " << i << ", insexStart = " << indexStart << ", indexEnd = " << indexEnd << std::endl;
+    
+    while (indexStart != indexEnd){
+       polygLine.push_back(allPolygLines[i][indexStart]);
+       indexStart = indexStart + 1 > allPolygLines[i].size() - 1 ? 0 : indexStart + 1;
+    }
+
+  }
+
+  for (const Segment_2& segment : polygLine){
+    std::cout << "FINAL ==> " << segment << std::endl;
+  }
+
+
 
 }
 
