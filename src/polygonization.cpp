@@ -880,13 +880,20 @@ bool Polygonization::lexOrderPoints(const Point& p1, const Point& p2){
 
 void Polygonization::spatialSubdivision(std::vector<Point>& points, int edge_selection, const std::string& initialization){
 
+     Incremental incemental(points, edge_selection, initialization);
+
+    incemental.start();
+    for (const Segment_2& segment : incemental.getPolygonLine()){
+      std::cout << "Segment init --> " << segment << std::endl;
+    }
+
   std::sort(points.begin(), points.end(), lexOrderPoints);
 
   for (const Point& p : points){
     std::cout << p << std::endl;
   }
 
-  int m = 10;
+  int m = 12;
   int n = points.size();
 
   int k = std::ceil((double)(n - 1)/(double)(m - 1));
@@ -895,7 +902,7 @@ void Polygonization::spatialSubdivision(std::vector<Point>& points, int edge_sel
 
   std::cout << "K = " << k << std::endl;
 
-  int threshold = 5;
+  int threshold = 6;
   int pIndex = 0;
 
   for (int i = 0; i < k; i++){
@@ -972,24 +979,29 @@ void Polygonization::spatialSubdivision(std::vector<Point>& points, int edge_sel
       if (allPolygLines[i][j].source() == subPolPoints[i][1]){
         indexStart = j;
       }
-      else if (allPolygLines[i][j].target() == subPolPoints[i][subPolPoints[i].size() - 1]){
+      else if (allPolygLines[i][j].target() == subPolPoints[i][subPolPoints[i].size() - 2]){
          indexEnd = j;
       }
     }
     
      if (i != 0)
-      polygLine.push_back(Segment_2(allPolygLines[i - 1][allPolygLines[i - 1].size() - 2].target(), allPolygLines[i][indexStart].source()));
+      polygLine.push_back(Segment_2(polygLine[polygLine.size() - 1].target(), allPolygLines[i][indexStart].source()));
 
     std::cout << "i = " << i << ", insexStart = " << indexStart << ", indexEnd = " << indexEnd << std::endl;
     
-    int iteration = abs(indexEnd - indexStart) + 1;
-    while (iteration >=0){
+    
+    while (indexStart != indexEnd){
        polygLine.push_back(allPolygLines[i][indexStart]);
+
+       std::cout << "Pushed Back ~~> " << allPolygLines[i][indexStart] << std::endl;
        indexStart = indexStart + 1 > allPolygLines[i].size() - 1 ? 0 : indexStart + 1;
-       
-       iteration--;
 
     }
+
+    if (i < allPolygLines.size() - 1)
+      polygLine.push_back(allPolygLines[i][indexStart]);
+    // std::cout << "Pushed Back ~~> " << allPolygLines[i][indexStart] << std::endl;
+
   }
 
   for (int i = allPolygLines.size() - 1; i >= 0; i--){
@@ -1006,14 +1018,6 @@ void Polygonization::spatialSubdivision(std::vector<Point>& points, int edge_sel
          indexEnd = j;
       }
     }
-    
-    if (i == allPolygLines.size() - 1)
-      polygLine.push_back(Segment_2(allPolygLines[i][allPolygLines[i].size() - 1].target(), allPolygLines[i][indexStart].source()));
-
-    else if (i == 0){
-      polygLine.push_back(Segment_2(allPolygLines[i][indexEnd].target(), allPolygLines[0][0].source()));
-    } 
-
 
     std::cout << "i = " << i << ", insexStart = " << indexStart << ", indexEnd = " << indexEnd << std::endl;
     
@@ -1021,15 +1025,19 @@ void Polygonization::spatialSubdivision(std::vector<Point>& points, int edge_sel
        polygLine.push_back(allPolygLines[i][indexStart]);
        indexStart = indexStart + 1 > allPolygLines[i].size() - 1 ? 0 : indexStart + 1;
     }
+    polygLine.push_back(allPolygLines[i][indexStart]);
 
+     if (i == 0){
+      polygLine.push_back(Segment_2(allPolygLines[i][indexEnd].target(), subPolPoints[i][1]));
+    } 
   }
 
+  
+
+  simulatedAnnealing(polygLine);
   for (const Segment_2& segment : polygLine){
-    std::cout << "FINAL ==> " << segment << std::endl;
-  }
-
-
-
+      std::cout << "FINAL ==> " << segment << std::endl;
+    }
 }
 
 void Polygonization::simulatedAnnealing(std::vector<Segment_2>& polygLine){
