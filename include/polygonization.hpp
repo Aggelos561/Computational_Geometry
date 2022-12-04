@@ -52,89 +52,51 @@ typedef struct transitionStep {
 class Polygonization{
 
     protected:
-        int edgeSelection;
-        std::vector<Point> points;
-        std::vector<Point> remainingPoints;
-        std::vector<Segment_2> polygLine;
-        std::vector<Point> polygLinePoints;
-        ft totalArea;
-        ft ratio;
-        ft areaDiff;
-        int L;
-        double threshold;
-        ft energy;
-        
-        std::vector<Point> getPolyLinePoints(const std::vector<Segment_2>&);
-    
-        void deleteSegment(std::vector<Segment_2>&, const Segment_2&);  
-        
-        bool forceInsertPoint(std::vector<Segment_2> &, const Point &);
+      int edgeSelection;
+      std::vector<Point> points;
+      std::vector<Point> remainingPoints;
+      std::vector<Segment_2> polygLine;
+      std::vector<Point> polygLinePoints;
+      ft totalArea;
+      ft ratio;
+      
+      std::vector<Point> getPolyLinePoints(const std::vector<Segment_2>&);
+  
+      void deleteSegment(std::vector<Segment_2>&, const Segment_2&);  
+      
+      bool forceInsertPoint(std::vector<Segment_2> &, const Point &);
 
-        void expandPolygonLine(std::vector<Segment_2>&, const Segment_2&, const Point&);
+      void expandPolygonLine(std::vector<Segment_2>&, const Segment_2&, const Point&);
 
-        ft calcArea(const std::vector<Segment_2> &);
+      ft calcArea(const std::vector<Segment_2> &);
 
-        ft calcPointsArea(std::vector<Point>);
+      ft calcRatio(const std::vector<Segment_2>&, const ft&);
 
-        ft calcRatio(const std::vector<Segment_2>&, const ft&);
+      std::vector<Segment_2> getConvexHull(const std::vector<Point>&);
 
-        std::vector<Segment_2> getConvexHull(const std::vector<Point>&);  
+      std::vector<Point> getPathK(std::vector<Segment_2>&, int, int, std::pair<Point, Point>&);
 
-        std::vector<Point> getPathK(std::vector<Segment_2>&, int, int, std::pair<Point, Point>&);
+      ft calculateDeletedArea(std::vector<Point>, const Segment_2&);
 
-        ft calculateDeletedArea(std::vector<Point>, const Segment_2&);
+      ft calculateAddedArea(std::vector<Point>, const std::pair<Point, Point>&);
 
-        ft calculateAddedArea(std::vector<Point>, const std::pair<Point, Point>&);
+      bool applyBlueRemoval(std::vector<Segment_2>&, Changes&);
 
-        void findChanges(std::vector<Changes>&, std::vector<Point>&, const Segment_2&, const std::pair<Point, Point>&);
+      bool applyKPathRemoval(std::vector<Segment_2>&, Changes&);
 
-        void applyChanges(std::vector<Segment_2>&, std::vector<Changes>&);
+      bool checkPolygonSimplicity(std::vector<Segment_2>&);
 
-        static bool sortAreaChanges(Changes&, Changes&);
+      bool isValidPath(const std::vector<Segment_2>&, const std::vector<Point>&, const Segment_2&, const std::pair<Point, Point>&);
 
-        static bool pointsYAscending(const Point&, const Point&);
-
-        bool applyBlueRemoval(std::vector<Segment_2>&, Changes&);
-
-        bool applyKPathRemoval(std::vector<Segment_2>&, Changes&);
-
-        bool checkPolygonSimplicity(std::vector<Segment_2>&);
-
-        bool isValidPath(const std::vector<Segment_2>&, const std::vector<Point>&, const Segment_2&, const std::pair<Point, Point>&);
-
-        ft calcAreaDiff(const std::vector<Segment_2>&, const Point&, const Point&, const Point&, const Point&);
-
-        ft energyCalc(const ft&, const ft&);
-        
-        transitionStep localTransition(std::vector<Segment_2>&, const Tree&);  
-
-        transitionStep globalTransition(std::vector<Segment_2>&);
-
-        void findGlobalChanges(std::vector<Changes>&, std::vector<Point>& , const Segment_2&, const std::pair<Point, Point>&);
-
-        transitionStep applyGlobalChanges(std::vector<Segment_2>&, std::vector<Changes>&);
-
-        void replace(const Segment_2&, const Segment_2&, const Segment_2&, const Segment_2&, const Segment_2&, std::vector<Segment_2>&, int, int, int);
-
-        void KdTreeInit(const std::vector<Segment_2>&, Tree&);
-
-        bool validityCheck(const Tree&, const std::vector<Segment_2>&, const Segment_2&, const Segment_2&, const Segment_2&);
-
-        FuzzyBox getRectangeBox(std::vector<Point>&);
-
-        ft metropolis(const ft&, const ft&);
-
-        static bool lexOrderPoints(const Point&, const Point&);
+      ft calcPointsArea(std::vector<Point>);
 
     public:
-        Polygonization(const std::vector<Point>&, int);
+      Polygonization(const std::vector<Point>&, int);
+      Polygonization(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&);
+      const ft& getArea();
+      const ft& getRatio();
+      const std::vector<Segment_2>& getPolygonLine();
         
-        const ft& getArea();
-        const ft& getRatio();
-        const std::vector<Segment_2>& getPolygonLine();
-        void localSearch(std::vector<Segment_2>&);
-        void simulatedAnnealing(std::vector<Segment_2>&);
-        void spatialSubdivision(std::vector<Point>&, int, const std::string&);
 };
 
 

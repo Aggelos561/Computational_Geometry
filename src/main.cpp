@@ -6,7 +6,8 @@
 #include "../include/convexHull.hpp"
 #include "../include/dataio.hpp"
 #include "../include/incremental.hpp"
-
+#include "../include/localSearch.hpp"
+#include "../include/simulatedAnnealing.hpp"
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
@@ -36,17 +37,23 @@ int main(int argc, char** argv) {
   // Calling incremental algorithm
   if(algorithm == "incremental"){
 
-    Polygonization pol = Polygonization(points, edge_selection);
+    // Polygonization pol = Polygonization(points, edge_selection);
 
-    pol.spatialSubdivision(points, edge_selection, initialization);
-    // Incremental pol = Incremental(points, edge_selection, initialization);
+    // pol.spatialSubdivision(points, edge_selection, initialization);
+    Incremental pol = Incremental(points, edge_selection, initialization);
 
-    // auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
 
     // Incremental algorithm begins
-    // pol.start();
+    pol.start();
 
-    // auto stop = std::chrono::high_resolution_clock::now();
+    std::vector<Segment_2> polygonLine = pol.getPolygonLine();
+
+    simulatedAnnealing sim = simulatedAnnealing(points, polygonLine, pol.getArea(), pol.getRatio(), 3000, 2, 0);
+   
+    sim.startSubdivision(points, edge_selection, initialization);
+
+    auto stop = std::chrono::high_resolution_clock::now();
 
     //calculating duration of algorithm
     // std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

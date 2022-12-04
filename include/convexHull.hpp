@@ -16,6 +16,10 @@ typedef CGAL::Epick::FT ft;
 class convexHull : public Polygonization{
 
     private:
+
+        bool spatial_Subdivision;
+        Segment_2 leftConnection;
+        Segment_2 rightConnection;
         std::vector<Segment_2> initialConvexHull;
 
         std::vector<Segment_2> getConvexHull(const std::vector<Point> &,std::vector<Point> &);
@@ -30,8 +34,10 @@ class convexHull : public Polygonization{
 
         Point findBestPoint(const std::vector<visPoint>&);
 
+        bool looseSegCompare(const Segment_2&, const Segment_2&);
         
     public:
         convexHull(const std::vector<Point>&, int );
+        convexHull(const std::vector<Point>&, int ,const Segment_2& , const Segment_2& );
         void start();
 };

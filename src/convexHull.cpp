@@ -22,6 +22,24 @@ typedef CGAL::Epick::FT ft;
 convexHull::convexHull(const std::vector<Point> &points, int edgeSelection) : Polygonization(points, edgeSelection) {
 }
 
+convexHull::convexHull(const std::vector<Point> &points, int edgeSelection, const Segment_2& leftConnection, const Segment_2& rightConnection) : Polygonization(points, edgeSelection) {
+  this->leftConnection = leftConnection;
+  this->rightConnection = rightConnection;
+  this->spatial_Subdivision = true;
+}
+
+bool convexHull::looseSegCompare(const Segment_2& seg1, const Segment_2& seg2){
+
+  if (seg1.source() == seg2.source() && seg1.target() == seg2.target())
+    return true;
+  
+  if (seg1.source() == seg2.target() && seg1.target() == seg2.source())
+    return true;
+  
+  return false;
+
+}
+
 
 // convex hull algorithm MAIN method
 void convexHull::start(){
@@ -58,7 +76,20 @@ void convexHull::start(){
     std::vector<pair> bestPoints;
 
     //For every polyon line segment find visible and shortest point
+    std::cout << "Untouchable segments: " << this->leftConnection << " " << this->rightConnection << std::endl;
     for(int i = 0; i < polygLine.size(); i++){
+
+      if(this->spatial_Subdivision){
+        
+        if(looseSegCompare(polygLine[i], this->leftConnection)){
+          std::cout << "LEFT CONNECTION" << std::endl;
+          continue;
+        }
+        else if (looseSegCompare(polygLine[i], this->rightConnection)){
+          std::cout << "RIGHT CONNECTION" << std::endl;
+          continue;
+        }
+      }
       
       std::vector<visPoint> visPoints;
       //Find visible points on this segment
@@ -120,6 +151,10 @@ void convexHull::initializeConvexHull(std::vector<Segment_2> &polygLine, const s
 
   polygLine = getConvexHull(convexPoints, remainingPoints);
   this->initialConvexHull = polygLine;
+
+  for (const Segment_2& segment : this->initialConvexHull){
+    std::cout << "initial convex --> " << segment << std::endl;
+  }
 }
 
 void convexHull::initialRun(const std::vector<Segment_2> &currConvexHullSegments, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {
@@ -144,6 +179,9 @@ void convexHull::initialRun(const std::vector<Segment_2> &currConvexHullSegments
       for (const Segment_2& polygSeg : polygLine) {
        
         if (currConvexHullSegments[i] == polygSeg)
+          continue;
+
+        if (looseSegCompare(polygSeg, leftConnection) || looseSegCompare(polygSeg, rightConnection))
           continue;
 
         for (int k = 0; k < 3; k++) {
@@ -202,6 +240,7 @@ void convexHull::initialRun(const std::vector<Segment_2> &currConvexHullSegments
       if (remainingPoints[m] == bestPoint) {
         remainingPoints.erase(remainingPoints.begin() + m);
         Segment_2 visSeg = currConvexHullSegments[i];
+        std::cout << "Visible Segment is " << visSeg << std::endl;
         deleteSegment(polygLine, visSeg);
         expandPolygonLine(polygLine, visSeg, bestPoint);
         break;
@@ -339,3 +378,4 @@ void convexHull::insertBestPoint(const std::vector<pair> &bestPoints, std::vecto
     }
   }
 }
+
