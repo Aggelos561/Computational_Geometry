@@ -127,8 +127,6 @@ void simulatedAnnealing::startAnnealing(){
         energyPrev = newEnergy;
         polygLine = transitionStep.newPolygLine;
         optimisedArea += transitionStep.areaDiff;
-        std::cout << "Optimised Area is " << (long int)optimisedArea << std::endl;
-        std::cout << std::endl;
       }
     }
     else{
@@ -272,8 +270,6 @@ ft simulatedAnnealing::calcAreaDiff(const std::vector<Segment_2>& polygLine, con
   ft deletedArea = abs(CGAL::area(PrevSegSource, nextSegSource, PrevSegTarget));
 
   Point triangleCenterP = CGAL::centroid (PrevSegSource, nextSegSource, PrevSegTarget);
-
-  std::cout << "CENTROID ~~> " << triangleCenterP << " For Triangle" << PrevSegSource << ", " << nextSegSource << ", " << PrevSegTarget << std::endl;
 
   std::vector<Point> points = getPolyLinePoints(polygLine);
 
