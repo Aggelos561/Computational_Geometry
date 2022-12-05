@@ -20,6 +20,8 @@ class convexHull : public Polygonization{
         bool spatial_Subdivision;
         Segment_2 leftConnection;
         Segment_2 rightConnection;
+        int polygonIndex;
+        int maxPolygonIndex;
         std::vector<Segment_2> initialConvexHull;
 
         std::vector<Segment_2> getConvexHull(const std::vector<Point> &,std::vector<Point> &);
@@ -33,11 +35,9 @@ class convexHull : public Polygonization{
         void findVisiblePoints(std::vector<visPoint>&, const Point&, const Segment_2&, const std::vector<Segment_2>& );
 
         Point findBestPoint(const std::vector<visPoint>&);
-
-        bool looseSegCompare(const Segment_2&, const Segment_2&);
         
     public:
         convexHull(const std::vector<Point>&, int );
-        convexHull(const std::vector<Point>&, int ,const Segment_2& , const Segment_2& );
+        convexHull(const std::vector<Point>&, int ,const Segment_2& , const Segment_2&, int, int);
         void start();
 };

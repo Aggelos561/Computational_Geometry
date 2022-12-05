@@ -90,6 +90,8 @@ class Polygonization{
 
       ft calcPointsArea(std::vector<Point>);
 
+      bool looseSegCompare(const Segment_2&, const Segment_2&);
+
     public:
       Polygonization(const std::vector<Point>&, int);
       Polygonization(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&);

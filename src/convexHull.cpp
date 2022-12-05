@@ -22,23 +22,14 @@ typedef CGAL::Epick::FT ft;
 convexHull::convexHull(const std::vector<Point> &points, int edgeSelection) : Polygonization(points, edgeSelection) {
 }
 
-convexHull::convexHull(const std::vector<Point> &points, int edgeSelection, const Segment_2& leftConnection, const Segment_2& rightConnection) : Polygonization(points, edgeSelection) {
+convexHull::convexHull(const std::vector<Point> &points, int edgeSelection, const Segment_2& leftConnection, const Segment_2& rightConnection, int polygonIndex, int maxPolygonIndex) : Polygonization(points, edgeSelection) {
   this->leftConnection = leftConnection;
   this->rightConnection = rightConnection;
   this->spatial_Subdivision = true;
+  this->polygonIndex = polygonIndex;
+  this->maxPolygonIndex = maxPolygonIndex;
 }
 
-bool convexHull::looseSegCompare(const Segment_2& seg1, const Segment_2& seg2){
-
-  if (seg1.source() == seg2.source() && seg1.target() == seg2.target())
-    return true;
-  
-  if (seg1.source() == seg2.target() && seg1.target() == seg2.source())
-    return true;
-  
-  return false;
-
-}
 
 
 // convex hull algorithm MAIN method
@@ -57,6 +48,8 @@ void convexHull::start(){
 
   // Get current convex hull segments
   std::vector<Segment_2> currConvexHullSegments = getConvexHull(polygLinePoints,remainingPoints);
+
+
 
   // Run to find the first next new point
   initialRun(currConvexHullSegments, remainingPoints, polygLine);
@@ -81,11 +74,11 @@ void convexHull::start(){
 
       if(this->spatial_Subdivision){
         
-        if(looseSegCompare(polygLine[i], this->leftConnection)){
+        if(polygonIndex != 0 && looseSegCompare(polygLine[i], this->leftConnection)){
           std::cout << "LEFT CONNECTION" << std::endl;
           continue;
         }
-        else if (looseSegCompare(polygLine[i], this->rightConnection)){
+        else if (polygonIndex != maxPolygonIndex && looseSegCompare(polygLine[i], this->rightConnection)){
           std::cout << "RIGHT CONNECTION" << std::endl;
           continue;
         }
@@ -164,6 +157,9 @@ void convexHull::initialRun(const std::vector<Segment_2> &currConvexHullSegments
   for (int i = 0; i < currConvexHullSegments.size(); i++) {
     
     std::vector<visPoint> visPoints;
+
+    if (spatial_Subdivision && (polygonIndex != 0 && looseSegCompare(currConvexHullSegments[i], leftConnection)) || (polygonIndex != maxPolygonIndex && looseSegCompare(currConvexHullSegments[i], rightConnection)))
+      continue;
     
     if (done) 
       return;
@@ -179,9 +175,6 @@ void convexHull::initialRun(const std::vector<Segment_2> &currConvexHullSegments
       for (const Segment_2& polygSeg : polygLine) {
        
         if (currConvexHullSegments[i] == polygSeg)
-          continue;
-
-        if (looseSegCompare(polygSeg, leftConnection) || looseSegCompare(polygSeg, rightConnection))
           continue;
 
         for (int k = 0; k < 3; k++) {
@@ -240,7 +233,6 @@ void convexHull::initialRun(const std::vector<Segment_2> &currConvexHullSegments
       if (remainingPoints[m] == bestPoint) {
         remainingPoints.erase(remainingPoints.begin() + m);
         Segment_2 visSeg = currConvexHullSegments[i];
-        std::cout << "Visible Segment is " << visSeg << std::endl;
         deleteSegment(polygLine, visSeg);
         expandPolygonLine(polygLine, visSeg, bestPoint);
         break;

@@ -409,3 +409,16 @@ bool Polygonization::checkPolygonSimplicity(std::vector<Segment_2>& polygLine){
   return polygon.is_simple();
 
 }
+
+
+bool Polygonization::looseSegCompare(const Segment_2& seg1, const Segment_2& seg2){
+
+  if (seg1.source() == seg2.source() && seg1.target() == seg2.target())
+    return true;
+  
+  if (seg1.source() == seg2.target() && seg1.target() == seg2.source())
+    return true;
+  
+  return false;
+
+}

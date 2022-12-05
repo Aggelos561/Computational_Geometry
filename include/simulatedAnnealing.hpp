@@ -41,7 +41,11 @@ class simulatedAnnealing: public Polygonization{
         int L;
         ft energy;
         int mode; // 1 = min, 2 = max
-        int subDAlgo;
+        int transitionMode; // 1 = local, 2 = global
+        int subDAlgo; // 1 = incremental, 2 = convex hull
+        bool segmentImmunity;
+
+        std::vector<Segment_2> untouchableVector;
 
         static bool pointsYAscending(const Point&, const Point&);
 
@@ -63,15 +67,28 @@ class simulatedAnnealing: public Polygonization{
 
         bool validityCheck(const Tree&, const std::vector<Segment_2>&, const Segment_2&, const Segment_2&, const Segment_2&);
 
+        bool isGlobalValidPath(const std::vector<Segment_2>&, const std::vector<Point>&, const Segment_2&, const std::pair<Point, Point>&);
+
         FuzzyBox getRectangeBox(std::vector<Point>&);
 
         ft metropolis(const ft&, const ft&);
 
         static bool lexOrderPoints(const Point&, const Point&);
 
+        void mergePolygons(std::vector<std::vector<Point>>&, std::vector<std::vector<Segment_2>>&);
+
+        void subGlobalTransitions(std::vector<std::vector<Point>>&, std::vector<std::vector<Segment_2>>&);
+
+        void subPolygonization(std::vector<std::vector<Point>>&, std::vector<std::vector<Segment_2>>&, int);
+    
+        void createSubsetPoints(std::vector<std::vector<Point>>&);
+
     public:
+
         simulatedAnnealing(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, int, int);
+        simulatedAnnealing(const std::vector<Point>&, int, int, int, int);
+        simulatedAnnealing(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, int, int, const std::vector<Segment_2>); 
         void startAnnealing();
-        void startSubdivision(std::vector<Point>&, int, const std::string&);
+        void startSubdivision(int, const std::string&);
     
 };

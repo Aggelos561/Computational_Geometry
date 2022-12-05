@@ -81,7 +81,7 @@ void localSearch::start(){
 
   std::cout << "Area Before ==> " << (long int)this->totalArea << std::endl;
   std::cout << std::endl << "Area After ==> " << (long int) this->optimisedArea << std::endl;
-
+   std::cout << std::endl << "Real Area After ==> " << (long int) calcArea(polygLine) << std::endl;
 
 }
 

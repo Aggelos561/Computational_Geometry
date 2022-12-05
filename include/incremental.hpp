@@ -23,6 +23,8 @@ class Incremental: public Polygonization{
 		static bool sortYAsc(Point &, Point &);
 		static bool sortYDesc(Point &, Point &);
 		void sortPoints(std::vector<Point> &);
+		bool staticSegmentException;
+		Point staticPoint;
 
 		void initializeTriangle(std::vector<Segment_2>&, const std::vector<Point>&, std::vector<Point>&);
 
@@ -37,5 +39,6 @@ class Incremental: public Polygonization{
 
 	public:
 		Incremental(const std::vector<Point>&, int, const std::string&);
+		Incremental(const std::vector<Point>&, int, const std::string&, const Point&);
 		void start();
 };

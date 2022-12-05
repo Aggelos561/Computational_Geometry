@@ -42,16 +42,17 @@ int main(int argc, char** argv) {
     // pol.spatialSubdivision(points, edge_selection, initialization);
     Incremental pol = Incremental(points, edge_selection, initialization);
 
+    pol.start();
+
     auto start = std::chrono::high_resolution_clock::now();
 
     // Incremental algorithm begins
-    pol.start();
+    // pol.start();
 
-    std::vector<Segment_2> polygonLine = pol.getPolygonLine();
 
-    simulatedAnnealing sim = simulatedAnnealing(points, polygonLine, pol.getArea(), pol.getRatio(), 3000, 2, 0);
+    simulatedAnnealing sim = simulatedAnnealing(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), 5000, 2, 2); // l mode transition
    
-    sim.startSubdivision(points, edge_selection, initialization);
+    sim.startAnnealing();
 
     auto stop = std::chrono::high_resolution_clock::now();
 

@@ -45,18 +45,43 @@ typedef CGAL::Fuzzy_iso_box<TreeTraits> FuzzyBox;
 
 
 
-simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const std::vector<Segment_2>& polygLine, const ft& area, const ft& ratio, int L, int mode, int subDAlgo = 0) : Polygonization(points, polygLine, area, ratio){
+simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const std::vector<Segment_2>& polygLine, const ft& area, const ft& ratio, int L, int mode, int transitionMode) : Polygonization(points, polygLine, area, ratio){
 
-    this->subDAlgo = subDAlgo;
+    this->subDAlgo = 0;
     this->L = L;
     this->optimisedArea = area;
     this->optimisedRatio = ratio;
     this->mode = mode; // 1 = min, 2 = max
+    this->transitionMode = transitionMode;
+    this->segmentImmunity = false;
 
 }
 
 
+simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, int L, int edgeSelection, int mode, int subDAlgo = 0) : Polygonization(points, edgeSelection){
 
+    this->subDAlgo = subDAlgo;
+    this->L = L;
+    this->optimisedArea = 0;
+    this->optimisedRatio = 0;
+    this->mode = mode; // 1 = min, 2 = max
+    this->segmentImmunity = false;
+
+}
+
+
+simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const std::vector<Segment_2>& polygLine, const ft& area, const ft& ratio, int L, int mode, int transitionMode, const std::vector<Segment_2> untouchable) : Polygonization(points, polygLine, area, ratio){
+
+    this->subDAlgo = 0;
+    this->L = L;
+    this->optimisedArea = area;
+    this->optimisedRatio = ratio;
+    this->mode = mode; // 1 = min, 2 = max
+    this->transitionMode = transitionMode;
+    this->untouchableVector = untouchable;
+    this->segmentImmunity = true;
+
+}
 
 
 void simulatedAnnealing::startAnnealing(){
@@ -71,7 +96,8 @@ void simulatedAnnealing::startAnnealing(){
   srand(time(NULL));
 
   Tree tree;
-  KdTreeInit(polygLine, tree);
+  if (transitionMode == 1)
+    KdTreeInit(polygLine, tree);
 
   double T = 1;
 
@@ -80,32 +106,29 @@ void simulatedAnnealing::startAnnealing(){
   std::vector<Segment_2> convexHullSegments = getConvexHull(getPolyLinePoints(polygLine));
   
   ft convexHullArea = calcArea(convexHullSegments);
-  ft energyPrev = energyCalc(convexHullArea, totalArea);
+  ft energyPrev = energyCalc(convexHullArea, optimisedArea);
 
   while(T >= 0){
 
-    //Local transition 
-    transitionStep transitionStep = localTransition(polygLine, tree);
-
-    // transitionStep transitionStep = globalTransition(polygLine);
+    // transition 
+    transitionStep transitionStep = transitionMode == 1 ? localTransition(polygLine, tree) : globalTransition(polygLine);
 
     if (transitionStep.simple){
-      ft newEnergy = energyCalc(convexHullArea, totalArea + transitionStep.areaDiff);
-      
-      bool DEnergyCondition = mode == 1 ? newEnergy - energyPrev < 0 : newEnergy - energyPrev > 0;
+      ft newEnergy = energyCalc(convexHullArea, optimisedArea + transitionStep.areaDiff);
 
-      if (DEnergyCondition || metropolis(newEnergy - energyPrev, T) >= R){
+      if (newEnergy - energyPrev < 0 || metropolis(newEnergy - energyPrev, T) >= R){
         
         std::cout << "Found Better Polygon!" << std::endl;
 
         for (const Segment_2& segment : transitionStep.newPolygLine){
           std::cout << segment << std::endl;
        }
-        std::cout << std::endl;
 
         energyPrev = newEnergy;
         polygLine = transitionStep.newPolygLine;
         optimisedArea += transitionStep.areaDiff;
+        std::cout << "Optimised Area is " << (long int)optimisedArea << std::endl;
+        std::cout << std::endl;
       }
     }
     else{
@@ -250,6 +273,8 @@ ft simulatedAnnealing::calcAreaDiff(const std::vector<Segment_2>& polygLine, con
 
   Point triangleCenterP = CGAL::centroid (PrevSegSource, nextSegSource, PrevSegTarget);
 
+  std::cout << "CENTROID ~~> " << triangleCenterP << " For Triangle" << PrevSegSource << ", " << nextSegSource << ", " << PrevSegTarget << std::endl;
+
   std::vector<Point> points = getPolyLinePoints(polygLine);
 
   K traits;
@@ -270,7 +295,7 @@ ft simulatedAnnealing::calcAreaDiff(const std::vector<Segment_2>& polygLine, con
 ft simulatedAnnealing::energyCalc(const ft& convexHullArea, const ft& totalArea){
 
   int n = polygLine.size();
- 
+
   //Minimization
   if(mode == 1){
     return n * (totalArea / convexHullArea);
@@ -407,7 +432,7 @@ transitionStep simulatedAnnealing::globalTransition(std::vector<Segment_2>& poly
 
     kPoints = getPathK(polygLine, segmentIndex, k, kPairSequence);
   
-  } while(!isValidPath(polygLine, kPoints, e, kPairSequence));
+  } while(!isGlobalValidPath(polygLine, kPoints, e, kPairSequence));
 
   findGlobalChanges(possibleChanges, kPoints, e, kPairSequence);
   
@@ -450,6 +475,28 @@ transitionStep simulatedAnnealing::applyGlobalChanges(std::vector<Segment_2>& po
   }
 
 
+}
+
+
+bool simulatedAnnealing::isGlobalValidPath(const std::vector<Segment_2>& polygLine, const std::vector<Point>& kPoints, const Segment_2& e, const std::pair<Point, Point>& kPairSequence){
+
+  Point source = e.source();
+  Point target = e.target();
+
+  if (segmentImmunity){
+    for (const Segment_2& segmentUnt : untouchableVector){
+      if (looseSegCompare(e, segmentUnt)){
+        return false;
+      }
+    }
+  }
+  
+  for (const Point& point : kPoints){
+    if ((point == source) || (point == target))
+      return false;
+  }
+
+  return true;
 }
 
 

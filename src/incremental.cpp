@@ -23,7 +23,15 @@ typedef CGAL::Epick::FT ft;
 // Constructor for incremental class 
 Incremental::Incremental(const std::vector<Point> &points, int edgeSelection, const std::string& initialization) : 
   Polygonization(points,edgeSelection), initialization(initialization) {
+    this->staticSegmentException = false;
 }
+
+Incremental::Incremental(const std::vector<Point> &points, int edgeSelection, const std::string& initialization, const Point& staticPoint) : 
+  Polygonization(points,edgeSelection), initialization(initialization) {
+    this->staticSegmentException = true;
+    this-> staticPoint = staticPoint;
+}
+
 
 // incremental algorithm MAIN method
 void Incremental::start() {
@@ -184,6 +192,42 @@ ft Incremental::getTriangleArea(const Segment_2& segment, const Point& nextPoint
 
 // Pick Random visble segment and delete from the vector
 Segment_2 Incremental::chooseVisibleSegment(const std::vector<Segment_2> &visibleSegments, const Point &nextPoint, ft &area) {
+
+  if (staticSegmentException && !remainingPoints.size()){
+
+    bool staticSegmentFound = false;
+    for (const Segment_2& segment : visibleSegments){
+
+      if (segment.source() == staticPoint || segment.target() == staticPoint){
+        staticSegmentFound = true;
+        area += getTriangleArea(segment, nextPoint);
+        return segment;
+      }
+    }
+
+    if (!staticSegmentFound){
+
+      std::cout << "Tried for static point " << staticPoint << std::endl;
+      std::cout << "Last point is " << nextPoint << std::endl;
+
+      for (const Segment_2& segment : visibleSegments){
+        std::cout << "visible --> " << segment << std::endl;
+      }
+
+      std::cout << std::endl << std::endl;
+
+      for (const Segment_2& segment : polygLine){
+        std::cout << "Was --> " << segment << std::endl;
+      }
+
+      std::cout << std::endl;
+
+      std::cout << "Could Not Create Subdivision Polygon" << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
+
+  }
+
 
   if (edgeSelection == 1){
     srand(time(NULL));
