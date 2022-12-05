@@ -11,8 +11,9 @@ typedef CGAL::Epick::FT ft;
 
 
 // Get parameters
-bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, int& edge_selection, std::string& initialization, int argc, char** argv) {
-  
+bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,double& threshold,std::string& annealing,int& L, int argc, char** argv) {
+  int max_min = 0;
+  std::string edge_selection;
   for(int i = 0; i < argc- 1; i++){
 
     std::string param = (argv[i]);
@@ -24,24 +25,54 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
     else if(param == "-o"){
       outputFile = mode;
     }
+    else if(param == "-algorithm_initial"){
+      algorithm_initial = mode;
+    }
     else if(param == "-algorithm"){
       algorithm = mode;
     }
-    else if(param == "-edge_selection"){
-      edge_selection = std::stoi(mode);
+    else if(param == "-max"){
+      edge_selection = mode;
+      if(max_min == 1)
+        return false;
+      max_min++;  
+    }
+    else if(param == "-min"){
+      edge_selection = mode;
+      if(max_min == 1)
+       return false;
+      max_min++;
+    }
+    else if(param == "-L"){
+      L = stoi(mode);
+    }
+    else if(param == "-threshold"){
+      threshold = stod(mode);
+    }
+    else if(param == "–annealing"){
+      annealing = mode;
     }
     else if(param == "-initialization"){
-      initialization = mode;
+      initial = mode;
     }
   }
 
-  if ((algorithm != "incremental") && (algorithm != "convex_hull"))
+  if ((algorithm_initial != "incremental") && (algorithm_initial != "convex_hull"))
     return false;
 
-  if (edge_selection < 1 || edge_selection > 3)
+  if (max_min == 0)
+    return false;
+  if(edge_selection == "-max"){
+    edge_selection_int = 3;
+  }
+  else if(edge_selection == "-min"){
+    edge_selection_int = 2;
+  }
+
+  if ((algorithm_initial == "incremental") && (initial != "1a") && (initial != "1b") && (initial != "2a") && (initial != "2b"))
     return false;
 
-  if ((algorithm == "incremental") && (initialization != "1a") && (initialization != "1b") && (initialization != "2a") && (initialization != "2b"))
+  if ((algorithm != "local_search") && (algorithm != "simulated_annealing"))
     return false;
 
   return true;

@@ -20,13 +20,18 @@ int main(int argc, char** argv) {
   
   std::string nameOfFile;
   std::string outputFile;
+  std::string algorithm_initial;
   std::string algorithm;
+  std::string annealing;
   int edge_selection;
   std::string initialization;
+  double threshold;
+  int L;
+
 
   // Reading and parsing parameters
-  bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, edge_selection, initialization, argc, argv);
-
+  //bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, edge_selection, initialization, argc, argv);
+  bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, algorithm_initial, initialization, edge_selection, threshold,  annealing, L, argc, argv);
   if (!parsed){
     std::cout << "Input parameters invalid" << std::endl;
     return 1;
