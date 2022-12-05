@@ -49,7 +49,7 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
     else if(param == "-threshold"){
       threshold = stod(mode);
     }
-    else if(param == "–annealing"){
+    else if(param == "-annealing"){
       annealing = mode;
     }
     else if(param == "-initialization"){
@@ -60,8 +60,10 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
   if ((algorithm_initial != "incremental") && (algorithm_initial != "convex_hull"))
     return false;
 
-  if (max_min == 0)
+  if (max_min == 0){ 
+    printf("edw");
     return false;
+  }
   if(edge_selection == "-max"){
     edge_selection_int = 3;
   }
