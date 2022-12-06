@@ -81,6 +81,7 @@ void localSearch::start(){
 
   std::cout << "Area Before ==> " << (long int)this->totalArea << std::endl;
   std::cout << std::endl << "Area After ==> " << (long int) this->optimisedArea << std::endl;
+  std::cout << this->mode << std::endl;
    std::cout << std::endl << "Real Area After ==> " << (long int) calcArea(polygLine) << std::endl;
 
 }
@@ -156,4 +157,12 @@ bool localSearch::sortAreaChanges(Changes& a, Changes& b){
 
   return false;
   
+}
+
+ft localSearch::getArea(){
+  return this->optimisedArea;
+}
+
+ft localSearch::getRatio(ft CHArea){
+  return this->optimisedArea/CHArea;
 }

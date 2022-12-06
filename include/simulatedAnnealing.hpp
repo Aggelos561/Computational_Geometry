@@ -88,6 +88,8 @@ class simulatedAnnealing: public Polygonization{
         simulatedAnnealing(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, int, int);
         simulatedAnnealing(const std::vector<Point>&, int, int, int, int);
         simulatedAnnealing(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, int, int, const std::vector<Segment_2>); 
+        ft getArea();
+        ft getRatio(ft CHArea);
         void startAnnealing();
         void startSubdivision(int, const std::string&);
     

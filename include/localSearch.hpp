@@ -32,4 +32,6 @@ class localSearch: public Polygonization{
     public:
         localSearch(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, double, int);
         void start();
+        ft getArea();
+        ft getRatio(ft CHArea);
 };

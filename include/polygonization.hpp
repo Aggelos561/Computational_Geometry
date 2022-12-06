@@ -58,6 +58,7 @@ class Polygonization{
       std::vector<Segment_2> polygLine;
       std::vector<Point> polygLinePoints;
       ft totalArea;
+      ft CHArea;
       ft ratio;
       
       std::vector<Point> getPolyLinePoints(const std::vector<Segment_2>&);
@@ -98,7 +99,7 @@ class Polygonization{
       const ft& getArea();
       const ft& getRatio();
       const std::vector<Segment_2>& getPolygonLine();
-        
+      ft getCHArea();
 };
 
 

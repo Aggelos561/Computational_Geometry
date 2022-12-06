@@ -150,7 +150,9 @@ ft Polygonization::calcArea(const std::vector<Segment_2>& polygLine) {
   return totalArea;
 }
 
-
+ft Polygonization::getCHArea(){
+  return this->CHArea;
+}
 
 // Calculating area / convex hull area ratio for results
 ft Polygonization::calcRatio(const std::vector<Segment_2> &convexHull, const ft &area){
@@ -159,7 +161,7 @@ ft Polygonization::calcRatio(const std::vector<Segment_2> &convexHull, const ft 
 
   // Calculating convex hull area and divide with total polygon area
   ft convexHullArea = CGAL::polygon_area_2(convexHullPoints.begin(), convexHullPoints.end(), Convex_hull_traits_2(CGAL::make_property_map(convexHullPoints)));
-
+  this->CHArea = convexHullArea;
   return area/convexHullArea;
 }
 

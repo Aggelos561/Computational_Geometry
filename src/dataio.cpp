@@ -33,13 +33,13 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
       algorithm = mode;
     }
     else if(param == "-max"){
-      edge_selection = mode;
+      edge_selection = "-max";
       if(max_min == 1)
         return false;
       max_min++;  
     }
     else if(param == "-min"){
-      edge_selection = mode;
+      edge_selection = "-min";
       if(max_min == 1)
        return false;
       max_min++;
@@ -80,10 +80,13 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
     printf("hah got em!\n");
     return false;
   }
+  std::cout << "edge selection " << edge_selection << std::endl;
   if(edge_selection == "-max"){
+    printf("ola kala2!\n");
     edge_selection_int = 3;
   }
   else if(edge_selection == "-min"){
+    printf("ola kala!\n");
     edge_selection_int = 2;
   }
 
@@ -143,7 +146,7 @@ std::vector<Point> dataio::readPoints(const std::string& name) {
 
 
 // Write resulta data into a spesific file
-void dataio::createResultsFile(const std::vector<Segment_2> &polygLine, const ft& area, const std::chrono::milliseconds& polygonizationDuration, const ft& ratio, const std::string& output, const std::string& algorithm, const int& edgeSelection, const std::string& initialization) {
+void dataio::createResultsFile(const std::vector<Segment_2> &polygLine, const ft& area, const ft& areaBefore, const ft& ratio,const ft& ratioBefore, const std::chrono::milliseconds& polygonizationDuration, const std::string& output, const std::string& algorithm, const int& edgeSelection, const std::string& initialization) {
 
   std::ofstream outdata;
 
@@ -164,14 +167,13 @@ void dataio::createResultsFile(const std::vector<Segment_2> &polygLine, const ft
 
   outdata << std::endl;
 
-  outdata << "Algorithm: "<< algorithm << "_edge_selection_" << edgeSelection;
+  outdata << "Algorithm: "<< algorithm << std::endl;
 
-  if (algorithm == "incremental")
-    outdata << "_initialization_" << initialization << std::endl;
-  else
-   outdata << std::endl;
+  outdata << "Area_initial: " << (long int)areaBefore << std::endl;
 
   outdata << "Area: " << (long int)area << std::endl;
+
+  outdata << "ratio_initial: " << ratioBefore << std::endl;
 
   outdata << "ratio: " << ratio << std::endl;
 

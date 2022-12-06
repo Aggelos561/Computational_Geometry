@@ -17,5 +17,5 @@ namespace dataio{
 
     std::vector<Point> readPoints(const std::string& );
 
-    void createResultsFile(const std::vector<Segment_2>&, const ft&, const std::chrono::milliseconds&, const ft& ,const std::string&, const std::string&, const int&, const std::string&);
+    void createResultsFile(const std::vector<Segment_2> &polygLine, const ft& area, const ft& areaBefore, const ft& ratio,const ft& ratioBefore, const std::chrono::milliseconds& polygonizationDuration, const std::string& output, const std::string& algorithm, const int& edgeSelection, const std::string& initialization);
 }

@@ -521,3 +521,11 @@ bool simulatedAnnealing::lexOrderPoints(const Point& p1, const Point& p2){
   }
 
 }
+
+ft simulatedAnnealing::getArea(){
+  return this->optimisedArea;
+}
+
+ft simulatedAnnealing::getRatio(ft CHArea){
+  return this->optimisedArea/CHArea;
+}
