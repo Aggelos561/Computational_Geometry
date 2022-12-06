@@ -11,9 +11,10 @@ typedef CGAL::Epick::FT ft;
 
 
 // Get parameters
-bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,double& threshold,std::string& annealing,int& L, int argc, char** argv) {
+bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,double& threshold,int& annealing_int,int& L, int argc, char** argv) {
   int max_min = 0;
   std::string edge_selection;
+  std::string annealing;
   for(int i = 0; i < argc- 1; i++){
 
     std::string param = (argv[i]);
@@ -57,11 +58,26 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
     }
   }
 
-  if ((algorithm_initial != "incremental") && (algorithm_initial != "convex_hull"))
+  if ((algorithm_initial != "incremental") && (algorithm_initial != "convex_hull")){
+    printf("here\n");
     return false;
+  }
 
   if (max_min == 0){ 
-    printf("edw");
+    printf("edw!\n");
+    return false;
+  }
+  if(annealing == "local"){
+    annealing_int = 1;
+  }
+  else if(annealing == "global"){
+    annealing_int = 2;
+  }
+  else if(annealing == "simulated"){
+    annealing_int = 0;
+  }
+  else{
+    printf("hah got em!\n");
     return false;
   }
   if(edge_selection == "-max"){

@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
   std::string outputFile;
   std::string algorithm_initial;
   std::string algorithm;
-  std::string annealing;
+  int annealing;
   int edge_selection;
   std::string initialization;
   double threshold;
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     auto start = std::chrono::high_resolution_clock::now();
 
 
-    simulatedAnnealing sim = simulatedAnnealing(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), 5000, 2, 2); // l mode transition
+    simulatedAnnealing sim = simulatedAnnealing(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), L, edge_selection, annealing); // l mode transition
    
     sim.startAnnealing();
 
@@ -64,6 +64,10 @@ int main(int argc, char** argv) {
 
     // Convex hull algorithm begins
     pol.start();
+
+    simulatedAnnealing sim = simulatedAnnealing(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), L, edge_selection, annealing); // l mode transition
+   
+    sim.startAnnealing();
 
     auto stop = std::chrono::high_resolution_clock::now();
 
