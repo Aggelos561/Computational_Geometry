@@ -41,23 +41,31 @@ int main(int argc, char** argv) {
   // Reading points from the input file
   std::vector<Point> points = dataio::readPoints(nameOfFile);
   // Calling incremental algorithm
-  if(algorithm == "incremental"){
+  if(algorithm_initial == "incremental"){
     Incremental pol = Incremental(points, edge_selection, initialization);
-
+    auto start = std::chrono::high_resolution_clock::now();
+    
     pol.start();
 
-    auto start = std::chrono::high_resolution_clock::now();
+    std::chrono::milliseconds duration;
+    if(algorithm == "simulated_annealing"){
+      simulatedAnnealing sim = simulatedAnnealing(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), L, edge_selection, annealing); // l mode transition
+        
+      sim.startAnnealing();
 
-
-    simulatedAnnealing sim = simulatedAnnealing(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), L, edge_selection, annealing); // l mode transition
-   
-    sim.startAnnealing();
-
-    auto stop = std::chrono::high_resolution_clock::now();
+      auto stop = std::chrono::high_resolution_clock::now();
+      duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    }
+    else if(algorithm == "local_search"){
+      localSearch local = localSearch(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), L,threshold ,edge_selection);
+      local.start();
+      auto stop = std::chrono::high_resolution_clock::now();
+      duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    }
+    dataio::createResultsFile(pol.getPolygonLine(), pol.getArea(), duration, pol.getRatio(), outputFile, algorithm, edge_selection, initialization);
   }
-
   // Calling convex hull algorithm
-  else if(algorithm == "convex_hull"){
+  else if(algorithm_initial == "convex_hull"){
     convexHull pol = convexHull(points,edge_selection);
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -65,17 +73,21 @@ int main(int argc, char** argv) {
     // Convex hull algorithm begins
     pol.start();
 
-    simulatedAnnealing sim = simulatedAnnealing(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), L, edge_selection, annealing); // l mode transition
-   
-    sim.startAnnealing();
+    std::chrono::milliseconds duration;
+    if(algorithm == "simulated_annealing"){
+      simulatedAnnealing sim = simulatedAnnealing(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), L, edge_selection, annealing); // l mode transition
+        
+      sim.startAnnealing();
 
-    auto stop = std::chrono::high_resolution_clock::now();
-
-    // Calulating duration of algorithm
-    std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-
-    // Write data into result file
-
+      auto stop = std::chrono::high_resolution_clock::now();
+      duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    }
+    else if(algorithm == "local_search"){
+      localSearch local = localSearch(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), L,threshold ,edge_selection);
+      local.start();
+      auto stop = std::chrono::high_resolution_clock::now();
+      duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    }
     dataio::createResultsFile(pol.getPolygonLine(), pol.getArea(), duration, pol.getRatio(), outputFile, algorithm, edge_selection, initialization);
   }
 

@@ -30,6 +30,6 @@ class localSearch: public Polygonization{
         static bool sortAreaChanges(Changes&, Changes&);
 
     public:
-        localSearch(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, int, int);
+        localSearch(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, double, int);
         void start();
 };

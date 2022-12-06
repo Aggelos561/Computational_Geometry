@@ -26,7 +26,7 @@ typedef CGAL::Fuzzy_iso_box<TreeTraits> FuzzyBox;
 
 
 
-localSearch::localSearch(const std::vector<Point>& points, const std::vector<Segment_2>& polygLine, const ft& area, const ft& ratio, int L, int threshold, int mode) : Polygonization(points, polygLine, area, ratio) {
+localSearch::localSearch(const std::vector<Point>& points, const std::vector<Segment_2>& polygLine, const ft& area, const ft& ratio, int L, double threshold, int mode) : Polygonization(points, polygLine, area, ratio) {
     this->optimisedArea = area;
     this->optimisedRatio = ratio;
     this->L = L;
