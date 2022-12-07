@@ -103,3 +103,18 @@ class Polygonization{
 };
 
 
+typedef struct subTeam {
+  std::vector<Point> points;
+  std::pair<Segment_2, Segment_2> markedSegments;
+} subTeam;
+
+class incerementalFailure : public std::exception {
+  private:
+    std::string message;
+
+  public:
+    incerementalFailure(std::string  msg) : message(msg) {}
+    std::string what () {
+        return message;
+    }
+  };

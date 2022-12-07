@@ -39,6 +39,6 @@ class Incremental: public Polygonization{
 
 	public:
 		Incremental(const std::vector<Point>&, int, const std::string&);
-		Incremental(const std::vector<Point>&, int, const std::string&, const Point&);
+		Incremental(const std::vector<Point>&, int, const std::string&, const Point&, bool);
 		void start();
 };

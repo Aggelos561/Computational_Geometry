@@ -31,7 +31,7 @@ localSearch::localSearch(const std::vector<Point>& points, const std::vector<Seg
     this->optimisedRatio = ratio;
     this->L = L;
     this->threshold = threshold;
-    this->mode = mode;
+    this->mode = mode;//Minimazation or Maximazation
 }
 
 

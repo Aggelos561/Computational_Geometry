@@ -26,9 +26,9 @@ Incremental::Incremental(const std::vector<Point> &points, int edgeSelection, co
     this->staticSegmentException = false;
 }
 
-Incremental::Incremental(const std::vector<Point> &points, int edgeSelection, const std::string& initialization, const Point& staticPoint) : 
+Incremental::Incremental(const std::vector<Point> &points, int edgeSelection, const std::string& initialization, const Point& staticPoint, bool staticSegmentException) : 
   Polygonization(points,edgeSelection), initialization(initialization) {
-    this->staticSegmentException = true;
+    this->staticSegmentException = staticSegmentException;
     this-> staticPoint = staticPoint;
 }
 
@@ -223,7 +223,7 @@ Segment_2 Incremental::chooseVisibleSegment(const std::vector<Segment_2> &visibl
       std::cout << std::endl;
 
       std::cout << "Could Not Create Subdivision Polygon" << std::endl;
-      std::exit(EXIT_FAILURE);
+      throw incerementalFailure("Incremental Failure");
     }
 
   }

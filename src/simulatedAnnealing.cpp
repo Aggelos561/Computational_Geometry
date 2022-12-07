@@ -58,14 +58,16 @@ simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const s
 }
 
 
-simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, int L, int edgeSelection, int mode, int subDAlgo = 0) : Polygonization(points, edgeSelection){
+simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, int L, int edgeSelection, int mode, const std::string& initialization, int m,int subDAlgo = 0) : Polygonization(points, edgeSelection){
 
     this->subDAlgo = subDAlgo;
+    this->initialization = initialization;
     this->L = L;
     this->optimisedArea = 0;
     this->optimisedRatio = 0;
     this->mode = mode; // 1 = min, 2 = max
     this->segmentImmunity = false;
+    this->m = m;
 
 }
 
@@ -148,6 +150,19 @@ void simulatedAnnealing::startAnnealing(){
   }
 
   std::cout << "Final Check Simplicity: " << polygon.is_simple() << std::endl;
+  for (const Point& p : points){
+    int counter = 0;
+
+    for (const Segment_2& seg : polygLine){
+      if (seg.source() == p || seg.target() == p){
+        counter++;
+      }
+    }
+
+    if (counter > 2){
+      std::cout << "Duplicate is " << p << std::endl;
+    }
+  }
   long int areaAfter = calcArea(polygLine);  
   std::cout << "Area Before ==> " << (long int)  totalArea << std::endl;
   std::cout << " Real Area After ==> " << areaAfter << std::endl;

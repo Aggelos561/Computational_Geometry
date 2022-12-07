@@ -11,7 +11,8 @@ typedef CGAL::Epick::FT ft;
 
 
 // Get parameters
-bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,double& threshold,int& annealing_int,int& L, int argc, char** argv) {
+bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,double& threshold,int& annealing_int,int& L, int argc, char** argv, int& m) {
+  m = -1;
   int max_min = 0;
   std::string edge_selection;
   std::string annealing;
@@ -56,8 +57,13 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
     else if(param == "-initialization"){
       initial = mode;
     }
+    else if(param == "-m"){
+      m = stoi(mode);
+    }
   }
-
+  if(m < 0){
+    m = 10;
+  }
   if ((algorithm_initial != "incremental") && (algorithm_initial != "convex_hull")){
     printf("here\n");
     return false;

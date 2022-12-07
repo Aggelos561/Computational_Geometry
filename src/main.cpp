@@ -21,6 +21,7 @@ int main(int argc, char **argv)
   std::string outputFile;
   std::string algorithm_initial;
   std::string algorithm;
+  int m;
   int annealing;
   int edge_selection;
   std::string initialization;
@@ -29,7 +30,7 @@ int main(int argc, char **argv)
 
   // Reading and parsing parameters
   // bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, edge_selection, initialization, argc, argv);
-  bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, algorithm_initial, initialization, edge_selection, threshold, annealing, L, argc, argv);
+  bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, algorithm_initial, initialization, edge_selection, threshold, annealing, L, argc, argv,m);
   std::cout << "nameOfFile " << nameOfFile << " "
             << "outputFile " << outputFile << " algorithm " << algorithm << " algorith_initial " << algorithm_initial << " annealing " << annealing << " edge_selection " << edge_selection << " initialization " << initialization << " threshold " << threshold << " L " << L << std::endl;
   if (!parsed)
@@ -53,10 +54,9 @@ int main(int argc, char **argv)
     std::chrono::milliseconds duration;
     ft areaNow,ratioNow;
     if (algorithm == "simulated_annealing")
-    {
-      simulatedAnnealing sim = simulatedAnnealing(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), L, edge_selection - 1, annealing); // l mode transition
-
-      sim.startAnnealing();
+    { int mode = 1;
+      simulatedAnnealing sim = simulatedAnnealing(points, L, edge_selection, edge_selection - 1, initialization, mode,m);
+      sim.startSubdivision();
 
       auto stop = std::chrono::high_resolution_clock::now();
       duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
@@ -89,10 +89,11 @@ int main(int argc, char **argv)
     std::chrono::milliseconds duration;
     ft areaNow,ratioNow;
     if (algorithm == "simulated_annealing")
-    {
-      simulatedAnnealing sim = simulatedAnnealing(points, pol.getPolygonLine(), pol.getArea(), pol.getRatio(), L, edge_selection - 1, annealing); // l mode transition
+    { 
+      int mode = 2;
+      simulatedAnnealing sim = simulatedAnnealing(points, L, edge_selection, edge_selection - 1, initialization, mode,m);
+      sim.startSubdivision();
 
-      sim.startAnnealing();
 
       auto stop = std::chrono::high_resolution_clock::now();
       duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

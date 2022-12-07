@@ -43,7 +43,9 @@ class simulatedAnnealing: public Polygonization{
         int mode; // 1 = min, 2 = max
         int transitionMode; // 1 = local, 2 = global
         int subDAlgo; // 1 = incremental, 2 = convex hull
-        bool segmentImmunity;
+        bool segmentImmunity; // segment marked
+        std::string initialization; // 1a, 1b, 2a, 2b
+        int m;
 
         std::vector<Segment_2> untouchableVector;
 
@@ -75,22 +77,27 @@ class simulatedAnnealing: public Polygonization{
 
         static bool lexOrderPoints(const Point&, const Point&);
 
-        void mergePolygons(std::vector<std::vector<Point>>&, std::vector<std::vector<Segment_2>>&);
+        void mergePolygons(std::vector<subTeam>&, std::vector<std::vector<Segment_2>>&);
 
-        void subGlobalTransitions(std::vector<std::vector<Point>>&, std::vector<std::vector<Segment_2>>&);
+        void subGlobalTransitions(std::vector<subTeam>&, std::vector<std::vector<Segment_2>>&);
 
-        void subPolygonization(std::vector<std::vector<Point>>&, std::vector<std::vector<Segment_2>>&, int);
+        void subPolygonization(std::vector<subTeam>&, std::vector<std::vector<Segment_2>>&, int);
     
-        void createSubsetPoints(std::vector<std::vector<Point>>&);
+        void createSubsetPoints(std::vector<subTeam>&);
+
+        std::pair<Segment_2, Segment_2> getMarkedSegments(const std::vector<Point>&);
+
+        std::vector<Segment_2> getLowerHull(const std::vector<Point> &);
+
+        bool spatialCondition(const std::vector<subTeam>&, int, int);
 
     public:
 
         simulatedAnnealing(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, int, int);
-        simulatedAnnealing(const std::vector<Point>&, int, int, int, int);
+        simulatedAnnealing(const std::vector<Point>&, int, int, int, const std::string&, int,int);
         simulatedAnnealing(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, int, int, const std::vector<Segment_2>); 
+        void startAnnealing();
+        void startSubdivision();
         ft getArea();
         ft getRatio(ft CHArea);
-        void startAnnealing();
-        void startSubdivision(int, const std::string&);
-    
 };
