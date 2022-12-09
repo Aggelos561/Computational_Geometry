@@ -4,5 +4,6 @@ main
 Makefile
 cmake_install.cmake
 *.txt
-data.in
+*.in
+*.instance
 to_polygon

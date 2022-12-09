@@ -44,7 +44,7 @@ typedef CGAL::Fuzzy_iso_box<TreeTraits> FuzzyBox;
 
 
 
-
+// CLASSIC ANNEALLING LOCAL OR GLOBAL
 simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const std::vector<Segment_2>& polygLine, const ft& area, const ft& ratio, int L, int mode, int transitionMode) : Polygonization(points, polygLine, area, ratio){
 
     this->subDAlgo = 0;
@@ -57,7 +57,7 @@ simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const s
 
 }
 
-
+// ONLY FOR SUBDIVISION - ANNEALING
 simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, int L, int edgeSelection, int mode, const std::string& initialization, int m,int subDAlgo = 0) : Polygonization(points, edgeSelection){
 
     this->subDAlgo = subDAlgo;
@@ -71,7 +71,7 @@ simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, int L, 
 
 }
 
-
+// ANNEALING WITH MARKED SEGMENTS FOR SUBDIVISION ONLY
 simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const std::vector<Segment_2>& polygLine, const ft& area, const ft& ratio, int L, int mode, int transitionMode, const std::vector<Segment_2> untouchable) : Polygonization(points, polygLine, area, ratio){
 
     this->subDAlgo = 0;
@@ -86,14 +86,8 @@ simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const s
 }
 
 
+// Start Annealing
 void simulatedAnnealing::startAnnealing(){
-
-  // Print initial polygon line
-  for (const Segment_2& segment : polygLine){
-    std::cout << segment << std::endl;
-  }
-
-  std::cout << std::endl << std::endl;
 
   srand(time(NULL));
 
@@ -109,26 +103,22 @@ void simulatedAnnealing::startAnnealing(){
   
   ft convexHullArea = calcArea(convexHullSegments);
   ft energyPrev = energyCalc(convexHullArea, optimisedArea);
+  
 
   while(T >= 0){
 
-    // transition 
+    // transition local or global based on parameter transition mode
     transitionStep transitionStep = transitionMode == 1 ? localTransition(polygLine, tree) : globalTransition(polygLine);
 
     if (transitionStep.simple){
       ft newEnergy = energyCalc(convexHullArea, optimisedArea + transitionStep.areaDiff);
 
       if (newEnergy - energyPrev < 0 || metropolis(newEnergy - energyPrev, T) >= R){
-        
-        std::cout << "Found Better Polygon!" << std::endl;
-
-        for (const Segment_2& segment : transitionStep.newPolygLine){
-          std::cout << segment << std::endl;
-       }
 
         energyPrev = newEnergy;
         polygLine = transitionStep.newPolygLine;
         optimisedArea += transitionStep.areaDiff;
+
       }
     }
     else{
@@ -139,41 +129,13 @@ void simulatedAnnealing::startAnnealing(){
     T = T - 1.0/(double)L;
   }
 
-  Polygon_2 polygon;
-
-  for (const Segment_2& segment : polygLine){
-    polygon.push_back(segment.source());
-  }
-
-  for (const Segment_2& segment : polygLine){
-    std::cout << "New --> " << segment << std::endl;
-  }
-
-  std::cout << "Final Check Simplicity: " << polygon.is_simple() << std::endl;
-  for (const Point& p : points){
-    int counter = 0;
-
-    for (const Segment_2& seg : polygLine){
-      if (seg.source() == p || seg.target() == p){
-        counter++;
-      }
-    }
-
-    if (counter > 2){
-      std::cout << "Duplicate is " << p << std::endl;
-    }
-  }
-  long int areaAfter = calcArea(polygLine);  
-  std::cout << "Area Before ==> " << (long int)  totalArea << std::endl;
-  std::cout << " Real Area After ==> " << areaAfter << std::endl;
-  std::cout << " Calculated Area After ==> " << (long int) optimisedArea << std::endl;
-  this->optimisedRatio = this->calcRatio(this->polygLine,this->optimisedArea);
+  this->optimisedRatio = this->calcRatio(this->getConvexHull(this->points) ,this->optimisedArea);
 }
 
 
 
 
-
+// Initialize and build KD TREE for queries
 void simulatedAnnealing::KdTreeInit(const std::vector<Segment_2>& polygLine, Tree& tree){ 
 
   for(const Point& point : getPolyLinePoints(polygLine)){
@@ -195,7 +157,7 @@ bool simulatedAnnealing::pointsYAscending(const Point& p1, const Point& p2){
 }
 
 
-
+// Get the rectangle box based on the points
 FuzzyBox simulatedAnnealing::getRectangeBox(std::vector<Point>& points){
 
   std::sort(points.begin(), points.end());
@@ -211,7 +173,7 @@ FuzzyBox simulatedAnnealing::getRectangeBox(std::vector<Point>& points){
 }
 
 
-
+// Check if transition is simple based on KD TREE POINTS
 bool simulatedAnnealing::validityCheck(const Tree& tree, const std::vector<Segment_2>& polygLine, const Segment_2& nextSegment, const Segment_2& middleSegment, const Segment_2& prevSegment){
 
   const auto result = intersection(nextSegment, prevSegment);
@@ -279,7 +241,7 @@ bool simulatedAnnealing::validityCheck(const Tree& tree, const std::vector<Segme
 }
 
 
-
+// Get area diffrence based on if centroid point of first triangle (CCW segments) is on bounded or not
 ft simulatedAnnealing::calcAreaDiff(const std::vector<Segment_2>& polygLine, const Point& PrevSegSource, const Point& PrevSegTarget, const Point& nextSegSource, const Point& nextSegTarget){
   
   ft addedArea = abs(CGAL::area(PrevSegTarget, nextSegSource, nextSegTarget));
@@ -303,7 +265,7 @@ ft simulatedAnnealing::calcAreaDiff(const std::vector<Segment_2>& polygLine, con
 }
 
 
-
+// Enerfy calculation based on mode (minimize maximize)
 ft simulatedAnnealing::energyCalc(const ft& convexHullArea, const ft& totalArea){
 
   int n = polygLine.size();
@@ -322,7 +284,7 @@ ft simulatedAnnealing::energyCalc(const ft& convexHullArea, const ft& totalArea)
 
 
 
-
+// Switch (replace) segments for local transition simulated annealing
 void simulatedAnnealing::replace(const Segment_2& prevPolygonPrevSeg, const Segment_2& prevPolygonNextSeg, const Segment_2& middleSegment, const Segment_2& newPolygonNextSeg, const Segment_2& newPolygonPrevSeg, std::vector<Segment_2>& polygLine, int middleSegIndex, int prevPolygonPrevIndex, int prevPolygonNextIndex){
 
   // Insert Segment After Polygon
@@ -403,7 +365,7 @@ transitionStep simulatedAnnealing::localTransition(std::vector<Segment_2>& polyg
 }
 
 
-
+// vanilla (k = 1) only for global (only one change)
 void simulatedAnnealing::findGlobalChanges(std::vector<Changes>& possibleChanges, std::vector<Point>& points , const Segment_2& e, const std::pair<Point, Point>& pairSequencePoints){
 
   ft removedArea = calculateDeletedArea(points, e);
@@ -421,7 +383,7 @@ void simulatedAnnealing::findGlobalChanges(std::vector<Changes>& possibleChanges
 }
 
 
-
+// Find a transition. only for global because at least global has to find a valid k path
 transitionStep simulatedAnnealing::globalTransition(std::vector<Segment_2>& polygLine){
 
   int k = 1;
@@ -454,7 +416,7 @@ transitionStep simulatedAnnealing::globalTransition(std::vector<Segment_2>& poly
 
 
 
-
+// Apply the transition found (change found)
 transitionStep simulatedAnnealing::applyGlobalChanges(std::vector<Segment_2>& polygLine, std::vector<Changes>& possibleChanges){
 
   std::vector<Segment_2> changedPolygLine = polygLine;
@@ -489,7 +451,7 @@ transitionStep simulatedAnnealing::applyGlobalChanges(std::vector<Segment_2>& po
 
 }
 
-
+// Check if the kpath (k = 1 in global) is valid for transition checking
 bool simulatedAnnealing::isGlobalValidPath(const std::vector<Segment_2>& polygLine, const std::vector<Point>& kPoints, const Segment_2& e, const std::pair<Point, Point>& kPairSequence){
 
   Point source = e.source();
@@ -512,13 +474,14 @@ bool simulatedAnnealing::isGlobalValidPath(const std::vector<Segment_2>& polygLi
 }
 
 
-
+// Caclulate metropolis
 ft simulatedAnnealing::metropolis(const ft& DEnergy, const ft& T){
 
   return pow(exp(1), (-DEnergy)/T);
 
 }
 
+// Lex order points (if points are not lex ordered in input file). This is for subdivision
 bool simulatedAnnealing::lexOrderPoints(const Point& p1, const Point& p2){
 
   if (p2.x() > p1.x())

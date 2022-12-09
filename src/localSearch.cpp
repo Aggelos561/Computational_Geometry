@@ -73,16 +73,9 @@ void localSearch::start(){
 
     Da = abs(this->areaDiff);
 
+
   } while(Da >= threshold);
 
-  for (const Segment_2& segment : polygLine){
-    std::cout << "New --> " << segment << std::endl;
-  }
-
-  std::cout << "Area Before ==> " << (long int)this->totalArea << std::endl;
-  std::cout << std::endl << "Area After ==> " << (long int) this->optimisedArea << std::endl;
-  std::cout << this->mode << std::endl;
-  std::cout << std::endl << "Real Area After ==> " << (long int) calcArea(polygLine) << std::endl;
   this->optimisedRatio = this->calcRatio(this->getConvexHull(this->points),this->optimisedArea);
 }
 

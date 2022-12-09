@@ -397,25 +397,14 @@ void simulatedAnnealing::startSubdivision(){
   // Local transitions for final polygon
   simulatedAnnealing annealing = simulatedAnnealing(points , polygLine, optimisedArea, calcRatio(polygLine, optimisedArea), this->L, this->mode, 1);
   annealing.startAnnealing();
+  
   polygLine = annealing.getPolygonLine();
+ 
   optimisedArea = annealing.getOptimisedArea();
 
-  for (const Segment_2& segment : prevPolygLine){
-      std::cout << "PREVIOUS ==> " << segment << std::endl;
-  }
+  std::vector<Segment_2> convexHullSegments = this->getConvexHull(this->points);
+  
+  this->ratio = calcRatio(convexHullSegments, this->totalArea);
+  this->optimisedRatio = calcRatio(convexHullSegments, this->optimisedArea);
 
-  for (const Segment_2& segment : polygLine){
-      std::cout << "CONSTRUCTED ==> " << segment << std::endl;
-  }
-
-  std::cout << " PREVIOUS Calculated Area After ==> " << totalArea << std::endl;
-  std::cout << " PREVIOUS Real Area After ==> " << calcArea(prevPolygLine) << std::endl << std::endl;
-
-  std::cout << " NEW Calculated Area After ==> " << optimisedArea << std::endl;
-  std::cout << " MEW Real Area After ==> " << calcArea(polygLine) << std::endl;
-
-  std::cout << "Segments Size: " << polygLine.size() << std::endl;
-  std::cout << "Polygon Simplicity: " << checkPolygonSimplicity(polygLine) << std::endl;
-  this->optimisedRatio = calcRatio(this->getConvexHull(this->points),this->optimisedArea);
-  this->ratio = calcRatio(this->getConvexHull(this->points),this->totalArea);
 }

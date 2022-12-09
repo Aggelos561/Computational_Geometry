@@ -1,4 +1,5 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -11,11 +12,13 @@ typedef CGAL::Epick::FT ft;
 
 
 // Get parameters
-bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m) {
+bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int, double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m) {
+  
   m = -1;
   threshold = -1.0;
   int max_min = 0;
   std::string edge_selection;
+
   for(int i = 0; i < argc- 1; i++){
 
     std::string param = (argv[i]);
@@ -46,7 +49,7 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
       max_min++;
     }
     else if(param == "-L"){
-      L = stoi(mode);
+      L = stod(mode);
     }
     else if(param == "-threshold"){
       threshold = stod(mode);
@@ -71,17 +74,21 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
   if (max_min == 0){ 
     return false;
   }
-  std::cout << "edge selection " << edge_selection << std::endl;
+
   if(edge_selection == "-max"){
     edge_selection_int = 3;
   }
+
   else if(edge_selection == "-min"){
     edge_selection_int = 2;
   }
+
   if ((algorithm == "local_search") && (threshold < 0.0))
     return false;
+
   if ((algorithm == "simulated_annealing") && (annealing != "local") && (annealing != "global") && (annealing != "subdivision"))
     return false;  
+
   if ((algorithm_initial == "incremental") && (initial != "1a") && (initial != "1b") && (initial != "2a") && (initial != "2b"))
     return false;
 
@@ -146,13 +153,15 @@ void dataio::createResultsFile(const std::vector<Segment_2> &polygLine, const ft
 
   if (!outdata) {
     std::cout << "Error: file could not be opened" << std::endl;
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   outdata << "Polygonization" << std::endl;
 
   for (const Segment_2& line : polygLine)
     outdata << line.source() << std::endl;
+
+  outdata << std::endl;
 
   for (const Segment_2& line : polygLine)
     outdata << line << std::endl;

@@ -206,23 +206,6 @@ Segment_2 Incremental::chooseVisibleSegment(const std::vector<Segment_2> &visibl
     }
 
     if (!staticSegmentFound){
-
-      std::cout << "Tried for static point " << staticPoint << std::endl;
-      std::cout << "Last point is " << nextPoint << std::endl;
-
-      for (const Segment_2& segment : visibleSegments){
-        std::cout << "visible --> " << segment << std::endl;
-      }
-
-      std::cout << std::endl << std::endl;
-
-      for (const Segment_2& segment : polygLine){
-        std::cout << "Was --> " << segment << std::endl;
-      }
-
-      std::cout << std::endl;
-
-      std::cout << "Could Not Create Subdivision Polygon" << std::endl;
       throw incerementalFailure("Incremental Failure");
     }
 

@@ -191,7 +191,7 @@ std::vector<Segment_2> Polygonization::getConvexHull(const std::vector<Point> &p
 }
 
 
-
+// Get K path based on k number
 std::vector<Point> Polygonization::getPathK(std::vector<Segment_2>& polygLine, int segmentIndex, int k, std::pair<Point, Point>& kPairSequence){
   
   std::vector<Point> k_path;
@@ -326,7 +326,7 @@ bool Polygonization::applyBlueRemoval(std::vector<Segment_2>& polygLine, Changes
 }
 
 
-
+//  Remove K path from above
 bool Polygonization::applyKPathRemoval(std::vector<Segment_2>& polygLine, Changes& change){
   
   int startIndex = 0;
@@ -383,7 +383,7 @@ bool Polygonization::applyKPathRemoval(std::vector<Segment_2>& polygLine, Change
 }
 
 
-
+// Area based on ccw or cw points
 ft Polygonization::calcPointsArea(std::vector<Point> polygPoints) {
 
   ft totalArea = abs(CGAL::polygon_area_2(polygPoints.begin(), polygPoints.end(), Convex_hull_traits_2(CGAL::make_property_map(polygPoints))));
@@ -392,7 +392,7 @@ ft Polygonization::calcPointsArea(std::vector<Point> polygPoints) {
 }
 
 
-
+//  debugging method for checking simplicity
 bool Polygonization::checkPolygonSimplicity(std::vector<Segment_2>& polygLine){
 
   Polygon_2 polygon = Polygon_2();
@@ -412,7 +412,7 @@ bool Polygonization::checkPolygonSimplicity(std::vector<Segment_2>& polygLine){
 
 }
 
-
+// compare segments having same source target or reverse
 bool Polygonization::looseSegCompare(const Segment_2& seg1, const Segment_2& seg2){
 
   if (seg1.source() == seg2.source() && seg1.target() == seg2.target())
@@ -425,6 +425,7 @@ bool Polygonization::looseSegCompare(const Segment_2& seg1, const Segment_2& seg
 
 }
 
+// For local search and global transition only. Checking spesific segments intersection
 bool Polygonization::isSimple(const Changes& change, const std::vector<Segment_2>& newPolygonLine){
   
   Segment_2 addedSegmentleft(change.segToRemove.source(), change.path[0]);

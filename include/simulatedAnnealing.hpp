@@ -6,10 +6,7 @@
 #include <vector>
 #include <CGAL/Kd_tree.h>
 #include <CGAL/Search_traits_2.h>
-#include <CGAL/Simple_cartesian.h>
 #include <CGAL/Polygon_2.h>
-#include <CGAL/Polygon_2_algorithms.h>
-#include <CGAL/Splitters.h>
 #include <CGAL/Fuzzy_iso_box.h>
 #include <CGAL/Kd_tree_rectangle.h>
 #include <CGAL/Convex_hull_traits_adapter_2.h>

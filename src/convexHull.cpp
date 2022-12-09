@@ -69,17 +69,14 @@ void convexHull::start(){
     std::vector<pair> bestPoints;
 
     //For every polyon line segment find visible and shortest point
-    std::cout << "Untouchable segments: " << this->leftConnection << " " << this->rightConnection << std::endl;
     for(int i = 0; i < polygLine.size(); i++){
 
       if(this->spatial_Subdivision){
         
         if(polygonIndex != 0 && looseSegCompare(polygLine[i], this->leftConnection)){
-          std::cout << "LEFT CONNECTION" << std::endl;
           continue;
         }
         else if (polygonIndex != maxPolygonIndex && looseSegCompare(polygLine[i], this->rightConnection)){
-          std::cout << "RIGHT CONNECTION" << std::endl;
           continue;
         }
       }
@@ -145,9 +142,6 @@ void convexHull::initializeConvexHull(std::vector<Segment_2> &polygLine, const s
   polygLine = getConvexHull(convexPoints, remainingPoints);
   this->initialConvexHull = polygLine;
 
-  for (const Segment_2& segment : this->initialConvexHull){
-    std::cout << "initial convex --> " << segment << std::endl;
-  }
 }
 
 void convexHull::initialRun(const std::vector<Segment_2> &currConvexHullSegments, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {

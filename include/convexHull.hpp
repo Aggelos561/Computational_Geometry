@@ -8,7 +8,6 @@
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
 typedef K::Segment_2 Segment_2;
-typedef CGAL::Epick::FT ft;
 
 // Class for convexHull algorithm
 // Inherits from polygonization base class
