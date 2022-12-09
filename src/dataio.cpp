@@ -11,11 +11,11 @@ typedef CGAL::Epick::FT ft;
 
 
 // Get parameters
-bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,double& threshold,int& annealing_int,int& L, int argc, char** argv, int& m) {
+bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m) {
   m = -1;
+  threshold = -1.0;
   int max_min = 0;
   std::string edge_selection;
-  std::string annealing;
   for(int i = 0; i < argc- 1; i++){
 
     std::string param = (argv[i]);
@@ -65,37 +65,23 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
     m = 10;
   }
   if ((algorithm_initial != "incremental") && (algorithm_initial != "convex_hull")){
-    printf("here\n");
     return false;
   }
 
   if (max_min == 0){ 
-    printf("edw!\n");
-    return false;
-  }
-  if(annealing == "local"){
-    annealing_int = 1;
-  }
-  else if(annealing == "global"){
-    annealing_int = 2;
-  }
-  else if(annealing == "simulated"){
-    annealing_int = 0;
-  }
-  else{
-    printf("hah got em!\n");
     return false;
   }
   std::cout << "edge selection " << edge_selection << std::endl;
   if(edge_selection == "-max"){
-    printf("ola kala2!\n");
     edge_selection_int = 3;
   }
   else if(edge_selection == "-min"){
-    printf("ola kala!\n");
     edge_selection_int = 2;
   }
-
+  if ((algorithm == "local_search") && (threshold < 0.0))
+    return false;
+  if ((algorithm == "simulated_annealing") && (annealing != "local") && (annealing != "global") && (annealing != "subdivision"))
+    return false;  
   if ((algorithm_initial == "incremental") && (initial != "1a") && (initial != "1b") && (initial != "2a") && (initial != "2b"))
     return false;
 
@@ -152,7 +138,7 @@ std::vector<Point> dataio::readPoints(const std::string& name) {
 
 
 // Write resulta data into a spesific file
-void dataio::createResultsFile(const std::vector<Segment_2> &polygLine, const ft& area, const ft& areaBefore, const ft& ratio,const ft& ratioBefore, const std::chrono::milliseconds& polygonizationDuration, const std::string& output, const std::string& algorithm, const int& edgeSelection, const std::string& initialization) {
+void dataio::createResultsFile(const std::vector<Segment_2> &polygLine, const ft& area, const ft& areaBefore, const ft& ratio,const ft& ratioBefore, const std::chrono::milliseconds& polygonizationDuration, const std::string& output, const std::string& algorithm, const int& edgeSelection, const std::string& initialization, const std::string& max_min) {
 
   std::ofstream outdata;
 
@@ -173,7 +159,7 @@ void dataio::createResultsFile(const std::vector<Segment_2> &polygLine, const ft
 
   outdata << std::endl;
 
-  outdata << "Algorithm: "<< algorithm << std::endl;
+  outdata << "Algorithm: "<< algorithm << "_" << max_min << std::endl;
 
   outdata << "Area_initial: " << (long int)areaBefore << std::endl;
 

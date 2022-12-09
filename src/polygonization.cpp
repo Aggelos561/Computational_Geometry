@@ -424,3 +424,47 @@ bool Polygonization::looseSegCompare(const Segment_2& seg1, const Segment_2& seg
   return false;
 
 }
+
+bool Polygonization::isSimple(const Changes& change, const std::vector<Segment_2>& newPolygonLine){
+  
+  Segment_2 addedSegmentleft(change.segToRemove.source(), change.path[0]);
+  Segment_2 addedSegmentRight(change.path[change.path.size() - 1], change.segToRemove.target());
+  Segment_2 upperAddedSegment(change.pairPointsSeq.first, change.pairPointsSeq.second);
+
+  auto result1 = CGAL::intersection(upperAddedSegment, addedSegmentleft);
+  auto result2 = CGAL::intersection(upperAddedSegment, addedSegmentRight);
+
+  if (result1 || result2){
+    return false;
+  }
+
+  std::vector<Segment_2> possibleInterSegs = {addedSegmentleft, addedSegmentRight, upperAddedSegment};
+
+
+  for (const Segment_2& newSegment : possibleInterSegs){
+    for (const Segment_2& newPolygonSegment : newPolygonLine){
+
+      if (newPolygonSegment == newSegment)
+        continue;
+
+      const auto result = CGAL::intersection(newSegment, newPolygonSegment);
+
+      if (result){
+        if (const Point *p = boost::get<Point>(&*result)) {
+
+          if (*p == newPolygonSegment.source() || *p == newPolygonSegment.target()) {
+            continue;
+          } 
+          else {
+            return false;
+          }
+        } 
+        else {
+        return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}

@@ -93,6 +93,7 @@ class Polygonization{
 
       bool looseSegCompare(const Segment_2&, const Segment_2&);
 
+      bool isSimple(const Changes&, const std::vector<Segment_2>&);
     public:
       Polygonization(const std::vector<Point>&, int);
       Polygonization(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&);
@@ -118,3 +119,8 @@ class incerementalFailure : public std::exception {
         return message;
     }
   };
+
+typedef struct polygonInstance {
+  std::vector<Segment_2> polygon;
+  ft area;
+} polygonInstance;  

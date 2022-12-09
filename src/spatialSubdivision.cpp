@@ -93,31 +93,31 @@ std::vector<Segment_2> simulatedAnnealing::getLowerHull(const std::vector<Point>
 
 
 // Merging all subpolygons into one final polygon
-void simulatedAnnealing::mergePolygons(std::vector<subTeam>& subPolPoints, std::vector<std::vector<Segment_2>>& allPolygLines){
+void simulatedAnnealing::mergePolygons(std::vector<Segment_2>& mergedPolygon, std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, ft& sumArea){
 
   for (int i = 0; i < allPolygLines.size(); i++){
     
     int indexStart;
     int indexEnd;
 
-    for (int j = 0; j < allPolygLines[i].size(); j++){
+    for (int j = 0; j < allPolygLines[i].polygon.size(); j++){
     
-      if (allPolygLines[i][j].source() == subPolPoints[i].markedSegments.first.source()){
+      if (allPolygLines[i].polygon[j].source() == subPolPoints[i].markedSegments.first.source()){
         indexStart = j;
       }
-      if (allPolygLines[i][j].target() == subPolPoints[i].markedSegments.second.target()){
+      if (allPolygLines[i].polygon[j].target() == subPolPoints[i].markedSegments.second.target()){
           indexEnd = j;
       }
     }
 
     
     while (indexStart != indexEnd){
-       polygLine.push_back(allPolygLines[i][indexStart]);
-       indexStart = indexStart + 1 > allPolygLines[i].size() - 1 ? 0 : indexStart + 1;
+       mergedPolygon.push_back(allPolygLines[i].polygon[indexStart]);
+       indexStart = indexStart + 1 > allPolygLines[i].polygon.size() - 1 ? 0 : indexStart + 1;
     }
 
     if (i < allPolygLines.size() - 1){
-      polygLine.push_back(allPolygLines[i][indexStart]);
+      mergedPolygon.push_back(allPolygLines[i].polygon[indexStart]);
     }
 
   }
@@ -127,51 +127,51 @@ void simulatedAnnealing::mergePolygons(std::vector<subTeam>& subPolPoints, std::
     int indexStart;
     int indexEnd;
     
-    for (int j = 0; j < allPolygLines[i].size(); j++){
+    for (int j = 0; j < allPolygLines[i].polygon.size(); j++){
 
-      if (allPolygLines[i][j].source() == subPolPoints[i].markedSegments.second.target()){
+      if (allPolygLines[i].polygon[j].source() == subPolPoints[i].markedSegments.second.target()){
         indexStart = j;
       }
     }
 
     if (i == allPolygLines.size() - 1){
-      polygLine.push_back(allPolygLines[i][indexStart - 1 >= 0 ? indexStart - 1 : allPolygLines[i].size() - 1]);
+      mergedPolygon.push_back(allPolygLines[i].polygon[indexStart - 1 >= 0 ? indexStart - 1 : allPolygLines[i].polygon.size() - 1]);
     }
 
-    for (int j = 0; j < allPolygLines[i].size(); j++){
+    for (int j = 0; j < allPolygLines[i].polygon.size(); j++){
 
-      if (allPolygLines[i][j].source() == polygLine[polygLine.size() - 1].target()){
+      if (allPolygLines[i].polygon[j].source() == mergedPolygon[mergedPolygon.size() - 1].target()){
         indexStart = j;
       }
-      if (allPolygLines[i][j].target() == subPolPoints[i].markedSegments.first.source()){
+      if (allPolygLines[i].polygon[j].target() == subPolPoints[i].markedSegments.first.source()){
          indexEnd = j;
       }
     }
 
     while (indexStart != indexEnd){
-       polygLine.push_back(allPolygLines[i][indexStart]);
-       indexStart = indexStart + 1 > allPolygLines[i].size() - 1 ? 0 : indexStart + 1;
+       mergedPolygon.push_back(allPolygLines[i].polygon[indexStart]);
+       indexStart = indexStart + 1 > allPolygLines[i].polygon.size() - 1 ? 0 : indexStart + 1;
     }
-    polygLine.push_back(allPolygLines[i][indexStart]);
+    mergedPolygon.push_back(allPolygLines[i].polygon[indexStart]);
   }
 
-  for (int i = 0; i < polygLine.size(); i++){
+  for (int i = 0; i < mergedPolygon.size(); i++){
     for (int j = 0; j < subPolPoints.size() - 1; j++){
 
-      if (subPolPoints[j].markedSegments.second == polygLine[i]){
+      if (subPolPoints[j].markedSegments.second == mergedPolygon[i]){
         int leftIndex = i;
-        int rightIndex = (i + 1) % polygLine.size();
-        int indexDeleted = (i + 1) % polygLine.size();
+        int rightIndex = (i + 1) % mergedPolygon.size();
+        int indexDeleted = (i + 1) % mergedPolygon.size();
 
-        Segment_2 segmentInsert = Segment_2(polygLine[leftIndex].source(), polygLine[rightIndex].target());
-        Segment_2 segForTriangle =  Segment_2(polygLine[rightIndex].target(), polygLine[leftIndex].source());
+        Segment_2 segmentInsert = Segment_2(mergedPolygon[leftIndex].source(), mergedPolygon[rightIndex].target());
+        Segment_2 segForTriangle =  Segment_2(mergedPolygon[rightIndex].target(), mergedPolygon[leftIndex].source());
 
-        std::vector<Segment_2> triangleVec = {polygLine[leftIndex], polygLine[rightIndex], segForTriangle};
-        optimisedArea += std::abs(calcArea(triangleVec));
+        std::vector<Segment_2> triangleVec = {mergedPolygon[leftIndex], mergedPolygon[rightIndex], segForTriangle};
+        sumArea += std::abs(calcArea(triangleVec));
 
-        polygLine.insert(polygLine.begin() + i, segmentInsert);
-        polygLine.erase(polygLine.begin() + indexDeleted);
-        polygLine.erase(polygLine.begin() + indexDeleted);
+        mergedPolygon.insert(mergedPolygon.begin() + i, segmentInsert);
+        mergedPolygon.erase(mergedPolygon.begin() + indexDeleted);
+        mergedPolygon.erase(mergedPolygon.begin() + indexDeleted);
         
       }
     }
@@ -271,9 +271,12 @@ void simulatedAnnealing::createSubsetPoints(std::vector<subTeam>& subPolPoints){
 }
 
 // Polygonization for every sub point
-void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, std::vector<std::vector<Segment_2>>& allPolygLines, int edge_selection){
+void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, int edge_selection){
+
 
   for (int i = 0; i < subPolPoints.size(); i++){
+
+    polygonInstance subPolygon;
 
     if (this->subDAlgo == 1){
       try {
@@ -309,13 +312,18 @@ void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, s
           throw incerementalFailure("Marked Segment Not Found");
         }
 
-        allPolygLines[i] = pol.getPolygonLine();
+        subPolygon.polygon = pol.getPolygonLine();
+        subPolygon.area = pol.getArea();
+        allPolygLines[i] = subPolygon;
       } 
       catch (incerementalFailure incFail) {
         
         convexHull pol = convexHull(subPolPoints[i].points, edge_selection, subPolPoints[i].markedSegments.first, subPolPoints[i].markedSegments.second, i, subPolPoints.size() - 1);
         pol.start();
-        allPolygLines[i] = pol.getPolygonLine();
+
+        subPolygon.polygon = pol.getPolygonLine();
+        subPolygon.area = pol.getArea();
+        allPolygLines[i] = subPolygon;
       }
 
     }
@@ -323,7 +331,11 @@ void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, s
 
       convexHull pol = convexHull(subPolPoints[i].points, edge_selection, subPolPoints[i].markedSegments.first, subPolPoints[i].markedSegments.second, i, subPolPoints.size() - 1);
       pol.start();
-      allPolygLines[i] = pol.getPolygonLine();
+
+      subPolygon.polygon = pol.getPolygonLine();
+      subPolygon.area = pol.getArea();
+      allPolygLines[i] = subPolygon;
+
     }
 
   }
@@ -332,11 +344,12 @@ void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, s
 
 
 // Global Transitions for every sub polygon
-void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints, std::vector<std::vector<Segment_2>>& allPolygLines){
+void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines){
   
   for (int i = 0; i < allPolygLines.size(); i++){
-    
-    std::cout << " i = " << i << std::endl;
+
+    polygonInstance polygon;    
+
     std::vector<Segment_2> markedSegments;
 
     if (i != 0)
@@ -345,10 +358,12 @@ void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints
     if (i != allPolygLines.size() - 1)
       markedSegments.push_back(subPolPoints[i].markedSegments.second);
 
-    simulatedAnnealing annealing = simulatedAnnealing(points , allPolygLines[i], calcArea(allPolygLines[i]), calcRatio(allPolygLines[i], calcArea(allPolygLines[i])), 1000, 2, 2, markedSegments);
+    simulatedAnnealing annealing = simulatedAnnealing(points , allPolygLines[i].polygon, allPolygLines[i].area, calcRatio(allPolygLines[i].polygon, allPolygLines[i].area), this->L, this->mode, 2, markedSegments);
     annealing.startAnnealing();
 
-    allPolygLines[i] = annealing.getPolygonLine();
+    polygon.polygon = annealing.getPolygonLine();
+    polygon.area = annealing.getOptimisedArea();
+    allPolygLines[i] = polygon;
   }
 
 }
@@ -360,28 +375,47 @@ void simulatedAnnealing::startSubdivision(){
   createSubsetPoints(subPolPoints);
 
   // Polygonization for every subset
-  std::vector<std::vector<Segment_2>> allPolygLines(subPolPoints.size());
+  std::vector<polygonInstance> allPolygLines(subPolPoints.size());
   subPolygonization(subPolPoints, allPolygLines, edgeSelection);
+
+  for (const polygonInstance& polygon : allPolygLines){
+    totalArea += polygon.area;
+  }
+
+  mergePolygons(prevPolygLine, subPolPoints, allPolygLines, totalArea);
 
   // // Global transitions for every sub polygon
   subGlobalTransitions(subPolPoints, allPolygLines);
 
+  for (const polygonInstance& polygon : allPolygLines){
+    optimisedArea += polygon.area;
+  }
+
   // Merge all subset polygons
-  mergePolygons(subPolPoints, allPolygLines);
+  mergePolygons(polygLine, subPolPoints, allPolygLines, optimisedArea);
 
   // Local transitions for final polygon
-  simulatedAnnealing annealing = simulatedAnnealing(points , polygLine, calcArea(polygLine), calcRatio(polygLine, calcArea(polygLine)), 2, 2, 1);
+  simulatedAnnealing annealing = simulatedAnnealing(points , polygLine, optimisedArea, calcRatio(polygLine, optimisedArea), this->L, this->mode, 1);
   annealing.startAnnealing();
   polygLine = annealing.getPolygonLine();
+  optimisedArea = annealing.getOptimisedArea();
 
+  for (const Segment_2& segment : prevPolygLine){
+      std::cout << "PREVIOUS ==> " << segment << std::endl;
+  }
 
   for (const Segment_2& segment : polygLine){
       std::cout << "CONSTRUCTED ==> " << segment << std::endl;
   }
 
-  optimisedArea = calcArea(polygLine);
+  std::cout << " PREVIOUS Calculated Area After ==> " << totalArea << std::endl;
+  std::cout << " PREVIOUS Real Area After ==> " << calcArea(prevPolygLine) << std::endl << std::endl;
 
-  std::cout << " Real Area After ==> " <<(long int) optimisedArea << std::endl;
+  std::cout << " NEW Calculated Area After ==> " << optimisedArea << std::endl;
+  std::cout << " MEW Real Area After ==> " << calcArea(polygLine) << std::endl;
+
   std::cout << "Segments Size: " << polygLine.size() << std::endl;
   std::cout << "Polygon Simplicity: " << checkPolygonSimplicity(polygLine) << std::endl;
+  this->optimisedRatio = calcRatio(this->getConvexHull(this->points),this->optimisedArea);
+  this->ratio = calcRatio(this->getConvexHull(this->points),this->totalArea);
 }

@@ -46,6 +46,7 @@ class simulatedAnnealing: public Polygonization{
         bool segmentImmunity; // segment marked
         std::string initialization; // 1a, 1b, 2a, 2b
         int m;
+        std::vector<Segment_2> prevPolygLine;
 
         std::vector<Segment_2> untouchableVector;
 
@@ -77,11 +78,11 @@ class simulatedAnnealing: public Polygonization{
 
         static bool lexOrderPoints(const Point&, const Point&);
 
-        void mergePolygons(std::vector<subTeam>&, std::vector<std::vector<Segment_2>>&);
+        void mergePolygons(std::vector<Segment_2>&, std::vector<subTeam>&, std::vector<polygonInstance>&, ft&);
 
-        void subGlobalTransitions(std::vector<subTeam>&, std::vector<std::vector<Segment_2>>&);
+        void subGlobalTransitions(std::vector<subTeam>&, std::vector<polygonInstance>&);
 
-        void subPolygonization(std::vector<subTeam>&, std::vector<std::vector<Segment_2>>&, int);
+        void subPolygonization(std::vector<subTeam>&, std::vector<polygonInstance>&, int);
     
         void createSubsetPoints(std::vector<subTeam>&);
 
@@ -98,6 +99,6 @@ class simulatedAnnealing: public Polygonization{
         simulatedAnnealing(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, int, int, const std::vector<Segment_2>); 
         void startAnnealing();
         void startSubdivision();
-        ft getArea();
-        ft getRatio(ft CHArea);
+        ft getOptimisedArea();
+        ft getOptimisedRatio();
 };

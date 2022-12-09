@@ -82,8 +82,8 @@ void localSearch::start(){
   std::cout << "Area Before ==> " << (long int)this->totalArea << std::endl;
   std::cout << std::endl << "Area After ==> " << (long int) this->optimisedArea << std::endl;
   std::cout << this->mode << std::endl;
-   std::cout << std::endl << "Real Area After ==> " << (long int) calcArea(polygLine) << std::endl;
-
+  std::cout << std::endl << "Real Area After ==> " << (long int) calcArea(polygLine) << std::endl;
+  this->optimisedRatio = this->calcRatio(this->getConvexHull(this->points),this->optimisedArea);
 }
 
 
@@ -102,7 +102,7 @@ void localSearch::applyChanges(std::vector<Segment_2>& polygLine, std::vector<Ch
 
     bool blueRemoved = applyBlueRemoval(changedPolygLine, change);
 
-    if (!checkPolygonSimplicity(changedPolygLine) || !blueRemoved || reductionFound){
+    if (!isSimple(change, changedPolygLine) || !blueRemoved || reductionFound){
       changedPolygLine = prevPolygon;
     }
     else{
@@ -159,10 +159,10 @@ bool localSearch::sortAreaChanges(Changes& a, Changes& b){
   
 }
 
-ft localSearch::getArea(){
+ft localSearch::getOptimisedArea(){
   return this->optimisedArea;
 }
 
-ft localSearch::getRatio(ft CHArea){
-  return this->optimisedArea/CHArea;
+ft localSearch::getOptimisedRatio(){
+  return this->optimisedRatio;
 }

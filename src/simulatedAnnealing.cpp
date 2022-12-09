@@ -167,6 +167,7 @@ void simulatedAnnealing::startAnnealing(){
   std::cout << "Area Before ==> " << (long int)  totalArea << std::endl;
   std::cout << " Real Area After ==> " << areaAfter << std::endl;
   std::cout << " Calculated Area After ==> " << (long int) optimisedArea << std::endl;
+  this->optimisedRatio = this->calcRatio(this->polygLine,this->optimisedArea);
 }
 
 
@@ -471,7 +472,7 @@ transitionStep simulatedAnnealing::applyGlobalChanges(std::vector<Segment_2>& po
 
   bool blueRemoved = applyBlueRemoval(changedPolygLine, change);
 
-  if (!checkPolygonSimplicity(changedPolygLine) || !blueRemoved || reductionFound){
+  if (!isSimple(change, changedPolygLine) || !blueRemoved || reductionFound){
     localTransition.simple = false;
     return localTransition;
   }
@@ -537,10 +538,10 @@ bool simulatedAnnealing::lexOrderPoints(const Point& p1, const Point& p2){
 
 }
 
-ft simulatedAnnealing::getArea(){
+ft simulatedAnnealing::getOptimisedArea(){
   return this->optimisedArea;
 }
 
-ft simulatedAnnealing::getRatio(ft CHArea){
-  return this->optimisedArea/CHArea;
+ft simulatedAnnealing::getOptimisedRatio(){
+  return this->optimisedRatio;
 }
