@@ -74,7 +74,7 @@ void localSearch::start(){
     Da = abs(this->areaDiff);
 
 
-  } while(Da >= threshold);
+  } while(Da > threshold);
 
   this->optimisedRatio = this->calcRatio(this->getConvexHull(this->points),this->optimisedArea);
 }
