@@ -391,6 +391,7 @@ void simulatedAnnealing::startSubdivision(){
     optimisedArea += polygon.area;
   }
 
+
   // Merge all subset polygons
   mergePolygons(polygLine, subPolPoints, allPolygLines, optimisedArea);
 
