@@ -30,11 +30,12 @@ int main(int argc, char **argv){
   std::string initialization;
   double threshold;
   int L;
+  int polygonEdgeSelection;
   std::string max_min;
   
   // Reading and parsing parameters
   // bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, edge_selection, initialization, argc, argv);
-  bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, algorithm_initial, initialization, edge_selection, threshold, annealing, L, argc, argv,m);
+  bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, algorithm_initial, initialization, edge_selection, polygonEdgeSelection,threshold, annealing, L, argc, argv,m);
   
   if (!parsed){
     std::cout << "Input parameters invalid" << std::endl;
@@ -53,7 +54,7 @@ int main(int argc, char **argv){
     if (algorithm == "simulated_annealing"){ 
 
       if(annealing == "local"){
-        Incremental pol = Incremental(points, edge_selection, initialization);
+        Incremental pol = Incremental(points, polygonEdgeSelection, initialization);
         
         pol.start();
         ft areaBefore = pol.getArea();
@@ -72,7 +73,7 @@ int main(int argc, char **argv){
         dataio::createResultsFile(sim.getPolygonLine(), areaNow, areaBefore, ratioNow, ratioBefore, duration,outputFile, algorithm, edge_selection, initialization,max_min);
       }
       else if(annealing == "global"){
-        Incremental pol = Incremental(points, edge_selection, initialization);
+        Incremental pol = Incremental(points, polygonEdgeSelection, initialization);
 
         pol.start();
         ft areaBefore = pol.getArea();
@@ -94,7 +95,7 @@ int main(int argc, char **argv){
         
         auto start = std::chrono::high_resolution_clock::now();
         
-        simulatedAnnealing sim = simulatedAnnealing(points, L, edge_selection, edge_selection - 1, initialization, m, 1);
+        simulatedAnnealing sim = simulatedAnnealing(points, L, polygonEdgeSelection, edge_selection - 1, initialization, m, 1);
         sim.startSubdivision();
         
         auto stop = std::chrono::high_resolution_clock::now();
@@ -111,7 +112,7 @@ int main(int argc, char **argv){
     }
     else if (algorithm == "local_search"){
 
-        Incremental pol = Incremental(points, edge_selection, initialization);
+        Incremental pol = Incremental(points, polygonEdgeSelection, initialization);
 
         pol.start();
         ft areaBefore = pol.getArea();
@@ -141,7 +142,7 @@ int main(int argc, char **argv){
 
       if(annealing == "local"){
 
-        convexHull pol = convexHull(points, edge_selection);
+        convexHull pol = convexHull(points, polygonEdgeSelection);
 
         pol.start();
 
@@ -163,7 +164,7 @@ int main(int argc, char **argv){
       }
       else if(annealing == "global"){
         
-        convexHull pol = convexHull(points, edge_selection);
+        convexHull pol = convexHull(points, polygonEdgeSelection);
 
         pol.start();
         ft areaBefore = pol.getArea();
@@ -183,7 +184,7 @@ int main(int argc, char **argv){
       }
       else{
 
-        simulatedAnnealing sim = simulatedAnnealing(points, L, edge_selection, edge_selection - 1, initialization, m, 2);
+        simulatedAnnealing sim = simulatedAnnealing(points, L, polygonEdgeSelection, edge_selection - 1, initialization, m, 2);
         auto start = std::chrono::high_resolution_clock::now();
 
         sim.startSubdivision();
@@ -202,7 +203,7 @@ int main(int argc, char **argv){
 
     }
     else if (algorithm == "local_search"){
-      convexHull pol = convexHull(points, edge_selection);
+      convexHull pol = convexHull(points, polygonEdgeSelection);
 
       // Convex hull algorithm begins
       pol.start();

@@ -13,7 +13,7 @@ typedef CGAL::Epick::FT ft;
 
 namespace dataio{
 
-    bool getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m);
+    bool getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,int& polygon_egde_selection,double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m);
 
     std::vector<Point> readPoints(const std::string& );
 

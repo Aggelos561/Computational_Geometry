@@ -12,8 +12,8 @@ typedef CGAL::Epick::FT ft;
 
 
 // Get parameters
-bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int, double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m) {
-  
+bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int, int& polygon_edge_selection, double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m) {
+  polygon_edge_selection  = -1;
   m = -1;
   threshold = -1.0;
   int max_min = 0;
@@ -63,6 +63,9 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
     else if(param == "-m"){
       m = stoi(mode);
     }
+    else if(param == "-edge_selection"){
+      polygon_edge_selection = stoi(mode);
+    }
   }
   if(m < 0){
     m = 10;
@@ -82,7 +85,8 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
   else if(edge_selection == "-min"){
     edge_selection_int = 2;
   }
-
+  if(polygon_edge_selection < 0 || polygon_edge_selection > 2)
+    polygon_edge_selection = max_min;
   if ((algorithm == "local_search") && (threshold < 0.0))
     return false;
 
