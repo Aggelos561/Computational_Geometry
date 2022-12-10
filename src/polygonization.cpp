@@ -245,7 +245,6 @@ ft Polygonization::calculateDeletedArea(std::vector<Point> points, const Segment
   points.push_back(e.target());
   points.push_back(e.source());
  
-
   return calcPointsArea(points);
 
 }
@@ -401,13 +400,6 @@ bool Polygonization::checkPolygonSimplicity(std::vector<Segment_2>& polygLine){
     polygon.push_back(segment.source());
   }
 
-
-  for (int i = 0; i < polygLine.size(); i++){
-
-    if (polygLine[i % polygLine.size()].target() != polygLine[(i+1) % polygLine.size()].source()){
-      return false;
-    }
-  }
   return polygon.is_simple();
 
 }

@@ -46,7 +46,7 @@ void localSearch::start(){
   do{
 
     std::vector<Changes> possibleChanges;
-    
+
     for (Segment_2& e: polygLine){
     
       int segmentIndex = 0;
@@ -54,7 +54,7 @@ void localSearch::start(){
       for (Segment_2& v : polygLine){
 
         for(int k = 1; k <= this->L; k++){
-
+          
           std::pair<Point, Point> kPairSequence;
           std::vector<Point> kPoints = getPathK(polygLine, segmentIndex, k, kPairSequence);
 
@@ -73,8 +73,12 @@ void localSearch::start(){
 
     Da = abs(this->areaDiff);
 
+    if (threshold == 0 && Da == 0){
+      break;
+    }
 
-  } while(Da > threshold);
+    
+  } while(Da >= threshold);
 
   this->optimisedRatio = this->calcRatio(this->getConvexHull(this->points),this->optimisedArea);
 }
@@ -95,7 +99,7 @@ void localSearch::applyChanges(std::vector<Segment_2>& polygLine, std::vector<Ch
 
     bool blueRemoved = applyBlueRemoval(changedPolygLine, change);
 
-    if (!isSimple(change, changedPolygLine) || !blueRemoved || reductionFound){
+    if (!checkPolygonSimplicity(changedPolygLine) || !blueRemoved || reductionFound){
       changedPolygLine = prevPolygon;
     }
     else{
@@ -145,12 +149,13 @@ void localSearch::findChanges(std::vector<Changes>& possibleChanges, std::vector
 
 bool localSearch::sortAreaChanges(Changes& a, Changes& b){
   
-  if (a.areaDiff > b.areaDiff)
+  if (abs(a.areaDiff) > abs(b.areaDiff))
     return true;
 
   return false;
   
 }
+
 
 ft localSearch::getOptimisedArea(){
   return this->optimisedArea;
