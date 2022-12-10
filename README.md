@@ -135,14 +135,84 @@
 -- localSearch.hpp - localSearch.cpp --
 Περιέχει κλάση που χρησιοποιείται για το local search και εχει μεθόδους που χρησιμοποιούνται για την εκτέλεση του αλγορίθμου(start) και την επιστροφή του ratio και του area(getOptimisedArea,getOptimisedRatio) σημαντικό είναι οτι για προστέθηκαν οι μέθοδοι applyKPathRemoval και applyBlueRemoval για την τροποποίηση του τμήματος του μονοπατιού και της ακμής που αφαιρείται αντίστοιχα στην κλαση Polygonization.Αξίζει να σημειωθεί επιπλέον ότι για να μετράμε σωστά το εμβαδόν της προστηθέμενης και της αφαιρούμενης επιφάνειας χρησιμοποιούμε το CGAL::ON_BOUNDED_SIDE.Υπάρχουν επιπλέον ιδιοτηκές μέθοδοι της κλάσης για εύρεση των αλλαγών και εφαρμογή τους(findChanges,applyChanges).
 
+Εάν επιλέγει απο τον χρήστη να γινει local search τοτε εκτελείται ο local search σε ολο το πολύγωνο και αναζητούνται ολα τα μονοπάτια σημείων μέσα στο πολύγωνο που βρίσκονται στις ακμές του και αντικαθήστανται με άλλη ακμή του πολυγώνου διατειρόντας παράλληλα την απλότητα του πολυγώνου.
+
 -- simulatedAnnealing.hpp  simulatedAnnealing.cpp spatialSubdivision.cpp--
 Περιέχουν την κλάση που χρησιμοποιείται για simulated anealing.Μέσα στην κλάση υπάρχουν μέθοδοι για την εκτέλεση του αλογoρίθμου(startAnnealing ή startSubdivision) και την εύρεση του εμβαδού και του ratio(getOptimisedArea,getOptimisedRatio),καθώς επίσης και ιδιοτηκές κλάσεις για την εκτέλεση global και local αλλαγών(localTransition,globalTransition),για έλεγχο εάν οι αλλαγές είναι έγκυρες(validityCheck),αντικατάσταση των ακμών και εύρεση αλλαγών(replace,findGlobalChanges).Επιπλέον περιέχονται μέθοδοι για αρχικοποίηση του kdtree και εύρεση των intersected ακμών μέσα σε μια αναζητούμενη περιοχή(KdTreeInit,validityCheck).Τέλος υπάρχουν μέθοδοι για τμηματοποίηση των σημείων εφαρμογή των αλογορίθμων σε αυτά και συνχονευση των υποπολυγώνων(createSubsetPoints,mergePolygons).
 
+Εάν επιλεγεί απο τον χρήστη το local anealing εφαρμόζονται local transitions σε όλο το πολύγωνο οπου επιλέγεται ένα τυχαίο σημείο και αλλάζει θέση με το επομένο του,η εγκυρότητα του πολυγώνου ελέγχεται με kd-tree.
+
+Εάν επιλεγεί απο τον χρήστη το global anealing εφαρμόζονται local transitions σε όλο το πολύγωνο οπου επιλέγονται δύο σημεία ενόνωνται μεταξύ τους και στην συνέχεια διαγράφεται η ακμή του σημείου που ενώνεται με το πρώτο και στην συνέχεια προσθέτουμε νεο segment σε αυτη τη περιοχή,η εγκυρότητα του πολυγώνου και εδώ ελέγχεται με kd-tree.
+
+Σε περίπτωση που επιλέγει απο τον χρήστη το subdision διαμερίζουμε τα σημεία σε k υποσύνολα με βάση τον τύπο k = ceil(n-1/m-1) το m ορίζεται από τον χρήστη.Το τελευταίο segment καθε πολυγώνου εκτός απο την τελευταία ομάδα απαιτείται να είναι γνησίως μονότονο,ενώ το πρώτο εκτός της πρώτης ομάδας απαιτείται αν είναι γνησιώς φθήνων.Εφαρμογή στην συνέχεια ενός εκ των αρχικών αλγορίθμων πολυγωνοποίησης(convex hull ή incremental) σε κάθε ομάδα σημείων,αποφυγή επεξεργασίας των άκρων των ομάδων καθώς μπορεί να προκληθεί σφάλμα κατά την συνχώνευση των υποομάδων.Εάν κατά την διαδικασία εκτέλεσης του incrental o αλγόριθμος αποτύχει να κρατήσει το marked segment τότε επιλέγουμε να εκτελεστεί ο convex hull για την συγκεκριμένη ομάδα.Στην συνέχεια εκτελούμε global transitions για κάθε υποπολύγωνο διατειρόντας τα ευθύγραμμα τμήματα συγχώνευσης.Για την συγχώνευσευση όλων των πολυγώνων ξεκινάμε από το lower hull ολων των πολυγώνων και ενώνουμε την κάθε ομάδα και μόλις φτάσουμε στο τέλος ενόνουμε τα uper hull των ομάδων πηγαίνοντας στην την φορά απο το τελός στην άρχη,στο τελευταίο στάδιο του merging γίνεται η διαγραφή των κοινών ακμών κάθε ομάδων με κοινό σημείο και η ένωση του κάτω μέρους του τριγώνου που προκύπτει.Τλος εφαρμόζουμε local transitions στο πολύγωνο που προκύπτει.
+
 
 Παρατηρήσεις:
-Χάρη στο subdivision πετυχαίνουμε καλύτερους χρόνους κατασκευής σε σχέση με την πρώτη εργασία,έχουμε επίσης κάνει optimise στην isSimple που ελέγχει εάν το πολύγωνο είναι απλό
+Χάρη στο subdivision πετυχαίνουμε καλύτερους χρόνους κατασκευής σε σχέση με την πρώτη εργασία,έχουμε επίσης κάνει optimise στην isSimple που ελέγχει εάν το πολύγωνο είναι απλό.
+Κατά την εκτέλεση του simulated anealing μπορεί να προκύψει πολύγωνο με μικρότερο εμβαδόν εάν δοθεί maximazation επιλογή απο τον χρήστη ή και το αντίστροφο αυτό μπορεί να αποφευχθεί είτε αυξάνοντας το L(που και πάλι δεν είναι εγγυημένο οτι θα έρθουν καλύτερα αποτελέσματα) ή κρατόντας το στιγμειότυπο του πολυγώνου κάθε φορά που έχει αυτή την στιγμή το μεγαλύτερο δυνατό εμβαδόν.
+Ο local search είναι πιό γρήγορος για λίγα σημεία ομως για πολλά (πάνω απο 1000) αργεί αρκετά να δώσει απαντήσεις ειδικά για μικρο thresshold,ο simulated 
+annealing κάνει καλύτερες προσεγγίσεις στο εμβαδόν από την άλλη και είναι ικανοποιητικός ως προς τον χρόνο ειδικά εαν επιλεγεί το subdivision.Τα local transitions έχουν γρήγορα αποτελέσματα αλλά όχι τόσο optimized,τα global transitions είναι αρκετά πιο αργά σε σχέση με τον local αλλα τα αποτελέματα του είναι αρκετά πιο optimal.Τέλος ο spatial subdivision συνδιάζοντας global transition σε μικρά πολύγωνα και local transition στο τελικό πολύγωνο παρατειρούμε ένα αρκετά ικανοποιητικό αποτέλεσμα ως προς τον χρόνο και ως προς την προσέγγιση. 
 
 Μεταγλώττιση:
 cgal_create_CMakeLists -s optimal_polygon
 cmake -DCMAKE_BUILD_TYPE=Release .
 make
+Εκτέλεση
+./optimal_polygon -i αρχειο_εισοδου -o αρχειο_εξοδου -algorithm αλγοριθμος_optimization(local_search or simulated_annealing) -L αριθμός -max ή -min -annealing μεθοδος_annealing(local ή global ή subdivision) -algorithm_initial αρχικός_αλγόριθμος(incremental ή convex_hull) -initialization μονο_για_τον_incremental (1a ή 1b ή 2a ή 2b) -m αριθμός
+
+Παραδείγματα εκτέλεσης
+./optimal_polygon -i uniform-0000030-1.instance -o output.txt -algorithm local_search -L 3 -min -threshold 2.0 -algorithm_initial convex_hull
+Algorithm: local_search_min
+Area_initial: 802586
+Area: 738962
+ratio_initial: 0.377536
+ratio: 0.347607
+Construction time: 24
+
+./optimal_polygon -i uniform-0000500-1.instance -o output.txt -algorithm simulated_annealing -L 100000 -max  -annealing local -algorithm_initial incremental -initialization 1a
+Algorithm: simulated_annealing_max
+Area_initial: 606856524
+Area: 629802226
+ratio_initial: 0.698769
+ratio: 0.72519
+Construction time: 2606
+
+./optimal_polygon -i euro-night-0000300.instance -o output.txt -algorithm simulated_annealing -L 6000 -min -annealing global -algorithm_initial incremental -initialization 1a
+Algorithm: simulated_annealing_min
+Area_initial: 18620510
+Area: 11651668
+ratio_initial: 0.229772
+ratio: 0.143778
+Construction time: 26625
+
+./optimal_polygon -i uniform-0000100-1.instance -o output.txt -algorithm local_search -L 5 -max -threshold 2.0 -algorithm_initial incremental -initialization 1a
+Algorithm: local_search_max
+Area_initial: 23777634
+Area: 25664036
+ratio_initial: 0.713752
+ratio: 0.770377
+Construction time: 1245
+
+./optimal_polygon -i uniform-0000100-1.instance -o output.txt -algorithm simulated_annealing -L 10000 -max -annealing global -algorithm_initial incremental -initialization 1a
+Algorithm: simulated_annealing_max
+Area_initial: 23777634
+Area: 26583850
+ratio_initial: 0.713752
+ratio: 0.797988
+Construction time: 5459
+
+./optimal_polygon -i uniform-0000500-1.instance -o output.txt -algorithm simulated_annealing -L 6000 -max -annealing subdivision -algorithm_initial convex_hull -m 20
+Algorithm: simulated_annealing_max
+Area_initial: 559346838
+Area: 603154100
+ratio_initial: 0.644063
+ratio: 0.694506
+Construction time: 10350
+
+./optimal_polygon -i uniform-0000500-1.instance -o output.txt -algorithm simulated_annealing -L 6000 -max -annealing subdivision -algorithm_initial incremental -initialization 1a -m 20
+Algorithm: simulated_annealing_max
+Area_initial: 535270110
+Area: 586421826
+ratio_initial: 0.61634
+ratio: 0.675239
+Construction time: 8843
