@@ -2,6 +2,7 @@
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <iostream>
+#include <string>
 #include <vector>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
@@ -13,9 +14,11 @@ typedef CGAL::Epick::FT ft;
 
 namespace dataio{
 
-    bool getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int,int& polygon_egde_selection,double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m);
+    bool getParameters(std::string& nameOfDirectory, std::string& outputFile, bool& preprocessEnabled, int argc, char** argv);
 
     std::vector<Point> readPoints(const std::string& );
 
-    void createResultsFile(const std::vector<Segment_2> &polygLine, const ft& area, const ft& areaBefore, const ft& ratio,const ft& ratioBefore, const std::chrono::milliseconds& polygonizationDuration, const std::string& output, const std::string& algorithm, const int& edgeSelection, const std::string& initialization, const std::string& max_min);
+    std::vector<std::pair<int, std::string>> findFiles(const std::string& );
+
+    void writeToOutputFile(const std::string&, const std::vector<std::pair<double, double>>&, const std::vector<double>&, const std::vector<double>&, int, bool);
 }

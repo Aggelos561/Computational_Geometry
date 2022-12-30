@@ -1,8 +1,11 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
+#include <dirent.h>
+#include <iomanip>
 #include "../include/dataio.hpp"
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
@@ -12,97 +15,74 @@ typedef CGAL::Epick::FT ft;
 
 
 // Get parameters
-bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int, int& polygon_edge_selection, double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m) {
+bool dataio::getParameters(std::string& nameOfDirectory, std::string& outputFile, bool& preprocessEnabled, int argc, char** argv) {
   
-  polygon_edge_selection  = -1;
-  m = -1;
-  threshold = -1.0;
-  int max_min = 0;
-  std::string edge_selection;
-
+  preprocessEnabled = false;
   for(int i = 0; i < argc- 1; i++){
 
     std::string param = (argv[i]);
     std::string mode = (argv[i+1]);
 
     if(param == "-i"){
-      nameOfFile = mode;
+      nameOfDirectory = mode;
     }
     else if(param == "-o"){
       outputFile = mode;
     }
-    else if(param == "-algorithm_initial"){
-      algorithm_initial = mode;
-    }
-    else if(param == "-algorithm"){
-      algorithm = mode;
-    }
-    else if(param == "-max"){
-      edge_selection = "-max";
-      if(max_min == 1)
-        return false;
-      max_min++;  
-    }
-    else if(param == "-min"){
-      edge_selection = "-min";
-      if(max_min == 1)
-       return false;
-      max_min++;
-    }
-    else if(param == "-L"){
-      L = stod(mode);
-    }
-    else if(param == "-threshold"){
-      threshold = stod(mode);
-    }
-    else if(param == "-annealing"){
-      annealing = mode;
-    }
-    else if(param == "-initialization"){
-      initial = mode;
-    }
-    else if(param == "-m"){
-      m = stoi(mode);
-    }
-    else if(param == "-edge_selection"){
-      polygon_edge_selection = stoi(mode);
+    else if(mode == "-preprocess"){
+      preprocessEnabled = true;
     }
   }
-  if(m < 0){
-    m = 10;
-  }
-  if ((algorithm_initial != "incremental") && (algorithm_initial != "convex_hull")){
-    return false;
-  }
-
-  if (max_min == 0){ 
-    return false;
-  }
-
-  if(edge_selection == "-max"){
-    edge_selection_int = 3;
-  }
-
-  else if(edge_selection == "-min"){
-    edge_selection_int = 2;
-  }
-
-  if(polygon_edge_selection < 0 || polygon_edge_selection > 3)
-    polygon_edge_selection = edge_selection_int;
-
-  if ((algorithm == "local_search") && (threshold < 0.0))
-    return false;
-
-  if ((algorithm == "simulated_annealing") && (annealing != "local") && (annealing != "global") && (annealing != "subdivision"))
-    return false;  
-
-  if ((algorithm_initial == "incremental") && (initial != "1a") && (initial != "1b") && (initial != "2a") && (initial != "2b"))
-    return false;
-
-  if ((algorithm != "local_search") && (algorithm != "simulated_annealing"))
-    return false;
 
   return true;
+}
+
+
+std::vector<std::pair<int, std::string>> dataio::findFiles(const std::string& dirName){
+
+  std::vector<std::pair<int, std::string>> files;
+
+  DIR* directory = opendir(dirName.c_str());
+
+  if (directory == NULL){
+    std::cout << "Failed to open directory " << dirName << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+
+  struct dirent* entryDir;
+
+  while((entryDir = readdir(directory)) != NULL){
+    if (entryDir->d_type != DT_DIR){
+      
+      std::string fileName = dirName + entryDir->d_name;
+
+      
+      std::string firstLine;
+
+      std::ifstream pointsFile(fileName);
+      std::getline(pointsFile, firstLine);
+
+      std::stringstream streamString(firstLine);
+
+      std::getline(streamString, firstLine, '(');
+      std::getline(streamString, firstLine, ' ');
+
+      int numberOfPoints = atoi(firstLine.c_str());
+
+      std::cout << "Number OF Points " << numberOfPoints << std::endl;
+      files.push_back(std::pair<int, std::string>(numberOfPoints, dirName + entryDir->d_name));
+
+      pointsFile.close();
+
+    }
+  }
+
+  closedir(directory);
+
+  std::sort(files.begin(), files.end());
+
+  return files;
+
 }
 
 
@@ -152,40 +132,41 @@ std::vector<Point> dataio::readPoints(const std::string& name) {
 
 
 // Write resulta data into a spesific file
-void dataio::createResultsFile(const std::vector<Segment_2> &polygLine, const ft& area, const ft& areaBefore, const ft& ratio,const ft& ratioBefore, const std::chrono::milliseconds& polygonizationDuration, const std::string& output, const std::string& algorithm, const int& edgeSelection, const std::string& initialization, const std::string& max_min) {
+void dataio::writeToOutputFile(const std::string& output, const std::vector<std::pair<double, double>>& scores, const std::vector<double>& minScores, const std::vector<double>& maxScores, int filePointsSize, bool initOutput) {
 
   std::ofstream outdata;
 
-  outdata.open(output.c_str());
+  if (initOutput)
+    outdata.open(output.c_str(), std::ofstream::out);
+  else
+   outdata.open(output.c_str(), std::ofstream::app);
+
 
   if (!outdata) {
     std::cout << "Error: file could not be opened" << std::endl;
     exit(EXIT_FAILURE);
   }
 
-  outdata << "Optimal Area Polygonization" << std::endl;
+  std::string spaces = "";
 
-  for (const Segment_2& line : polygLine)
-    outdata << line.source() << std::endl;
+  for (int i = 0; i < 18; i++){
+    spaces += " ";
+  }
 
-  outdata << std::endl;
+  if (initOutput){
+    outdata  << std::setw(10) << "||" << spaces << "Algorithm 1" <<  spaces << "||" << spaces << "Algorithm 2" << spaces << "||" << spaces << "Algorithm 3" << spaces << "||" << std::endl;
+  
+    outdata  << std::setw(8) << "Size " << "||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound";
+    outdata << " ||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound";
+    outdata << " ||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound" << " ||" << std::endl;
+  }
+  
+  outdata << std::setw(6) << filePointsSize << std::setw(5);
+  
+  for (int i = 0; i < scores.size(); i++)
+    outdata  << "  || " << std::setw(2) << std::fixed << std::setprecision(6) << scores[i].first << "  | " << scores[i].second << "  | " << minScores[i] << "  | " << maxScores[i];
 
-  for (const Segment_2& line : polygLine)
-    outdata << line << std::endl;
-
-  outdata << std::endl;
-
-  outdata << "Algorithm: "<< algorithm << "_" << max_min << std::endl;
-
-  outdata << "Area_initial: " << (long int)areaBefore << std::endl;
-
-  outdata << "Area: " << (long int)area << std::endl;
-
-  outdata << "ratio_initial: " << ratioBefore << std::endl;
-
-  outdata << "ratio: " << ratio << std::endl;
-
-  outdata << "Construction time: " << polygonizationDuration.count() << std::endl;
+  outdata << "  || " << std::endl;
 
   outdata.close();
   

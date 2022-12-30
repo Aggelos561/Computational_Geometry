@@ -8,3 +8,4 @@ cmake_install.cmake
 *.instance
 to_polygon
 optimal_polygon
+evaluate
