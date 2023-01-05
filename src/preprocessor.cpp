@@ -17,86 +17,79 @@ typedef K::Point_2 Point;
 typedef K::Segment_2 Segment_2;
 
 
-Preprocessor::Preprocessor(){
+std::vector<Point> Preprocessor::generateSubPoints(){
+
+    std::vector<Point> subPoints;
+
+    std::vector<std::pair<int, Point>> indexToPoints;
+
+    int totalPoints = 1000;
+
+    int randomIndex;
+
+    std::set<int> uniqueIndexes;
+
+    while(uniqueIndexes.size() < totalPoints){
+        randomIndex = rand() % this->points.size();
+        uniqueIndexes.insert(randomIndex);
+    }
+
+    for (int index : uniqueIndexes){
+        indexToPoints.push_back(std::pair<int, Point>(index, this->points[index]));
+    }
+
+    std::sort(indexToPoints.begin(), indexToPoints.end());
+
+    for (const std::pair<int, Point>& pr : indexToPoints){
+        subPoints.push_back(pr.second);
+    }
+
+    return subPoints;
+
 }
 
-
-void Preprocessor::generateSubPoints(){
-
-    // std::vector<std::pair<int, Point>> indexToPoints;
-
-    // int totalPoints = this->percentage * this->points.size();
-
-    // int randomIndex;
-
-    // std::set<int> uniqueIndexes;
-
-    // while(uniqueIndexes.size() < totalPoints){
-    //     randomIndex = rand() % this->points.size();
-    //     uniqueIndexes.insert(randomIndex);
-    // }
-
-    // for (int index : uniqueIndexes){
-    //     indexToPoints.push_back(std::pair<int, Point>(index, this->points[index]));
-    // }
-
-    // std::sort(indexToPoints.begin(), indexToPoints.end());
-
-    // for (const std::pair<int, Point>& pr : indexToPoints){
-    //     this->subPoints.push_back(pr.second);
-    // }
-
-}
-
-void Preprocessor::defaultInput(const std::vector<Point>& pointsVec){
-
-    points = pointsVec;
-
-    int pointsSize = points.size();
+void Preprocessor::defaultInput(){
 
     // Simulated Annealing Local Step and Global Step
-    if (pointsSize <= 1000){
-        sizeToLocalL[pointsSize] = 20000;
-        sizeToGlobalL[pointsSize] = 3000;
-        sizeToSubdivisionL[pointsSize] = 9000;
-        sizeToLocalL[10] = 20000;
-        sizeToGlobalL[10] = 3000;
-        sizeToSubdivisionL[10] = 9000;
-        sizeToLocalL[100] = 20000;
-        sizeToGlobalL[100] = 3000;
-        sizeToSubdivisionL[100] = 9000;
-        sizeToLocalL[1000] = 20000;
-        sizeToGlobalL[1000] = 3000;
-        sizeToSubdivisionL[1000] = 9000;
-        sizeToLocalL[1000] = 20000;
-        sizeToGlobalL[1000] = 3000;
-        sizeToSubdivisionL[1000] = 9000;
-    }
-    else if (pointsSize <= 10000){
-        sizeToLocalL[pointsSize] = 15000;
-        sizeToGlobalL[pointsSize] = 1500;
-        sizeToSubdivisionL[pointsSize] = 7000;
-        sizeToLocalL[10000] = 20000;
-        sizeToGlobalL[10000] = 3000;
-        sizeToSubdivisionL[10000] = 9000;
-    }
-    else {
-        sizeToLocalL[pointsSize] = 10000;
-        sizeToGlobalL[pointsSize] = 1000;
-        sizeToSubdivisionL[pointsSize] = 6000;
-        sizeToLocalL[100000] = 20000;
-        sizeToGlobalL[100000] = 3000;
-        sizeToSubdivisionL[100000] = 9000;
-    }
+   
+    sizeToLocalL[10] = 25000;
+    sizeToGlobalL[10] = 3000;
+    sizeToSubdivisionL[10] = 10000;
+    sizeToLocalL[100] = 21000;
+    sizeToGlobalL[100] = 3000;
+    sizeToSubdivisionL[100] = 10000;
+    sizeToLocalL[1000] = 21000;
+    sizeToGlobalL[1000] = 1100;
+    sizeToSubdivisionL[1000] = 10000;
+    sizeToLocalL[1000] = 21000;
+    sizeToGlobalL[1000] = 1100;
+    sizeToSubdivisionL[1000] = 10000;
+
+
+    sizeToLocalL[10000] = 21000;
+    sizeToGlobalL[10000] = 1000;
+    sizeToSubdivisionL[10000] = 10000;
+
+
+    sizeToLocalL[100000] = 20000;
+    sizeToGlobalL[100000] = 1000;
+    sizeToSubdivisionL[100000] = 10000;
+
 
 }
 
 
 
 void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
+    
     points =  pointsVec;
 
     int pointsSize = points.size();
+
+    if (pointsSize > 1000)
+        points = generateSubPoints();
+
+    std::cout << "Points Size = " << pointsSize << std::endl;
     int starting_L, ending_L;
 
     Incremental incremental = Incremental(points, 3, "1a");
@@ -106,22 +99,26 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
 
     ft prevArea = incremental.getArea();
 
-    if (pointsSize <= 1000){
-        starting_L = 10000;
+    if (pointsSize <= 100){
+        starting_L = 18000;
+        ending_L = 30000;
+    } 
+    else if (pointsSize <= 1000){
+        starting_L = 16000;
         ending_L = 25000;
     }
     else if (pointsSize <= 10000){
-        starting_L = 7000;
-        ending_L = 21000;
+        starting_L = 15000;
+        ending_L = 20000;
     }
     else {
-        starting_L = 6000;
-        ending_L = 21000;
+        starting_L = 15000;
+        ending_L = 20000;
     }
 
     int optimalLocal_L = 18000;
 
-    for (int L = starting_L; L <= ending_L; L+=100){
+    for (int L = starting_L; L <= ending_L; L+=1000){
       
       simulatedAnnealing simulatedLocal = simulatedAnnealing(points, polygon, incremental.getArea(), incremental.getRatio(), L, 2, 1);
       simulatedLocal.startAnnealing();
@@ -134,27 +131,32 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
       }
 
     }
-    std::cout << "OMPTIMAL ==> " << optimalLocal_L << std::endl;
-    sizeToLocalL[getSizeBucket(pointsSize)] = (optimalLocal_L + sizeToLocalL[getSizeBucket(pointsSize)]) / 2;
+
     
-    
+    sizeToLocalL[pointsSize] = (optimalLocal_L + sizeToLocalL[getSizeBucket(pointsSize)]) / 2;    
+    sizeToLocalL[getSizeBucket(pointsSize)] = (optimalLocal_L + sizeToLocalL[getSizeBucket(pointsSize)]) / 2;    
+
+    if (pointsSize <= 100){
+        starting_L = 10000;
+        ending_L = 15000;
+    } 
     if (pointsSize <= 1000){
-        starting_L = 8000;
+        starting_L = 10000;
         ending_L = 12000;
     }
     else if (pointsSize <= 10000){
-        starting_L = 7000;
-        ending_L = 10000;
+        starting_L = 9000;
+        ending_L = 12000;
     }
     else {
-        starting_L = 6000;
-        ending_L = 8000;
+        starting_L = 10000;
+        ending_L = 12000;
     }
 
     int optimalsubDiv= starting_L;
     prevArea = 0;
 
-    for (int L = starting_L; L <= ending_L; L+=100){
+    for (int L = starting_L; L <= ending_L; L+=1000){
         simulatedAnnealing simulatedSubdivision = simulatedAnnealing(points, L, 3, 2, "1a", getSimSubDiv_M(pointsSize), 1);
         simulatedSubdivision.startSubdivision();
 
@@ -167,28 +169,32 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
 
     }
 
+    sizeToSubdivisionL[pointsSize] = (optimalsubDiv + sizeToSubdivisionL[getSizeBucket(pointsSize)]) / 2;
     sizeToSubdivisionL[getSizeBucket(pointsSize)] = (optimalsubDiv + sizeToSubdivisionL[getSizeBucket(pointsSize)]) / 2;
-
 
     prevArea = incremental.getArea();
 
+    if (pointsSize <= 100){
+        starting_L = 4000;
+        ending_L = 6000;
+    }
     if (pointsSize <= 1000){
-        starting_L = 2800;
-        ending_L = 3500;
+        starting_L = 1000;
+        ending_L = 1600;
     }
     else if (pointsSize <= 10000){
-        starting_L = 1200;
-        ending_L = 1800;
+        starting_L = 800;
+        ending_L = 1400;
     }
     else {
-        starting_L = 800;
+        starting_L = 700;
         ending_L = 1300;
     }
 
     int optimalGlobal_L = starting_L;
     prevArea = incremental.getArea();
 
-    for (int L = starting_L; L <= ending_L; L+=100){
+    for (int L = starting_L; L <= ending_L; L+=200){
       
       simulatedAnnealing simulatedGlobal = simulatedAnnealing(points, polygon, incremental.getArea(), incremental.getRatio(), L, 2, 1);
       simulatedGlobal.startAnnealing();
@@ -202,6 +208,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
 
     }
 
+    sizeToGlobalL[pointsSize] = (optimalGlobal_L + sizeToGlobalL[getSizeBucket(pointsSize)]) / 2;
     sizeToGlobalL[getSizeBucket(pointsSize)] = (optimalGlobal_L + sizeToGlobalL[getSizeBucket(pointsSize)]) / 2;
 
 }

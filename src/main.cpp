@@ -54,10 +54,14 @@ int main(int argc, char **argv){
     showCasedAlgos::initPreprocess(points, processor, filesNPoints);
   }
   else{
-    processor.defaultInput(points);
+    processor.defaultInput();
   }
 
+
   for (const std::pair<int, std::string>& f : filesNPoints){
+
+    std::cout << "Global L = " << processor.getSimGlobal_L(f.first) << std::endl;
+    std::cout << "Local L = " << processor.getSimLocal_L(f.first) << std::endl;
 
     cutOff = std::chrono::milliseconds(500 * f.first);
 
@@ -71,13 +75,13 @@ int main(int argc, char **argv){
     points = dataio::readPoints(f.second);
 
     showCasedAlgos::runAlgorithm("INC+GLOBAL+LOCAL", points, scores, boundMinScores, boundMaxScores, cutOff, scoreIndex, f, processor);
-
+    std::cout << "Passed INC+GLOBAL+LOCAL"  << std::endl;
     showCasedAlgos::runAlgorithm("SUBDIVISION", points, scores, boundMinScores, boundMaxScores, cutOff, scoreIndex, f, processor);
-
+    std::cout << "Passed SUBDIVISION"  << std::endl;
     showCasedAlgos::runAlgorithm("INC+LOCAL", points, scores, boundMinScores, boundMaxScores, cutOff, scoreIndex, f, processor);
-
+    std::cout << "Passed INC+LOCAL"  << std::endl;
     showCasedAlgos::runAlgorithm("CONVEX+LOCAL", points, scores, boundMinScores, boundMaxScores, cutOff, scoreIndex, f, processor);
-
+    std::cout << "CONVEX+LOCAL"  << std::endl;
     if (fileIndex == filesNPoints.size())
       showCasedAlgos::partialWrite(filesNPoints, scores, boundMinScores, boundMaxScores, f, firstWrite, f.first, outputFile, fileIndex, true);
 

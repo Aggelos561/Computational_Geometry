@@ -69,7 +69,6 @@ std::vector<std::pair<int, std::string>> dataio::findFiles(const std::string& di
 
       int numberOfPoints = atoi(firstLine.c_str());
 
-      std::cout << "Number OF Points " << numberOfPoints << std::endl;
       files.push_back(std::pair<int, std::string>(numberOfPoints, dirName + entryDir->d_name));
 
       pointsFile.close();
@@ -152,10 +151,10 @@ void dataio::writeToOutputFile(const std::string& output, const std::vector<std:
   
     outdata  << std::setw(8) << "Size " << "||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound";
    
-   for (int i = 0; i < 3; i++){
-    outdata << " ||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound";
-   }
-   
+    for (int i = 0; i < 3; i++){
+      outdata << " ||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound";
+    }
+
    outdata << " ||" << std::endl;
 
   }

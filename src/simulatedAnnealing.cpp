@@ -322,8 +322,6 @@ void simulatedAnnealing::replace(const Segment_2& prevPolygonPrevSeg, const Segm
 
 transitionStep simulatedAnnealing::localTransition(std::vector<Segment_2>& polygLine, const Tree& tree){
 
-  std::vector<Point> points = getPolyLinePoints(polygLine);
-
   int q_num = rand() % points.size();
 
   std::vector<Segment_2> polygLine2 = polygLine;

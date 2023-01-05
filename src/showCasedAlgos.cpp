@@ -1,6 +1,7 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <chrono>
 #include <iostream>
+#include <limits>
 #include <vector>
 #include "../include/polygonization.hpp"
 #include "../include/convexHull.hpp"
@@ -34,7 +35,7 @@ void showCasedAlgos::runAlgorithm(const std::string& algorithm, const std::vecto
       incremental.start();
 
       std::vector<Segment_2> polygonLine = incremental.getPolygonLine();
-
+    
       simulatedAnnealing simulatedGlobal = simulatedAnnealing(points, incremental.getPolygonLine(), incremental.getArea(), incremental.getRatio(), processor.getSimGlobal_L(f.first), mode - 1, 2);
       simulatedGlobal.startAnnealing();
       
@@ -84,20 +85,30 @@ void showCasedAlgos::runAlgorithm(const std::string& algorithm, const std::vecto
     else if (algorithm == "CONVEX+LOCAL"){
 
       auto start = std::chrono::high_resolution_clock::now();
-  
-      convexHull convex = convexHull(points, mode);
-      convex.start();
 
-      std::vector<Segment_2> polygonLine = convex.getPolygonLine();
+      try{
 
-      simulatedAnnealing simulatedLocal = simulatedAnnealing(points, convex.getPolygonLine(), convex.getArea(), convex.getRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
-      simulatedLocal.startAnnealing();
+        if (points.size() > 1000){
+            throw polygonizationFailure("Huge Input For Convex Polygonization");
+        }
+        
+        convexHull convex = convexHull(points, mode);
+        convex.start();
 
-      auto stop = std::chrono::high_resolution_clock::now();
-      duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        std::vector<Segment_2> polygonLine = convex.getPolygonLine();
 
-      optimizedArea = simulatedLocal.getOptimisedArea();
-      optimizedRatio = simulatedLocal.getOptimisedRatio();
+        simulatedAnnealing simulatedLocal = simulatedAnnealing(points, convex.getPolygonLine(), convex.getArea(), convex.getRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
+        simulatedLocal.startAnnealing();
+
+        auto stop = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+        optimizedArea = simulatedLocal.getOptimisedArea();
+        optimizedRatio = simulatedLocal.getOptimisedRatio();
+      }
+      catch(polygonizationFailure convexFail){
+        duration = std::chrono::milliseconds(500 * points.size() + 1);
+      }
 
     }
 
@@ -156,7 +167,7 @@ void showCasedAlgos::partialWrite(const std::vector<std::pair<int, std::string>>
 
 void showCasedAlgos::initPreprocess(std::vector<Point> points, Preprocessor& processor, const std::vector<std::pair<int, std::string>>& filesNPoints){
 
-  processor.defaultInput(points);
+  processor.defaultInput();
   
   for (int i = 0; i < 5; i++){
     
