@@ -273,7 +273,6 @@ void simulatedAnnealing::createSubsetPoints(std::vector<subTeam>& subPolPoints){
 // Polygonization for every sub point
 void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, int edge_selection){
 
-
   for (int i = 0; i < subPolPoints.size(); i++){
 
     polygonInstance subPolygon;
@@ -303,27 +302,47 @@ void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, s
         }
 
         if (i != 0 && i != subPolPoints.size() - 1 && (!leftSegmentFound || !rightSegmentFound)){
-          throw incerementalFailure("Marked Segment Not Found");
+          throw polygonizationFailure("Marked Segment Not Found");
         }
         if (i == 0 && !rightSegmentFound){
-          throw incerementalFailure("Marked Segment Not Found");
+          throw polygonizationFailure("Marked Segment Not Found");
         }
         if (i == subPolPoints.size() - 1 && !leftSegmentFound){
-          throw incerementalFailure("Marked Segment Not Found");
+          throw polygonizationFailure("Marked Segment Not Found");
         }
 
         subPolygon.polygon = pol.getPolygonLine();
         subPolygon.area = pol.getArea();
         allPolygLines[i] = subPolygon;
       } 
-      catch (incerementalFailure incFail) {
-        
-        convexHull pol = convexHull(subPolPoints[i].points, edge_selection, subPolPoints[i].markedSegments.first, subPolPoints[i].markedSegments.second, i, subPolPoints.size() - 1);
-        pol.start();
+      catch (polygonizationFailure incFail) {
+      
+        try{
+          convexHull pol = convexHull(subPolPoints[i].points, edge_selection, subPolPoints[i].markedSegments.first, subPolPoints[i].markedSegments.second, i, subPolPoints.size() - 1);
+          pol.start();
 
-        subPolygon.polygon = pol.getPolygonLine();
-        subPolygon.area = pol.getArea();
-        allPolygLines[i] = subPolygon;
+          subPolygon.polygon = pol.getPolygonLine();
+          subPolygon.area = pol.getArea();
+          allPolygLines[i] = subPolygon;
+        }
+
+        catch(polygonizationFailure convexFail){
+          while(true){
+            try{
+              convexHull pol = convexHull(subPolPoints[i].points, 1, subPolPoints[i].markedSegments.first, subPolPoints[i].markedSegments.second, i, subPolPoints.size() - 1);
+              pol.start();
+
+              subPolygon.polygon = pol.getPolygonLine();
+              subPolygon.area = pol.getArea();
+              allPolygLines[i] = subPolygon;
+              break;
+            }
+            catch(polygonizationFailure convexFail){
+              continue;
+            }
+          }
+        } 
+
       }
 
     }
@@ -347,7 +366,7 @@ void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, s
 void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines){
   
   for (int i = 0; i < allPolygLines.size(); i++){
-
+    
     polygonInstance polygon;    
 
     std::vector<Segment_2> markedSegments;
@@ -358,7 +377,8 @@ void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints
     if (i != allPolygLines.size() - 1)
       markedSegments.push_back(subPolPoints[i].markedSegments.second);
 
-    simulatedAnnealing annealing = simulatedAnnealing(points , allPolygLines[i].polygon, allPolygLines[i].area, calcRatio(allPolygLines[i].polygon, allPolygLines[i].area), this->L, this->mode, 2, markedSegments);
+    
+    simulatedAnnealing annealing = simulatedAnnealing(subPolPoints[i].points , allPolygLines[i].polygon, allPolygLines[i].area, calcRatio(allPolygLines[i].polygon, allPolygLines[i].area), this->L, this->mode, 2, markedSegments);
     annealing.startAnnealing();
 
     polygon.polygon = annealing.getPolygonLine();
@@ -387,16 +407,16 @@ void simulatedAnnealing::startSubdivision(){
   // // Global transitions for every sub polygon
   subGlobalTransitions(subPolPoints, allPolygLines);
 
-  for (const polygonInstance& polygon : allPolygLines){
+  for (polygonInstance& polygon : allPolygLines){
     optimisedArea += polygon.area;
   }
 
-
+ 
   // Merge all subset polygons
   mergePolygons(polygLine, subPolPoints, allPolygLines, optimisedArea);
-
+  
   // Local transitions for final polygon
-  simulatedAnnealing annealing = simulatedAnnealing(points , polygLine, optimisedArea, calcRatio(polygLine, optimisedArea), this->L, this->mode, 1);
+  simulatedAnnealing annealing = simulatedAnnealing(points , polygLine, optimisedArea, calcRatio(polygLine, optimisedArea), 2 * this->L, this->mode, 1);
   annealing.startAnnealing();
   
   polygLine = annealing.getPolygonLine();
@@ -407,5 +427,4 @@ void simulatedAnnealing::startSubdivision(){
   
   this->ratio = calcRatio(convexHullSegments, this->totalArea);
   this->optimisedRatio = calcRatio(convexHullSegments, this->optimisedArea);
-
 }

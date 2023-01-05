@@ -2,6 +2,7 @@
 #include <CGAL/Bbox_2.h>
 #include <CGAL/Convex_hull_traits_adapter_2.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Intersections_2/Circle_2_Circle_2.h>
 #include <CGAL/Kernel/global_functions.h>
 #include <CGAL/Kernel/global_functions_2.h>
 #include <CGAL/Polygon_2.h>
@@ -445,7 +446,7 @@ bool Polygonization::isSimple(const Changes& change, const std::vector<Segment_2
       if (result){
         if (const Point *p = boost::get<Point>(&*result)) {
 
-          if (*p == newPolygonSegment.source() || *p == newPolygonSegment.target()) {
+          if (*p == newSegment.source() || *p == newSegment.target()) {
             continue;
           } 
           else {
@@ -453,11 +454,11 @@ bool Polygonization::isSimple(const Changes& change, const std::vector<Segment_2
           }
         } 
         else {
-        return false;
+          return false;
         }
       }
     }
   }
-
+  
   return true;
 }

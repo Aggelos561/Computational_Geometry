@@ -299,9 +299,14 @@ Point convexHull::findBestPoint(const std::vector<visPoint> &visPoints) {
 void convexHull::insertBestPoint(const std::vector<pair> &bestPoints, std::vector<Point> &remainingPoints, std::vector<Segment_2> &polygLine) {
   
 	if (this->edgeSelection != 1) {
-
+  
+    if (bestPoints.size() == 0){
+      throw polygonizationFailure("Convex Hull Failure");
+    }
+  
     std::vector<Segment_2> testPolyg = polygLine;
     deleteSegment(testPolyg, bestPoints[0].seg);
+
     expandPolygonLine(testPolyg, bestPoints[0].seg, bestPoints[0].cor);
     
     std::vector<Point> polygLinePoints = getPolyLinePoints(testPolyg);
@@ -334,6 +339,7 @@ void convexHull::insertBestPoint(const std::vector<pair> &bestPoints, std::vecto
         bestPair.cor = bestPoints[i].cor;
         bestPair.seg = bestPoints[i].seg;
       }
+      
     }
     
     for (int m = 0; m < remainingPoints.size(); m++) {
@@ -348,7 +354,9 @@ void convexHull::insertBestPoint(const std::vector<pair> &bestPoints, std::vecto
     }
   } else {
     
+    
     int rindex = rand() % bestPoints.size();
+    
     pair bestPair;
 
     bestPair.cor = bestPoints[rindex].cor;

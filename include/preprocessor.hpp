@@ -3,6 +3,7 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <iostream>
 #include <vector>
+#include <map>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
@@ -13,24 +14,26 @@ class Preprocessor{
 
     private:
         std::vector<Point> points;
-        float percentage;
-        std::vector<Point> subPoints;
-        int optimalLocal_L = 1;
-        int optimalSimLocal_L = 6000;
-        int optimalSimGlobal_L = 5000;
+        std::map<int, int> sizeToLocalL;
+        std::map<int, int> sizeToGlobalL;
+        std::map<int, int> sizeToSubdivisionL;
+        int optimal_M;        
         void generateSubPoints();
-
+        int getSizeBucket(int );
 
     public:
-        Preprocessor(const std::vector<Point>& , float);
+        Preprocessor();
 
-        void preProcessInput();
+        void defaultInput(const std::vector<Point>& );
 
-        int getLocal_L();
+        void preprocessInput(const std::vector<Point>& );
 
-        int getSimLocal_L();
+        int getSimSubDiv_M(int );
 
-        int getSimGlobal_L();
+        int getSimLocal_L(int );
 
-        
+        int getSimGlobal_L(int );
+
+        int getSimSubDiv_L(int );
+
 };

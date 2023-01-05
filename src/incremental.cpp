@@ -206,7 +206,7 @@ Segment_2 Incremental::chooseVisibleSegment(const std::vector<Segment_2> &visibl
     }
 
     if (!staticSegmentFound){
-      throw incerementalFailure("Incremental Failure");
+      throw polygonizationFailure("Incremental Failure");
     }
 
   }
