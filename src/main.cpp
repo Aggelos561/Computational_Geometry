@@ -1,5 +1,4 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <vector>
@@ -65,7 +64,7 @@ int main(int argc, char **argv){
     fileIndex++;
     scoreIndex = 0;
 
-    std::cout << "FILE: " << f.second << std::endl;
+    std::cout << "File: " << f.second << std::endl;
     
     showCasedAlgos::partialWrite(filesNPoints, scores, boundMinScores, boundMaxScores, f, firstWrite, previousPointsSize, outputFile, fileIndex, false);
 

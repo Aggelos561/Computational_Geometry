@@ -1,5 +1,4 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <vector>
@@ -20,7 +19,7 @@ typedef CGAL::Epick::FT ft;
 
 
 
-void  showCasedAlgos::runAlgorithm(const std::string& algorithm, const std::vector<Point>& points, std::vector<std::pair<double, double>>& scores, std::vector<std::vector<double>>& boundMinScores, std::vector<std::vector<double>>& boundMaxScores, const std::chrono::milliseconds cutOff, int& scoreIndex, const std::pair<int, std::string>& f, Preprocessor& processor){
+void showCasedAlgos::runAlgorithm(const std::string& algorithm, const std::vector<Point>& points, std::vector<std::pair<double, double>>& scores, std::vector<std::vector<double>>& boundMinScores, std::vector<std::vector<double>>& boundMaxScores, const std::chrono::milliseconds cutOff, int& scoreIndex, const std::pair<int, std::string>& f, Preprocessor& processor){
 
   for (int mode = 2; mode <= 3; mode++){
     
@@ -120,7 +119,7 @@ void  showCasedAlgos::runAlgorithm(const std::string& algorithm, const std::vect
 
 void showCasedAlgos::partialWrite(const std::vector<std::pair<int, std::string>>& filesNPoints, std::vector<std::pair<double, double>>& scores, std::vector<std::vector<double>>& boundMinScores, std::vector<std::vector<double>>& boundMaxScores, const std::pair<int, std::string>& f,  bool& firstWrite, int pointSize, const std::string& outputFile, int fileIndex, bool lastTime){
 
-  if ( (!lastTime && f.first != pointSize) || lastTime){
+  if ((!lastTime && f.first != pointSize) || lastTime){
       
     std::vector<double> minScores, maxScores;
 
@@ -147,7 +146,7 @@ void showCasedAlgos::partialWrite(const std::vector<std::pair<int, std::string>>
       boundMinScores[i].clear();
     }
     for (int i = 0; i < boundMaxScores.size(); i++){
-      boundMinScores[i].clear();
+      boundMaxScores[i].clear();
     }
 
   }

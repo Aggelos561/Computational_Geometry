@@ -9,7 +9,6 @@
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
-typedef K::Segment_2 Segment_2;
 typedef CGAL::Epick::FT ft;
 
 // Namespace dataio is used to read the file input and write result files
