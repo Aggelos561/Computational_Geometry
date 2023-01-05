@@ -147,20 +147,17 @@ void dataio::writeToOutputFile(const std::string& output, const std::vector<std:
     exit(EXIT_FAILURE);
   }
 
-  std::string spaces = "";
-
-  for (int i = 0; i < 18; i++){
-    spaces += " ";
-  }
-
   if (initOutput){
-    outdata  << std::setw(10) << "||" << spaces << "Algorithm 1" <<  spaces << "||" << spaces << "Algorithm 2" << spaces << "||" << spaces << "Algorithm 3" << spaces << "||" << spaces << "Algorithm 4" << spaces << "||" << std::endl;
+    outdata  << std::setw(10) << "||" << std::setw(29) << "Incr+Global+Local" <<  std::setw(20) << "||" << std::setw(29) << "Subdivision" << std::setw(20) << "||" << std::setw(29) << "Incr+Local" << std::setw(20) << "||" << std::setw(29) << "Convex+Local" << std::setw(20) << "||" << std::endl;
   
     outdata  << std::setw(8) << "Size " << "||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound";
+   
+   for (int i = 0; i < 3; i++){
     outdata << " ||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound";
-    outdata << " ||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound";
-    outdata << " ||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound" << " ||" << std::endl;
-    
+   }
+   
+   outdata << " ||" << std::endl;
+
   }
   
   outdata << std::setw(6) << filePointsSize << std::setw(5);
