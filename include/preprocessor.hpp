@@ -13,15 +13,17 @@ class Preprocessor{
 
     private:
         std::vector<Point> points;
+        std::map<int, int> sizeToNumFiles;
         std::map<int, int> sizeToLocalL;
         std::map<int, int> sizeToGlobalL;
         std::map<int, int> sizeToSubdivisionL;
         int optimal_M;
-        const float percentage = 0.10;
         
         int getSizeBucket(int );
 
     public:
+
+        Preprocessor(const std::vector<std::pair<int, std::string>>& , bool );
 
         void defaultInput();
 
@@ -35,6 +37,6 @@ class Preprocessor{
 
         int getSimSubDiv_L(int );
 
-        std::vector<Point> generateSubPoints();
+        std::vector<Point> generateSubPoints(const std::vector<Point>& );
 
 };

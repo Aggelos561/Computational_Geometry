@@ -167,75 +167,9 @@ void showCasedAlgos::partialWrite(const std::vector<std::pair<int, std::string>>
 
 void showCasedAlgos::initPreprocess(std::vector<Point> points, Preprocessor& processor, const std::vector<std::pair<int, std::string>>& filesNPoints){
 
-  processor.defaultInput();
-  
-  for (int i = 0; i < 5; i++){
-    
-    int size = 0;
-
-    for (const std::pair<int, std::string>& f : filesNPoints){
-
-      if (i == 0){
-        if (f.first <= 10){
-          size++;
-
-          if (size > 3)
-            break;
-
-          points = dataio::readPoints(f.second);
-              
-          processor.preprocessInput(points);
-        }
-      }
-
-      if (i == 1){
-        if (f.first <= 100 && f.first > 10){
-          size++;
-
-          if (size > 3)
-            break;
-
-          points = dataio::readPoints(f.second);
-          processor.preprocessInput(points);
-        }
-      }
-      if (i == 2){
-        if (f.first <= 1000 && f.first > 100){
-          size++;
-
-          if (size > 3)
-            break;
-
-          points = dataio::readPoints(f.second);
-          processor.preprocessInput(points);
-        }
-      }
-      if (i == 3){
-        if (f.first <= 10000 && f.first > 1000){
-          size++;
-
-          if (size > 3)
-            break;
-
-          points = dataio::readPoints(f.second);
-          processor.preprocessInput(points);
-        }
-      }
-
-      if (i == 4){
-        if (f.first <= 100000 && f.first > 10000){
-          size++;
-
-          if (size > 3)
-            break;
-
-          points = dataio::readPoints(f.second);
-          processor.preprocessInput(points);
-        }
-      }
-
-    }
+  for (const std::pair<int, std::string>& f : filesNPoints){
+    processor.preprocessInput(dataio::readPoints(f.second));
   }
-
+  
 }
 
