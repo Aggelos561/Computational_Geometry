@@ -87,7 +87,7 @@ simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const s
 
 
 // Start Annealing
-void simulatedAnnealing::startAnnealing(){
+void simulatedAnnealing::startAnnealing(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff){
 
   srand(time(NULL));
 
@@ -110,6 +110,11 @@ void simulatedAnnealing::startAnnealing(){
   ft bestArea = totalArea;
 
   while(T >= 0){
+
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+      throw cutOffAbort("Cut off time exceeded");
+    }
+
     // transition local or global based on parameter transition mode
     transitionStep transitionStep = transitionMode == 1 ? localTransition(polygLine, tree) : globalTransition(polygLine);
 
@@ -130,8 +135,14 @@ void simulatedAnnealing::startAnnealing(){
       }
     }
     else{
-      if (pointsNumber <= 20)
-        T = T - 1.0/((double)L * 0.5/pointsNumber);
+      if (pointsNumber <= 20){
+        T = T - 1.0/((double)L * 0.7/pointsNumber);
+      }
+
+      if (transitionMode == 2 && pointsNumber > 10000){
+          T = T - 1.0/((double)L / 2.0);
+      }
+
       continue;
     }
 
@@ -141,6 +152,7 @@ void simulatedAnnealing::startAnnealing(){
   polygLine = bestPolygon;
   optimisedArea = bestArea;
   this->optimisedRatio = this->calcRatio(this->getConvexHull(this->points) ,this->optimisedArea);
+  std::cout << "Simple Check ===> " << checkPolygonSimplicity(polygLine) << std::endl;
 }
 
 

@@ -1,4 +1,5 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <chrono>
 #include <cstdlib>
 #include <map>
 #include <iostream>
@@ -115,7 +116,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
 
     if (pointsSize > 1000){
         divisionTest = true;
-        iterations = 4;
+        iterations = 2;
     }
 
     for (int i = 0; i < iterations; i++){
@@ -126,7 +127,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
         int starting_L, ending_L;
 
         Incremental incremental = Incremental(points, 3, "1a");
-        incremental.start();
+        incremental.start(std::chrono::_V2::system_clock::time_point::max(), std::chrono::milliseconds::max());
 
         std::vector<Segment_2> polygon = incremental.getPolygonLine();
 
@@ -154,7 +155,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
         for (int L = starting_L; L <= ending_L; L+=500){
         
             simulatedAnnealing simulatedLocal = simulatedAnnealing(points, polygon, incremental.getArea(), incremental.getRatio(), L, 2, 1);
-            simulatedLocal.startAnnealing();
+            simulatedLocal.startAnnealing(std::chrono::_V2::system_clock::time_point::max(), std::chrono::milliseconds::max());
 
             ft optimizedArea = simulatedLocal.getOptimisedArea();
 
@@ -192,7 +193,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
 
         for (int L = starting_L; L <= ending_L; L+=1000){
             simulatedAnnealing simulatedSubdivision = simulatedAnnealing(points, L, 3, 2, "1a", getSimSubDiv_M(pointsSize), 1);
-            simulatedSubdivision.startSubdivision();
+            simulatedSubdivision.startSubdivision(std::chrono::_V2::system_clock::time_point::max(), std::chrono::milliseconds::max());
 
             ft optimizedArea = simulatedSubdivision.getOptimisedArea();
 
@@ -233,7 +234,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
         for (int L = starting_L; L <= ending_L; L+=200){
         
             simulatedAnnealing simulatedGlobal = simulatedAnnealing(points, polygon, incremental.getArea(), incremental.getRatio(), L, 2, 1);
-            simulatedGlobal.startAnnealing();
+            simulatedGlobal.startAnnealing(std::chrono::_V2::system_clock::time_point::max(), std::chrono::milliseconds::max());
 
             ft optimizedArea = simulatedGlobal.getOptimisedArea();
 

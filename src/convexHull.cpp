@@ -33,7 +33,7 @@ convexHull::convexHull(const std::vector<Point> &points, int edgeSelection, cons
 
 
 // convex hull algorithm MAIN method
-void convexHull::start(){
+void convexHull::start(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff){
 
   srand(time(NULL));
 
@@ -47,8 +47,7 @@ void convexHull::start(){
  	polygLinePoints = getPolyLinePoints(polygLine);
 
   // Get current convex hull segments
-  std::vector<Segment_2> currConvexHullSegments = getConvexHull(polygLinePoints,remainingPoints);
-
+  std::vector<Segment_2> currConvexHullSegments = getConvexHull(polygLinePoints, remainingPoints);
 
 
   // Run to find the first next new point
@@ -66,6 +65,10 @@ void convexHull::start(){
 
   while(remainingPoints.size() > 0){
 
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+      throw cutOffAbort("Cut off time exceeded");
+    }
+
     std::vector<pair> bestPoints;
 
     //For every polyon line segment find visible and shortest point
@@ -81,17 +84,29 @@ void convexHull::start(){
         }
       }
       
-      std::vector<visPoint> visPoints;
+
+      std::vector<visPoint> allPossiblePoints;
       //Find visible points on this segment
       for(int j = 0; j < remainingPoints.size(); j++){
-        findVisiblePoints(visPoints, remainingPoints[j], polygLine[i], polygLine);
+        double distance = squared_distance(remainingPoints[j], polygLine[i]);
+        Point insPoint = remainingPoints[j];
+        visPoint inserted;
+        inserted.cor = insPoint;
+        inserted.distance = distance;
+        allPossiblePoints.push_back(inserted);
       }
+
+      sort(allPossiblePoints.begin(), allPossiblePoints.end(), sortVisPointsAsc);
+
+      std::vector<visPoint> visPoints;
       
+      findVisiblePoints(visPoints, allPossiblePoints[0].cor, polygLine[i], polygLine);
+   
       if(visPoints.size() == 0){
         continue;
       }
 
-      Point bestPoint = findBestPoint(visPoints);
+      Point bestPoint = visPoints[0].cor;
       
       Segment_2 bestSeg = polygLine[i];
       pair best = {bestPoint, bestSeg};
@@ -101,6 +116,8 @@ void convexHull::start(){
     insertBestPoint(bestPoints, remainingPoints, polygLine);
   }
 
+
+  std::cout << "Simple Check --> " << checkPolygonSimplicity(polygLine) << std::endl;
   totalArea = calcArea(polygLine);
   ratio = calcRatio(initialConvexHull, totalArea);
 }
@@ -237,7 +254,7 @@ void convexHull::initialRun(const std::vector<Segment_2> &currConvexHullSegments
 
 
 // find visible points based on a vector of segments polygon line
-void convexHull::findVisiblePoints(std::vector<visPoint> &visPoints, const Point &remainingPoint, const Segment_2 &seg, const std::vector<Segment_2> &polygLine) {
+bool convexHull::findVisiblePoints(std::vector<visPoint> &visPoints, const Point &remainingPoint, const Segment_2 &seg, const std::vector<Segment_2> &polygLine) {
   
   Segment_2 segmentsArray[] = {
       Segment_2(remainingPoint, seg.point(0)),
@@ -277,7 +294,13 @@ void convexHull::findVisiblePoints(std::vector<visPoint> &visPoints, const Point
     inserted.cor = insPoint;
     inserted.distance = distance;
     visPoints.push_back(inserted);
+    return true;
   }
+  else{
+    visPoints.clear();
+    return false;
+  }
+
 }
 
 
@@ -354,7 +377,10 @@ void convexHull::insertBestPoint(const std::vector<pair> &bestPoints, std::vecto
     }
   } else {
     
-    
+    if (bestPoints.size() == 0){
+      throw polygonizationFailure("Convex Hull Failure");
+    }
+
     int rindex = rand() % bestPoints.size();
     
     pair bestPair;
@@ -373,3 +399,10 @@ void convexHull::insertBestPoint(const std::vector<pair> &bestPoints, std::vecto
   }
 }
 
+// Sort Y Ascending
+bool convexHull::sortVisPointsAsc(const visPoint& a , const visPoint& b) {
+  if (a.distance < b.distance)
+    return true;
+  
+  return false;
+}

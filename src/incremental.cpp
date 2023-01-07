@@ -5,6 +5,7 @@
 #include <CGAL/Polygon_2_algorithms.h>
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/intersections.h>
+#include <chrono>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -34,7 +35,7 @@ Incremental::Incremental(const std::vector<Point> &points, int edgeSelection, co
 
 
 // incremental algorithm MAIN method
-void Incremental::start() {
+void Incremental::start(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff) {
 
   // Sort points in a spesific order
   this->sortPoints(points);
@@ -56,6 +57,10 @@ void Incremental::start() {
 
   // Loop until there are no remaining points left
   while (remainingPoints.size() > 0) {
+
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+      throw cutOffAbort("Cut off time exceeded");
+    }
 
     // Get next new point and delete it from remaining
     Point nextPoint = remainingPoints[0];

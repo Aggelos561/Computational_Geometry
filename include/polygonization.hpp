@@ -94,6 +94,7 @@ class Polygonization{
       bool looseSegCompare(const Segment_2&, const Segment_2&);
 
       bool isSimple(const Changes&, const std::vector<Segment_2>&);
+    
     public:
       Polygonization(const std::vector<Point>&, int);
       Polygonization(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&);
@@ -118,7 +119,19 @@ class polygonizationFailure : public std::exception {
     std::string what () {
         return message;
     }
-  };
+};
+
+class cutOffAbort : public std::exception {
+  private:
+    std::string message;
+
+  public:
+    cutOffAbort(std::string  msg) : message(msg) {}
+    std::string what () {
+        return message;
+    }
+};
+
 
 typedef struct polygonInstance {
   std::vector<Segment_2> polygon;

@@ -24,92 +24,99 @@ void showCasedAlgos::runAlgorithm(const std::string& algorithm, const std::vecto
 
   for (int mode = 2; mode <= 3; mode++){
     
-    ft optimizedArea, optimizedRatio;
+    ft optimizedArea = 0, optimizedRatio = 0;
     std::chrono::milliseconds duration;
 
-    if (algorithm == "INC+GLOBAL+LOCAL"){
+    try{
 
-      auto start = std::chrono::high_resolution_clock::now();
+      if (algorithm == "INC+GLOBAL+LOCAL"){
 
-      Incremental incremental = Incremental(points, mode, "1a");
-      incremental.start();
+        auto start = std::chrono::high_resolution_clock::now();
 
-      std::vector<Segment_2> polygonLine = incremental.getPolygonLine();
-    
-      simulatedAnnealing simulatedGlobal = simulatedAnnealing(points, incremental.getPolygonLine(), incremental.getArea(), incremental.getRatio(), processor.getSimGlobal_L(f.first), mode - 1, 2);
-      simulatedGlobal.startAnnealing();
-      
-      simulatedAnnealing simulatedLocal = simulatedAnnealing(points, simulatedGlobal.getPolygonLine(), simulatedGlobal.getOptimisedArea(), simulatedGlobal.getOptimisedRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
-      simulatedLocal.startAnnealing();
+        Incremental incremental = Incremental(points, mode, "1a");
+        incremental.start(start, cutOff);
 
-      auto stop = std::chrono::high_resolution_clock::now();
+        std::vector<Segment_2> polygonLine = incremental.getPolygonLine();
 
-      duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        simulatedAnnealing simulatedGlobal = simulatedAnnealing(points, incremental.getPolygonLine(), incremental.getArea(), incremental.getRatio(), processor.getSimGlobal_L(f.first), mode - 1, 2);
+        simulatedGlobal.startAnnealing(start, cutOff);
 
-      optimizedArea = simulatedLocal.getOptimisedArea();
-      optimizedRatio = simulatedLocal.getOptimisedRatio();
+        simulatedAnnealing simulatedLocal = simulatedAnnealing(points, simulatedGlobal.getPolygonLine(), simulatedGlobal.getOptimisedArea(), simulatedGlobal.getOptimisedRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
+        simulatedLocal.startAnnealing(start, cutOff);
 
-    }
-    else if (algorithm == "SUBDIVISION"){
+        auto stop = std::chrono::high_resolution_clock::now();
 
-      auto start = std::chrono::high_resolution_clock::now();
-      
-      simulatedAnnealing simulatedSubdivision = simulatedAnnealing(points, processor.getSimSubDiv_L(f.first), mode, mode - 1, "1a", processor.getSimSubDiv_M(f.first), 1);
-      simulatedSubdivision.startSubdivision();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-      auto stop = std::chrono::high_resolution_clock::now();
-      duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        optimizedArea = simulatedLocal.getOptimisedArea();
+        optimizedRatio = simulatedLocal.getOptimisedRatio();
 
-      optimizedArea = simulatedSubdivision.getOptimisedArea();
-      optimizedRatio = simulatedSubdivision.getOptimisedRatio();
-    }
-    else if (algorithm == "INC+LOCAL"){
-      
-      auto start = std::chrono::high_resolution_clock::now();
-  
-      Incremental incremental = Incremental(points, mode, "1a");
-      incremental.start();
+      }
+      else if (algorithm == "SUBDIVISION"){
 
-      std::vector<Segment_2> polygonLine = incremental.getPolygonLine();
-
-      simulatedAnnealing simulatedLocal = simulatedAnnealing(points, incremental.getPolygonLine(), incremental.getArea(), incremental.getRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
-      simulatedLocal.startAnnealing();
-
-      auto stop = std::chrono::high_resolution_clock::now();
-      duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-
-      optimizedArea = simulatedLocal.getOptimisedArea();
-      optimizedRatio = simulatedLocal.getOptimisedRatio();
-    
-    }
-    else if (algorithm == "CONVEX+LOCAL"){
-
-      auto start = std::chrono::high_resolution_clock::now();
-
-      try{
-
-        if (points.size() > 1000){
-            throw polygonizationFailure("Huge Input For Convex Polygonization");
-        }
+        auto start = std::chrono::high_resolution_clock::now();
         
-        convexHull convex = convexHull(points, mode);
-        convex.start();
+        simulatedAnnealing simulatedSubdivision = simulatedAnnealing(points, processor.getSimSubDiv_L(f.first), mode, mode - 1, "1a", processor.getSimSubDiv_M(f.first), 1);
+        simulatedSubdivision.startSubdivision(start, cutOff);
 
-        std::vector<Segment_2> polygonLine = convex.getPolygonLine();
+        auto stop = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-        simulatedAnnealing simulatedLocal = simulatedAnnealing(points, convex.getPolygonLine(), convex.getArea(), convex.getRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
-        simulatedLocal.startAnnealing();
+        optimizedArea = simulatedSubdivision.getOptimisedArea();
+        optimizedRatio = simulatedSubdivision.getOptimisedRatio();
+      }
+      else if (algorithm == "INC+LOCAL"){
+        
+        auto start = std::chrono::high_resolution_clock::now();
+    
+        Incremental incremental = Incremental(points, mode, "1a");
+        incremental.start(start, cutOff);
+
+        std::vector<Segment_2> polygonLine = incremental.getPolygonLine();
+
+        simulatedAnnealing simulatedLocal = simulatedAnnealing(points, incremental.getPolygonLine(), incremental.getArea(), incremental.getRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
+        simulatedLocal.startAnnealing(start, cutOff);
 
         auto stop = std::chrono::high_resolution_clock::now();
         duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
         optimizedArea = simulatedLocal.getOptimisedArea();
         optimizedRatio = simulatedLocal.getOptimisedRatio();
+      
       }
-      catch(polygonizationFailure convexFail){
-        duration = std::chrono::milliseconds(500 * points.size() + 1);
+      else if (algorithm == "CONVEX+LOCAL"){
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+        try{
+
+          if (points.size() > 5000){
+              throw polygonizationFailure("Huge Input For Convex Polygonization");
+          }
+          
+          convexHull convex = convexHull(points, mode);
+          convex.start(start, cutOff);
+
+          std::vector<Segment_2> polygonLine = convex.getPolygonLine();
+
+          simulatedAnnealing simulatedLocal = simulatedAnnealing(points, convex.getPolygonLine(), convex.getArea(), convex.getRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
+          simulatedLocal.startAnnealing(start, cutOff);
+
+          auto stop = std::chrono::high_resolution_clock::now();
+          duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+          optimizedArea = simulatedLocal.getOptimisedArea();
+          optimizedRatio = simulatedLocal.getOptimisedRatio();
+        }
+        catch(polygonizationFailure convexFail){
+          duration = std::chrono::milliseconds(500 * points.size() + 1);
+        }
+
       }
 
+    }
+    catch(cutOffAbort abort){
+      duration = std::chrono::milliseconds(500 * points.size() + 1);
     }
 
     if (mode == 2){
