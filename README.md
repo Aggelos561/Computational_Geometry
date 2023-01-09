@@ -22,13 +22,13 @@
 1) Incremntal with Global Trasitions and afterwards Local Transitions
 Ουσιαστικα σε αυτην την εκτελεση πολυγωνοποιουμε με τον incremental αλγοριθμο εν συνεχεια κανουμε optimize με Global Trasitions και τελος κανουμε δευτερο(εαν επιτρεπει ο χρονος) optimize με Local Transitions.
 
-2)Spatial Subdivision
+2) Spatial Subdivision
 Σε αυτην την εκτελεση διασπαμε το σημειοσυνολο σε επιμερους υποσυνολα και για καθενα υποσυνολο το πολυγωνοποιουμε αρχικα με incremental εαν αυτος αποτυχει με convex hull και εαν και αυτος αποτυχει τοτε πολυγωνοποιουμε με τυχαια επιλογη ακμων για τον convex hull.Επισης οταν τρεχει σε καθε υποπολυγωνο global transitions ακομα και να μην ικανοποιειται η συνθηκη του να ειναι simple μειωνεται η θερμοκρασια T ελαχιστα σε καθε επαναληψη ετσι ωστε να αποφευγουμε ατερμων βρογχους.
 
-3)Incrental polygonization with Local Transitions
+3) Incrental polygonization with Local Transitions
 Σε αυτην την επιλογη αρχικα πολυγωνοποιουμε με incremental polygonization και εν συνεχεια εφαρμοζουμε local Transitions για την βελτιστοποιηση του πολυγωνου.
 
-4)Convex Hull with Local Transitions
+4) Convex Hull with Local Transitions
 Σε αυτην την επιλογη αρχικα πολυγωνοποιουμε με Convex Hull αλγοριθμο και εν συνεχεια κανουμε optimization με Local Transitions.
 
 
