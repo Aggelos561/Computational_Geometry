@@ -9,6 +9,31 @@
 Γρηγόριος Μουλκιώτης 1115201900117
 
 
+Δομή και αρχεία του project
+
+Directory include/:
+- polygonization.hpp: Βασικά methods για την υλοποίηση του incremental και convex hull polygonization
+- convexHull.hpp: Class για την υλοποίηση του convex hull η οποία κάνει inherit απο το polygonization class
+- incremental.hpp: Class για την υλοποίηση του incremental η οποία κάνει inherit απο το polygonization class
+- dataio.hpp: Namespace για το διάβασμα και έλεγχο παραμέτρων εισόδου και γράψιμο output σε συγκεκριμένο αρχείο
+- localSearch.hpp: Class για υλοποίηση αλγόριθμου localSearch
+- simulatedAnnealing.hpp: Class για υλοποίηση local step, global step και spatial subdivision
+- preprocessor.hpp: Namespace που χρησιμοποιείται για το preprocess του project 3 πρίν την εκτέλεση των αλγόριθμων
+- showCasedAlgos.hpp: Namespace όπου υπάρχουν κάποιες συναρτήσεις για την εκτέλεση συγκεκριμέων αλγόριμων για το project 3 και για την αποθήκευση των δεδομένων (scores , bound scores) για το γράψιμο στο output.
+
+
+Directory src/:
+- polygonization.cpp: υλοποίηση των methods για την υλοποίηση του incremental και convex hull polygonization
+- convexHull.cpp: υλοποίημένα methods για τον convex hull algorithm
+- incremental.cpp: υλοποίημένα methods για τον incremental algorithm
+- dataio.cpp: υλοποιήσεις συναρτήσεων για το input και output του προγράμματος
+- localSearch.cpp: υλοποίημένα methods για τον local search optimization algorithm
+- simulatedAnnealing.cpp: υλοποίημένα methods για local step, global step του simulated annealing
+- spatialSubdivision.cpp: υλοποίημένα methods για spatial subdivision simulated annealing (ιδια κλάση με το global και local step)
+- preprocessor.cpp: συναρτήσεις για την εκτέλεση του preprocess το οποίο καλείται απο την main
+- showCasedAlgos.cpp: συναρτήσεις για την εκτέλεση συγκεκριμένων αλγόριθμων για το project 3 και την αποθήκευση δεδομένων που θα γραφτούν στο output έπειτα
+- main.cpp: στο project 3 βρίσκεται το main function που καλούνται το διάβασμα των parameters, το preprocessing (optinal) και η εκτέλεση των συγκεκριμένων αλγορίθων με την χρήση συναρτήσεων του namespace showCasedAlgos
+
 
 Τρόπος μεταγλώττισης project
 
