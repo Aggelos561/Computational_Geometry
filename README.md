@@ -33,6 +33,9 @@ Preprocessing
 
 Αποτελεσματα
 Χωρις preprocessing
+
+
+
 ||            Incr+Global+Local                  ||                  Subdivision                  ||                  Incr+Local                  ||                 Convex+Local                  ||
    Size || min score | max score | min bound | max bound || min score | max score | min bound | max bound || min score | max score | min bound | max bound || min score | max score | min bound | max bound ||
     10  || 2.037073  | 4.468362  | 0.494711  | 0.869049  || 1.689800  | 4.474963  | 0.393686  | 0.822482  || 1.750790  | 4.416422  | 0.494711  | 0.861008  || 1.774267  | 4.359436  | 0.403368  | 0.800249  || 
