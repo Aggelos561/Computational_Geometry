@@ -1,6 +1,7 @@
                            -- Εργασια 3 --
-                    
- Τελειοποίηση πολυγωνοποίησης σημειοσυνόλου βέλτιστης επιφάνειας, ανάπτυξη εφαρμογής 
+              Ανάπτυξη Λογισμικού Για Αλγοριθμικά Προβλήματα
+              
+Τελειοποίηση πολυγωνοποίησης σημειοσυνόλου βέλτιστης επιφάνειας, ανάπτυξη εφαρμογής 
     για τη συγκριτική αξιολόγηση των αλγόριθμων πολυγωνοποίησης και διαγωνισμός
 
 
@@ -12,27 +13,27 @@
 Δομή και αρχεία του project
 
 Directory include/:
-- polygonization.hpp: Βασικά methods για την υλοποίηση του incremental και convex hull polygonization
-- convexHull.hpp: Class για την υλοποίηση του convex hull η οποία κάνει inherit απο το polygonization class
-- incremental.hpp: Class για την υλοποίηση του incremental η οποία κάνει inherit απο το polygonization class
-- dataio.hpp: Namespace για το διάβασμα και έλεγχο παραμέτρων εισόδου και γράψιμο output σε συγκεκριμένο αρχείο
-- localSearch.hpp: Class για υλοποίηση αλγόριθμου localSearch
-- simulatedAnnealing.hpp: Class για υλοποίηση local step, global step και spatial subdivision
-- preprocessor.hpp: Namespace που χρησιμοποιείται για το preprocess του project 3 πρίν την εκτέλεση των αλγόριθμων
+- polygonization.hpp: Βασικά methods για την υλοποίηση του incremental και convex hull polygonization.
+- convexHull.hpp: Class για την υλοποίηση του convex hull η οποία κάνει inherit απο το polygonization class.
+- incremental.hpp: Class για την υλοποίηση του incremental η οποία κάνει inherit απο το polygonization class.
+- dataio.hpp: Namespace για το διάβασμα και έλεγχο παραμέτρων εισόδου και γράψιμο output σε συγκεκριμένο αρχείο.
+- localSearch.hpp: Class για υλοποίηση αλγόριθμου localSearch.
+- simulatedAnnealing.hpp: Class για υλοποίηση local step, global step και spatial subdivision.
+- preprocessor.hpp: Namespace που χρησιμοποιείται για το preprocess του project 3 πρίν την εκτέλεση των αλγόριθμων.
 - showCasedAlgos.hpp: Namespace όπου υπάρχουν κάποιες συναρτήσεις για την εκτέλεση συγκεκριμέων αλγόριμων για το project 3 και για την αποθήκευση των δεδομένων (scores , bound scores) για το γράψιμο στο output.
 
 
 Directory src/:
-- polygonization.cpp: υλοποίηση των methods για την υλοποίηση του incremental και convex hull polygonization
-- convexHull.cpp: υλοποίημένα methods για τον convex hull algorithm
-- incremental.cpp: υλοποίημένα methods για τον incremental algorithm
-- dataio.cpp: υλοποιήσεις συναρτήσεων για το input και output του προγράμματος
-- localSearch.cpp: υλοποίημένα methods για τον local search optimization algorithm
-- simulatedAnnealing.cpp: υλοποίημένα methods για local step, global step του simulated annealing
-- spatialSubdivision.cpp: υλοποίημένα methods για spatial subdivision simulated annealing (ιδια κλάση με το global και local step)
-- preprocessor.cpp: συναρτήσεις για την εκτέλεση του preprocess το οποίο καλείται απο την main
+- polygonization.cpp: υλοποίηση των methods για την υλοποίηση του incremental και convex hull polygonization.
+- convexHull.cpp: υλοποίημένα methods για τον convex hull algorithm.
+- incremental.cpp: υλοποίημένα methods για τον incremental algorithm.
+- dataio.cpp: υλοποιήσεις συναρτήσεων για το input και output του προγράμματος.
+- localSearch.cpp: υλοποίημένα methods για τον local search optimization algorithm.
+- simulatedAnnealing.cpp: υλοποίημένα methods για local step, global step του simulated annealing.
+- spatialSubdivision.cpp: υλοποίημένα methods για spatial subdivision simulated annealing (ιδια κλάση με το global και local step).
+- preprocessor.cpp: συναρτήσεις για την εκτέλεση του preprocess το οποίο καλείται απο την main.
 - showCasedAlgos.cpp: συναρτήσεις για την εκτέλεση συγκεκριμένων αλγόριθμων για το project 3 και την αποθήκευση δεδομένων που θα γραφτούν στο output έπειτα
-- main.cpp: στο project 3 βρίσκεται το main function που καλούνται το διάβασμα των parameters, το preprocessing (optinal) και η εκτέλεση των συγκεκριμένων αλγορίθων με την χρήση συναρτήσεων του namespace showCasedAlgos
+- main.cpp: στο project 3 βρίσκεται το main function που καλούνται το διάβασμα των parameters, το preprocessing (optinal) και η εκτέλεση των συγκεκριμένων αλγορίθων με την χρήση συναρτήσεων του namespace showCasedAlgos.
 
 
 Directory instances_test/:
@@ -65,7 +66,7 @@ $ ./evaluate -i (point set path) -o (output file) -preprocess (optional)
 
    1) Convex Hull: Μείωση περιττών ελέγχων για την εύρεση νέου σημείου και την εισαγωγή του στο πολύγωνο σε κάθε επανάληψη με αποτέλεσμα να μπορούμε να παράγουμε πολύγωνα απο μεγαλύτερα σημειοσύνολα εισόδου.
    2) Simulated annealing-spatial Subdivsion: Σε αυτον τον αλγοριθμο εαν αποτυχουν να κανουν πολυγωνοποίηση ο Incremental τοτε θα τρεξει Convex με την επιλογη ακμων που του δοθηκε (min/max) και εαν και αυτος ο αλγοριθμος αποτυχει λογω των περιορισμων στις δυο ακρειανες ακμες τοτε θα εκτελεστει ξανα Convex αυτην την φορα με επιλογη τυχαιας ακμης μεχρι να ικανοποιηθουν οι περιορισμοι (να μην επιρεαστούν τα 2 ακριανά segments ώστε να μπορεί να γίνει merge έπειτα). Με την αλλαγή αυτή ο spatial subdivision μπορεί να εκτελέσει πολυγωνοποίηση και optimization χώρις να υπάρχει fail μέχρι και 100k σημέιων.
-   3) Simulated annealing-Local Transition: Για να αποφευχθούν ατέρμων βρόχοι σε πολύγωνα λίγων σημείων προστέθηκε η σταδιακή μείωση της θερμοκρασίας T ακόμα και αν δεν μπορεί να βρεί νεο simple πολύγωνο.
+   3) Simulated annealing-Local Transition: Για να αποφευχθούν ατέρμων βρόχοι σε πολύγωνα λίγων σημείων προστέθηκε η σταδιακή (μικρή) μείωση της θερμοκρασίας T ακόμα και αν δεν μπορεί να βρεί νεο simple πολύγωνο σε κάθε iteration.
    
   Επιπλεον, αφαιρεσαμε περριτο κωδικα όπως ορισμένους ελέγχους και κλήσεις συναρτήσεων που δεν χρησιμευαν πουθενα για την εκτελεση των αλγοριθμων μειωνοντας ετσι το χρονο εκτελεσης σε όλους τους αλγόριθμους.
 
