@@ -92,7 +92,7 @@ int main(int argc, char **argv){
     std::cout << "Passed INC+LOCAL"  << std::endl;
 
     showCasedAlgos::runAlgorithm("CONVEX+LOCAL", points, scores, boundMinScores, boundMaxScores, cutOff, scoreIndex, f, processor);
-    std::cout << "CONVEX+LOCAL"  << std::endl;
+    std::cout << "Passed CONVEX+LOCAL"  << std::endl;
 
     if (fileIndex == filesNPoints.size())
       showCasedAlgos::partialWrite(filesNPoints, scores, boundMinScores, boundMaxScores, f, firstWrite, f.first, outputFile, fileIndex, true);

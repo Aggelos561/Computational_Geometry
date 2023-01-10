@@ -9,3 +9,7 @@ cmake_install.cmake
 to_polygon
 optimal_polygon
 evaluate
+!resultsWithoutPreprocess.txt
+!resultsWithPreprocess.txt
+!instances_test
+!instances_test/*

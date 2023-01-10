@@ -152,7 +152,7 @@ void simulatedAnnealing::startAnnealing(const std::chrono::_V2::system_clock::ti
   polygLine = bestPolygon;
   optimisedArea = bestArea;
   this->optimisedRatio = this->calcRatio(this->getConvexHull(this->points) ,this->optimisedArea);
-  std::cout << "Simple Check ===> " << checkPolygonSimplicity(polygLine) << std::endl;
+
 }
 
 

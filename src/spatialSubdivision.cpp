@@ -449,5 +449,4 @@ void simulatedAnnealing::startSubdivision(const std::chrono::_V2::system_clock::
   
   this->ratio = calcRatio(convexHullSegments, this->totalArea);
   this->optimisedRatio = calcRatio(convexHullSegments, this->optimisedArea);
-  std::cout << "Simple Check ~~~> " << checkPolygonSimplicity(polygLine) << std::endl;
 }

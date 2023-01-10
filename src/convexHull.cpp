@@ -116,8 +116,6 @@ void convexHull::start(const std::chrono::_V2::system_clock::time_point startTim
     insertBestPoint(bestPoints, remainingPoints, polygLine);
   }
 
-
-  std::cout << "Simple Check --> " << checkPolygonSimplicity(polygLine) << std::endl;
   totalArea = calcArea(polygLine);
   ratio = calcRatio(initialConvexHull, totalArea);
 }
