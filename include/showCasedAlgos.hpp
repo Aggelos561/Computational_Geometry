@@ -11,7 +11,7 @@ typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
 typedef CGAL::Epick::FT ft;
 
-// Namespace dataio is used to read the file input and write result files
+// Namespace showCasedAlgos is used run the showcased algorithms and partial write data to the output
 
 namespace showCasedAlgos{
 

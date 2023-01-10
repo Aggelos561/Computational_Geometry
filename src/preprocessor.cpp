@@ -20,6 +20,7 @@ typedef K::Segment_2 Segment_2;
 
 Preprocessor::Preprocessor(const std::vector<std::pair<int, std::string>>& filesNPoints, bool enabled){
 
+    // mapping the number of files for every size
     for (const std::pair<int, std::string>& f : filesNPoints){
         
         // Not exists in map
@@ -31,7 +32,8 @@ Preprocessor::Preprocessor(const std::vector<std::pair<int, std::string>>& files
             sizeToNumFiles[f.first] += 1;
         }
     }
-
+    
+    // if the actual preprocessing is enabled
     if (enabled){
         // initialize maps for average
         for (auto i : sizeToNumFiles){
@@ -74,6 +76,7 @@ std::vector<Point> Preprocessor::generateSubPoints(const std::vector<Point>& poi
 
 }
 
+// Default values initialized if preprocessing is not enabled
 void Preprocessor::defaultInput(){
 
     // Default bucket values
@@ -104,7 +107,9 @@ void Preprocessor::defaultInput(){
 }
 
 
-
+// Preprocesses input
+// For every input file of dir finds the best L for every optimization algorithm only for maximization
+// Its executed only for maximization because its harder than minimization
 void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
     
     points = pointsVec;
@@ -114,11 +119,16 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
     bool divisionTest = false;
     int iterations = 1;
 
+    // if points size of input is bigger than 1000 points the create 2 subspoints that contains random points from the original
+    // input and run the optimization testing for those points
+
     if (pointsSize > 1000){
         divisionTest = true;
         iterations = 2;
     }
 
+    // So for input size < 1000 points iteration is only 1 time to the original input points
+    // if if size > 1000 then 2 random generated sub points are created from the original and run the tests on them
     for (int i = 0; i < iterations; i++){
 
         if (divisionTest)
@@ -132,7 +142,8 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
         std::vector<Segment_2> polygon = incremental.getPolygonLine();
 
         ft prevArea = incremental.getArea();
-
+        
+        // L values range for every algorithm
         if (pointsSize <= 100){
             starting_L = 22000;
             ending_L = 30000;
@@ -152,6 +163,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
 
         int optimalLocal_L = starting_L;
 
+        // Running local simulated 
         for (int L = starting_L; L <= ending_L; L+=500){
         
             simulatedAnnealing simulatedLocal = simulatedAnnealing(points, polygon, incremental.getArea(), incremental.getRatio(), L, 2, 1);
@@ -171,6 +183,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
         else
             sizeToLocalL[pointsSize] += (optimalLocal_L / iterations / sizeToNumFiles[pointsSize]);
 
+        // Spesific values range
         if (pointsSize <= 100){
             starting_L = 11000;
             ending_L = 15000;
@@ -191,6 +204,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
         int optimalsubDiv= starting_L;
         prevArea = 0;
 
+        // Running subdivision
         for (int L = starting_L; L <= ending_L; L+=1000){
             simulatedAnnealing simulatedSubdivision = simulatedAnnealing(points, L, 3, 2, "1a", getSimSubDiv_M(pointsSize), 1);
             simulatedSubdivision.startSubdivision(std::chrono::_V2::system_clock::time_point::max(), std::chrono::milliseconds::max());
@@ -231,6 +245,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
         int optimalGlobal_L = starting_L;
         prevArea = incremental.getArea();
 
+        // Running for global step
         for (int L = starting_L; L <= ending_L; L+=200){
         
             simulatedAnnealing simulatedGlobal = simulatedAnnealing(points, polygon, incremental.getArea(), incremental.getRatio(), L, 2, 1);
@@ -253,7 +268,7 @@ void Preprocessor::preprocessInput(const std::vector<Point>& pointsVec){
     }
 }
 
-
+// If a spesific input size is not mapped (Preprocessing disabled) then give spesific values for L parameter
 int Preprocessor::getSizeBucket(int size){
 
     if (sizeToLocalL.find(size) == sizeToLocalL.end()) {
@@ -291,6 +306,7 @@ int Preprocessor::getSimSubDiv_L(int size){
     return sizeToSubdivisionL[getSizeBucket(size)];
 }
 
+// Getting the optimal M value for subdivision. 10 <= M <= 100
 int Preprocessor::getSimSubDiv_M(int size){
     // Spatial Subdivision
     if (size <= 10){

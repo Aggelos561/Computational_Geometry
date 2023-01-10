@@ -24,14 +24,16 @@ int main(int argc, char **argv){
   bool preprocessEnabled;
   std::string outputFile;
 
-
+  // Reading parameters from command line
   bool parsed = dataio::getParameters(nameOfDirectory, outputFile, preprocessEnabled, argc, argv);
 
+  // Checking if parameters are parsed
   if (!parsed){
     std::cout << "Input parameters invalid" << std::endl;
     return -1;
   }
 
+  // Finds files and stores the name of every file and points size of the spesific dir
   std::vector<std::pair<int, std::string>> filesNPoints = dataio::findFiles(nameOfDirectory);
   int previousPointsSize = filesNPoints[0].first;
 
@@ -43,22 +45,32 @@ int main(int argc, char **argv){
   
   std::chrono::milliseconds cutOff;
 
+  // Vectors for scores
   std::vector<std::pair<double, double>> scores(4);
   std::vector<std::vector<double>> boundMinScores(4);
   std::vector<std::vector<double>> boundMaxScores(4);
 
+  // Contruct inctance preprocessor
   Preprocessor processor(filesNPoints, preprocessEnabled);
   
+  // If enabled then do the preprocessing
   if (preprocessEnabled){
     showCasedAlgos::initPreprocess(points, processor, filesNPoints);
   }
+  // Else just give the parameter L for every algorithm a spesific L parameter (depends on algorithm)
   else{
     processor.defaultInput();
   }
 
+  // For every file in the given dir that was stores in the vector eariler
+  // --> execute the algorithms
+  // --> store scores
+  // --> if the input of spesific size is completed then write the scores to ouput file
+  // --> reset scores vectors
 
   for (const std::pair<int, std::string>& f : filesNPoints){
 
+    // cut off
     cutOff = std::chrono::milliseconds(500 * f.first);
 
     fileIndex++;

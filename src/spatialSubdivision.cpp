@@ -340,6 +340,7 @@ void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, s
         }
 
         catch(polygonizationFailure convexFail){
+          // if all the above failed then run convex with random segments until completes with marked segments inside
           while(true){
             try{
               convexHull pol = convexHull(subPolPoints[i].points, 1, subPolPoints[i].markedSegments.first, subPolPoints[i].markedSegments.second, i, subPolPoints.size() - 1);

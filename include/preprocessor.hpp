@@ -8,6 +8,7 @@
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
 
+// Preprocessor class for preprocessing data before executing the showcased algorithms
 
 class Preprocessor{
 
