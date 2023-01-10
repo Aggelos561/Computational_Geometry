@@ -1,241 +1,127 @@
-                    -- Εργασια 1 --
+                           -- Εργασια 3 --
+              Ανάπτυξη Λογισμικού Για Αλγοριθμικά Προβλήματα
+              
+Τελειοποίηση πολυγωνοποίησης σημειοσυνόλου βέλτιστης επιφάνειας, ανάπτυξη εφαρμογής 
+       για τη συγκριτική αξιολόγηση των αλγόριθμων πολυγωνοποίησης
 
--- Πολυγωνοποίηση σημειοσυνόλου με την χρήση της βιβλιοθήκης CGAL --
 
+Ομάδα 27
 Άγγελος Δωρόθεος Χατζόπουλος 1115201900217
-
 Γρηγόριος Μουλκιώτης 1115201900117
 
 
--- polygonization.hpp - polygonization.cpp --
-Αρχικά ορίζουμε την κλάση Polygonization που περιέχει τον τρόπο που επιλέγονται οι ακμές στην επιλεγμένη μέθοδο(edgeSelection),το εμβαδόν και το ratio(totalArea,ratio αντίστοιχα) περιέχει επιπλέον μεθοδους για επέκταση της πολυγωνικής γραμμής(expandPolygonLine),την διαγραφή ευθύγραμμων τμημάτων(deleteSegment),την εισαγωγή σημείων στο πολύγωνο όταν αυτα βρίσκονται στο κυρτό περίβλημα(forceInsertPoint),την διαγραφή ευθυγράμμων τμημάτων(deleteSegment) και getters και τις μεταβλητές της κλάσης. 
+Δομή και αρχεία του project
+
+Directory include/:
+- polygonization.hpp: Βασικά methods για την υλοποίηση του incremental και convex hull polygonization.
+- convexHull.hpp: Class για την υλοποίηση του convex hull η οποία κάνει inherit απο το polygonization class.
+- incremental.hpp: Class για την υλοποίηση του incremental η οποία κάνει inherit απο το polygonization class.
+- dataio.hpp: Namespace για το διάβασμα και έλεγχο παραμέτρων εισόδου και γράψιμο output σε συγκεκριμένο αρχείο.
+- localSearch.hpp: Class για υλοποίηση αλγόριθμου localSearch.
+- simulatedAnnealing.hpp: Class για υλοποίηση local step, global step και spatial subdivision.
+- preprocessor.hpp: Namespace που χρησιμοποιείται για το preprocess του project 3 πρίν την εκτέλεση των αλγόριθμων.
+- showCasedAlgos.hpp: Namespace όπου υπάρχουν κάποιες συναρτήσεις για την εκτέλεση συγκεκριμέων αλγόριμων για το project 3 και για την αποθήκευση των δεδομένων (scores , bound scores) για το γράψιμο στο output.
 
 
--- incremental.hpp - incremental.cpp --
-Για τον αυξητικό αλγόριθμο χρησιμοποιούμε την κλάση Incremental που κληρωνομεί απο την κλάση Polygonization η οποία παρέχει μεθόδους για αρχικοποίηση του τριγώνου(initializeTriangle),για την εύρεση των κόκκινων,ορατών και επιλογή ορατής ακμής(chooseVisibleSegment,getRedSegments,findVisibleSegments),διάταξη σημείων με βάση τις συντεταγμένες τους(sortYAsc,sortYDesc,sortPoints) όταν μας δοθεί ως όρισμα απο το command line ο τρόπος αρχικοποίησης του κυρτού πολυγώνου και αποθηκεύεται στην μεταβλητή της κλάσης initialization. Η μέθοδος start στην κλάση incremental καλείται απο την main για την εκτέλεση του αλγορίθμου.
+Directory src/:
+- polygonization.cpp: υλοποίηση των methods για την υλοποίηση του incremental και convex hull polygonization.
+- convexHull.cpp: υλοποίημένα methods για τον convex hull algorithm.
+- incremental.cpp: υλοποίημένα methods για τον incremental algorithm.
+- dataio.cpp: υλοποιήσεις συναρτήσεων για το input και output του προγράμματος.
+- localSearch.cpp: υλοποίημένα methods για τον local search optimization algorithm.
+- simulatedAnnealing.cpp: υλοποίημένα methods για local step, global step του simulated annealing.
+- spatialSubdivision.cpp: υλοποίημένα methods για spatial subdivision simulated annealing (ιδια κλάση με το global και local step).
+- preprocessor.cpp: συναρτήσεις για την εκτέλεση του preprocess το οποίο καλείται απο την main.
+- showCasedAlgos.cpp: συναρτήσεις για την εκτέλεση συγκεκριμένων αλγόριθμων για το project 3 και την αποθήκευση δεδομένων που θα γραφτούν στο output έπειτα.
+- main.cpp: στο project 3 βρίσκεται το main function που καλούνται το διάβασμα των parameters, το preprocessing (optinal) και η εκτέλεση των συγκεκριμένων αλγορίθων με την χρήση συναρτήσεων του namespace showCasedAlgos. Για κάθε input size που τελεειώνου όλοι οι αλγόριθμοι, γράφεται στο αρχείο output.
 
 
--- convexHull.hpp - convexHull.cpp --
-Για τον αλγόριθμο κυρτού περιβλήματος χρησιμοποιούμε την κλάση convexHull που κληρωνομεί απο την κλάση Polygonization και παρέχει μεθόδους για την αρχικοποίηση του κυρτού περιβλήματος(initializeConvexHull),την εύρεση του κοντινότερου σημείου απο κάθε ακμή και επιλογή του καταληλλότερου για εισαγωγή στο πολύγωνο(findBestPoint,findVisiblePoints,insertBestPoint) και υπολογισμό του εμβαδού(calcArea). Η μέθοδος start στην κλάση convexHull καλείται απο την main για την εκτέλεση του αλγoρίθμου.
+Directory instances_test/:
+- Περιέχει όλα τα αρχεία εκτέλεσης των αλγόριμων για να παραχθούν οι πίνακες των scores με preprocessing και χωρις preprocessing
+
+Επιπλέον, τα αρχεία ResultswithPreprocessing.txt και ResultswithoutPreprocessing.txt περιέχουν τα scores μετά την εκτέλεση των αρχείων που βρίσκονται στο directory inctances_test/
+
+Τρόπος μεταγλώττισης project
+
+Στο directory src/ του project εκτελούνται οι εντολές:
+
+1) cgal_create_CMakeLists -s evaluate
+2) cmake -DCMAKE_BUILD_TYPE=Release .
+3) make
 
 
--- dataio.hpp - dataio.cpp --
-Για το io χρησιμοποιούμε ενα namespace που περιέχει συνάρτηση για διάβασμα των command line arguments(getParameters),το διάβασμα των σημείων απο αρχείο(readPoints) και την εξοδο σε output file(createResultsFile).
+Τρόπος εκτέλεσης project
+
+$ ./evaluate -i (point set path) -o (output file) -preprocess (optional)
+
+  - (point set path) : Directory το οποίο θα περιέχει όλα τα αρχεία .inctance προς εκτέλεση
+  - (output file): αρχείο στο οποίο θα καταγραφούν τα δεδομένα (πίνακας αποτελεσμάτων)
+  - (optional): το συγκεκριμένο parameter είναι optional. Εάν εκτελεστεί με -preprocess πρώτα θα γίνει προεπεξεργασία με βάση τα αρχεία του input directory και μετά θα εκτελεστούν όλοι οι επιλεγμένοι αλγόριθμοι που αναλύονται παρακάτω.
 
 
--- main.cpp --
-Οπότε στην main απλως επιλέγουμε την κατάλληλη κλάση ανάλογα τον αλγόριθμο και επιλέγουμε την μέθοδο start για το τρέξιμο του αλγορίθμου.
-
-
-
-Για να γίνει build απαιτείται στο directory ./src/ να τρέξουν οι εντολές:
-
-• cgal_create_CMakeLists -s to_polygon
-
-  --> Με την εκτέλεση της παραπάνω εντολής θα πρέπει να έχει δημιουργηθεί αυτόματα ενα αρχείο CMakeList.txt που θα περιέχει μέσα τις ακόλουθες εντολές:
-    - include_directories( BEFORE ../include )
-    - add_executable( to_polygon  convexHull.cpp dataio.cpp incremental.cpp main.cpp polygonization.cpp )
-    - add_to_cached_list( CGAL_EXECUTABLE_TARGETS to_polygon )
-    - target_link_libraries(to_polygon PRIVATE CGAL::CGAL )
-
-
-• cmake -DCMAKE_BUILD_TYPE=Release .
-
-
-• make
-
-
-• Εκτέλεση του προγράμματος όπως παρακάτω
-
-
-Παραδείγματα εκτέλεσης προγράμματος:
-
-
-    -- Για τον αυξητικό αλγόριθμο --
     
- •   ./to_polygon -i euro-night-0000050.instance -o results_file.txt -algorithm incremental -edge_selection 1 -initialization 1a
-     Algorithm: incremental_edge_selection_1_initialization_1a
-     Area: 45615704
-     ratio: 0.697328
-     Construction time: 0
+Βεκτιστοποιηση των υλοποιησεων για μεγαλυτερη ταχυτητα και ακριβεια προσεγγισεων.
 
- •   ./to_polygon -i london-0000100.instance -o results_file.txt -algorithm incremental -edge_selection 2 -initialization 1b
-     Algorithm: incremental_edge_selection_2_initialization_1b
-     Area: 100211210
-     ratio: 0.263031
-     Construction time: 5
+Πραγματοποιήσαμε βελτιστοποίηση των αλγορίθμων:
 
-•   ./to_polygon -i uniform-0000200-1.instance -o results_file.txt -algorithm incremental -edge_selection 2 -initialization 2a
-     Algorithm: incremental_edge_selection_2_initialization_2a
-     Area: 37363878
-     ratio: 0.278152
-     Construction time: 8
-
-•   ./to_polygon -i protein-0020000.instance -o results_file.txt -algorithm incremental -edge_selection 3 -initialization 2b
-     Algorithm: incremental_edge_selection_3_initialization_2b
-     Area: 75886700638
-     ratio: 0.685471
-     Construction time: 151085
-
-•   ./to_polygon -i paris-0000200.instance -o results_file.txt -algorithm incremental -edge_selection 3 -initialization 2b
-     Algorithm: incremental_edge_selection_3_initialization_1a
-     Area: 197092256
-     ratio: 0.724213
-     Construction time: 5
-
-•   ./to_polygon -i euro-night-0100000.instance -o results_file.txt -algorithm incremental -edge_selection 1 -initialization 1b
-     Algorithm: incremental_edge_selection_1_initialization_1b
-     Area: 2332581614
-     ratio: 0.407177
-     Construction time: 4199035
+   1) Convex Hull: Μείωση περιττών ελέγχων για την εύρεση νέου σημείου και την εισαγωγή του στο πολύγωνο σε κάθε επανάληψη με αποτέλεσμα να μπορούμε να παράγουμε πολύγωνα απο μεγαλύτερα σημειοσύνολα εισόδου.
+   2) Simulated annealing-spatial Subdivsion: Σε αυτόν τον αλγόριθμο εαν αποτύχουν να κάνουν πολυγωνοποίηση ο Incremental τοτε θα τρέξει Convex με την επιλογή ακμών που του δώθηκε (min/max) και εάν και αυτος ο αλγόριθμος αποτύχει λόγω των περιορισμών στις δύο ακρειανές ακμές τότε θα εκτελεστεί ξανά Convex αυτήν την φορά με επιλογή τυχαίας ακμής μέχρι να ικανοποιηθούν οι περιορισμοί (να μην επιρεαστούν τα 2 ακριανά segments ώστε να μπορεί να γίνει merge έπειτα). Με την αλλαγή αυτή ο spatial subdivision μπορεί να εκτελέσει πολυγωνοποίηση και optimization χώρις να υπάρχει fail μέχρι και 100k σημέιων.
+   3) Simulated annealing-Local Transition: Για να αποφευχθούν ατέρμων βρόχοι σε πολύγωνα λίγων σημείων προστέθηκε η σταδιακή (μικρή) μείωση της θερμοκρασίας T ακόμα και αν δεν μπορεί να βρεί νεο simple πολύγωνο σε κάθε iteration.
+   
+  Επιπλέον, αφαιρέσαμε περριτό κώδικα όπως ορισμένους ελέγχους και κλήσεις συναρτήσεων που δεν χρησίμευαν πουθένα για την εκτέλεση των αλγορίθμων μειώνοντας έτσι το χρόνο εκτέλεσης σε όλους τους αλγόριθμους.
 
 
 
-    -- Για τον αλγόριθμο με βάση το ΚΠ --
+Επιλογή αλγορίθμων
 
- •   ./to_polygon -i stars-0000200.instance -o results_file.txt -algorithm convex_hull -edge_selection 1
-     Algorithm: convex_hull_edge_selection_1
-     Area: 159720393928
-     ratio: 0.48022
-     Construction time: 2020
+Οι αλγόριθμοι που επιλέχτηκαν είναι οι εξής:
 
- •   ./to_polygon -i london-0000100.instance  -o results_file.txt -algorithm convex_hull -edge_selection 2
-     Algorithm: convex_hull_edge_selection_2
-     Area: 91436178
-     ratio: 0.239999
-     Construction time: 192
+1) Incremntal with Global Trasitions and afterwards Local Transitions
+Ουσιαστικά σε αυτήν την εκτέλεση πολυγωνοποιούμε με τον incremental αλγόριθμο εν συνεχεία κάνουμε optimize με Global Trasitions και τέλος κάνουμε δεύτερο optimize με Local Transitions.
 
- •   ./to_polygon -i euro-night-0000050.instance euro -o results_file.txt -algorithm convex_hull -edge_selection 2
-     Algorithm: convex_hull_edge_selection_2
-     Area: 18837314
-     ratio: 0.287966
-     Construction time: 13
+2) Spatial Subdivision
+Σε αυτήν την εκτέλεση διασπάμε το σημειοσύνολο σε επιμέρους υποσύνολα και για καθένα υποσύνολο το πολυγωνοποιούμε αρχικά με incremental εάν αυτός αποτύχει τότε εκετελέιτε convex hull και εάν και αυτός αποτύχει τοτε πολυγωνοποιούμε με τυχαία επιλογή ακμών για τον convex hull μέχρις ότου τα 2 ακριανά segments βρίσκονται στην πολυγωνική γραμμή. Επίσης, όταν τρέχει σε κάθε υποπολύγωνο global transitions ακόμα και να μην ικανοποιείται η συνθήκη του να είναι simple μειώνεται η θερμοκρασία T ελάχιστα σε κάθε επανάληψη έτσι ώστε να αποφεύγουμε ατέρμων βρόγχους (Μόνο για μικρά σημειοσύνολα).
+
+3) Incremental polygonization with Local Transitions
+Σε αυτήν την επιλογή αρχικά πολυγωνοποιούμε με incremental polygonization και εν συνέχεια εφαρμόζουμε local Transitions για την βελτιστοποίηση του πολυγώνου.
+
+4) Convex Hull with Local Transitions
+Σε αυτήν την επιλογή αρχικά πολυγωνοποιούμε με Convex Hull αλγόριθμο και εν συνεχεία κάνουμε optimization με Local Transitions.
+
+Τέλος, δοκιμάστηκε και ο αλγόριθμος local search optimization για σημειοσύνολα μεγέθους εως 800 σημείων και παρατηρήθηκε οτι ο χρόνος εκτέλεσης του αυξάνεται ραγδαία διότι για να εφαρμόσει οποιαδήποτε αλλαγή στο πολύγωνο πρέπει σε κάθε επανάληψη να βρεί όλες τις δυνατές αλλαγές που μπορεί να πραγματοποιήσει για εως και k paths και έπειτα να εφαρμόσει την καλύτερη. Ιδιαίτερα για μεγάλη τιμή παραμέτρου K ο αλγόριθμους αν και παρήγαγε αρκετά καλά αποτελέσματα ο χρόνος εκτέλεσης είναι μεγάλος και μπορεί να χρησιμοποιηθέι μόνο σε πολύγωνα με σχετικά μικρό αριθμό σημείων. Για τους παραπάνω λόγους δεν εφαρμόστηκε στις τελικές δοκιμές για τους πίνακες αποτελεσμάτων.
 
 
-•    ./to_polygon -i paris-0000200.instance -o results_file.txt -algorithm convex_hull -edge_selection 3
-     Algorithm: convex_hull_edge_selection_3
-     Area: 242592482
-     ratio: 0.891403
-     Construction time: 1742
+Preprocessing
+
+Καταρχήν, εάν δεν οριστεί από τα ορισματα να γίνει preprocessing θα αρχικοποιήσουμε την υπερπαράμετρο των αλγορίθμων L σε μια default τιμή ανάλογα το μέγεθος της εισόδου και ανάλογα τον optimization αλγόριθμο.
+
+Σε περίπτωση που οριστεί το preprocessing τότε εκτελούμε έναν αλγόριθμο μηχανικής μάθησης που τρέχει σε κάθε αρχείο του directory της εισόδου και βγάζει μέσο όρο για το L του αλγορίθμου ανάλογα το μέγεθος. Για σημειοσύνολα με μέγεθος μεγαλύτερο του 1000 τότε δημιουργεί 2 σημειοσύνολα με τυχαία σημεία απο το αρχικό και εκτελεί δοκιμές για L ώστε τελικά να βρεθέι optimal τιμή σε ενα σχετικά μικρό χρονικό διάστημα.
+
+Αναλυτικότερα, για να βρεθεί optimal L για τον subdivison, τον local step και global step εκετελούνται αρκετές δοκιμές στο πολύγωνο που παράγεται με τον incremental αλγόριθμο για maximization διότι έχει παρατηρηθέι οτι στο συγκεκριμένο mode είναι πιο δύσκολο να παραχθούν αποτελέσματα που να προσεγγίζουν το ολικό μέγιστο σε σχέση με το minimization. Άρα βρίσκονας optimal L για κάθε αλγόριθμο optimization για maximization, ο αλγόριθμος εγγυάται πως θα παράγει πολύ καλά προσεγγιστικά αποτελέσματα και για minimization.
 
 
-    -i το input file (.instance με κατάλληλη δομή με tabs ανάμεσα)
-    -o το output file που θα εκτυπωθούν τα δεδομένα όπως αναφέρει η εκφώνηση
-    - algorithm για την εκτέλεση συγκεκριμένου αλγορίθμου (incremental or convex_hull)
-    - edge_selection για την επιλογή κατάλληλης ακμής/σημείου (random ή πρόσθεση ελάσχιστου/μέγιστου εμβαδού)
-    - initialization για τον αυξητικό αλγόριθμο για την επιλογή του sorting των σημείων (1a , 1b, 2a, 2b)
 
+Αποτελέσματα Δοκιμών
 
-    -- Παρατηρήσεις --
-• Η κεντρική διαφορά μεταξύ των αλγορίθμων είναι ότι ο αυξητικός περιορίζει ανά επανάληψη τον έλεγχο των ακμών που θα προστεθούν και μάλιστα επιλέγει ένα σημείο με βάση το αρχικό sorting που έχει γίνει.Σε αντίθεση με τον αλγόριθμο με βάση το ΚΠ ο οποιος ελέγχει σε καθε επανάληψη όλες τις ακμές του πολυγώνου και όλα τα υπολοιπόμενα σημεία για την εύρεση ορατότητας και εγγύτητας.Τα παραπάνω τεκμαίρωνται και από τον χρόνο εκτέλεσης του προγράμματος χρησιμοποιώντας τους παραπάνω αλγορίθμους.
+1) Τα αποτελέσματα χωρίς preprocessing βρίσκονται στο αρχείο resultsWithoutPreprocess.txt  
+2) Τα αποτελέσματα με preprocessing βρίσκονται στο αρχείο resultsWithPreprocess.txt  
+3) Τα αρχεία δοκιμών για τους πίνακες αποτελεσμάτωτν βρίσκονται στο instances_test/ directory
 
-• Επιπλέον, παρατηρείται οτι κατά την εκτέλεση εύρεσης τοπικού μέγιστου και τοπικού ελάχιστου πολύγωνου ο αλγόριθμος με βάση το ΚΠ αν και πιο αργός βρίσκει πολύγωνα με μικρότερο/μεγαλύτερο τοπικό ελάχιστο/μέγιστο εμβαδό σε σχέση με τον αυξητικό αλγόριθμο.
+Απο τις παραπάνω δοκιμές παρατηρούμε οτι:
 
+1) Ο Subdivision παράγει στις περισσότερες περιπτώσεις καλύτερα αποτελέσματα για min score σε σχέση με τους υπόλοιπους αλγόριθμους.
 
-                    -- Εργασια 2 --
+2) Για max score έχουμε καλύτερα αποτελέσματα με Spatial Subdivision και Convex+Local με τον Convex+Local να είναι καλύτερος όσο αυξάνονται τα σημεία αλλά να αποτυγχάνει να πετύχει τους χρόνο cut off για είσοδο μεγαλύτερη ή ίση των 10.000 σημείων.
 
--- localSearch.hpp - localSearch.cpp --
-Περιέχει κλάση που χρησιοποιείται για το local search και εχει μεθόδους που χρησιμοποιούνται για την εκτέλεση του αλγορίθμου(start) και την επιστροφή του ratio και του area(getOptimisedArea,getOptimisedRatio) σημαντικό είναι οτι για προστέθηκαν οι μέθοδοι applyKPathRemoval και applyBlueRemoval για την τροποποίηση του τμήματος του μονοπατιού και της ακμής που αφαιρείται αντίστοιχα στην κλαση Polygonization.Αξίζει να σημειωθεί επιπλέον ότι για να μετράμε σωστά το εμβαδόν της προστηθέμενης και της αφαιρούμενης επιφάνειας χρησιμοποιούμε το CGAL::ON_BOUNDED_SIDE.Υπάρχουν επιπλέον ιδιοτηκές μέθοδοι της κλάσης για εύρεση των αλλαγών και εφαρμογή τους(findChanges,applyChanges).
+3) Ο subdivision καταφέρνει να έχει τον μικρότερο χρόνο εκτέλεσης ενώ ο Convex+Local τον μεγαλύτερο χρόνο εκτέλεσης.
 
-Εάν επιλέγει απο τον χρήστη να γινει local search τοτε εκτελείται ο local search σε ολο το πολύγωνο και αναζητούνται ολα τα μονοπάτια σημείων μέσα στο πολύγωνο που βρίσκονται στις ακμές του και αντικαθήστανται με άλλη ακμή του πολυγώνου διατειρόντας παράλληλα την απλότητα του πολυγώνου.
+4) Οι αλγόριθμοι Incr+Global+Local και Incr+Local βρίσκονται στο ενδιάμεσο ως προς τον χρόνο εκτέλεσης με τον Incr+Global+Local να υπερτερεί στα τελικά αποτελέσματα καθώς προστίθενται ο παράγοντας Global Transitions που βελτιώνει σχεδόν σε κάθε input το τελικό area.
 
--- simulatedAnnealing.hpp  simulatedAnnealing.cpp spatialSubdivision.cpp--
-Περιέχουν την κλάση που χρησιμοποιείται για simulated anealing.Μέσα στην κλάση υπάρχουν μέθοδοι για την εκτέλεση του αλογoρίθμου(startAnnealing ή startSubdivision) και την εύρεση του εμβαδού και του ratio(getOptimisedArea,getOptimisedRatio),καθώς επίσης και ιδιοτηκές κλάσεις για την εκτέλεση global και local αλλαγών(localTransition,globalTransition),για έλεγχο εάν οι αλλαγές είναι έγκυρες(validityCheck),αντικατάσταση των ακμών και εύρεση αλλαγών(replace,findGlobalChanges).Επιπλέον περιέχονται μέθοδοι για αρχικοποίηση του kdtree και εύρεση των intersected ακμών μέσα σε μια αναζητούμενη περιοχή(KdTreeInit,validityCheck).Τέλος υπάρχουν μέθοδοι για τμηματοποίηση των σημείων εφαρμογή των αλογορίθμων σε αυτά και συνχονευση των υποπολυγώνων(createSubsetPoints,mergePolygons).
+5) Όλοι οι επιλεγμένοι αλγόριθμοι εκτός του Convex+Local καταφέρνουν να παράξουν αποτελέσματα στο χρονικό περιθόριο cut off για είσοδο εως και 100k σημείων.
 
-Εάν επιλεγεί απο τον χρήστη το local anealing εφαρμόζονται local transitions σε όλο το πολύγωνο οπου επιλέγεται ένα τυχαίο σημείο και αλλάζει θέση με το επομένο του,η εγκυρότητα του πολυγώνου ελέγχεται με kd-tree.
+6) Με την εκτέλεση των αλγόριμων με preprocessing παρατηρούμε οτι στα περισσότερα σημειοσύνολα στον πίνακες αποτελεσμάτων παράγονται καλύτερα αποτελέσματα σε σχέση με την εκτέλεση τον αλγόριθμων με default επιλογές L κυρίως στο minimization αλλά και σε αρκετές περιπτώσεις και στο maximization.
 
-Εάν επιλεγεί απο τον χρήστη το global anealing εφαρμόζονται local transitions σε όλο το πολύγωνο οπου επιλέγονται δύο σημεία ενόνωνται μεταξύ τους και στην συνέχεια διαγράφεται η ακμή του σημείου που ενώνεται με το πρώτο και στην συνέχεια προσθέτουμε νεο segment σε αυτη τη περιοχή,η εγκυρότητα του πολυγώνου και εδώ ελέγχεται με kd-tree.
+7) Ο local transitions του simulated annealing λόγω των τοπικών (μικρών) αλλαγών που κάνει και λόγω της χρήσης του kd-tree για τον ελεγχό των intersection, η τιμή του L μπορεί να είναι πολύ μεγαλύτερη σε σχέση με τον αλγόριθμο global transitions.
 
-Σε περίπτωση που επιλέγει απο τον χρήστη το subdision διαμερίζουμε τα σημεία σε k υποσύνολα με βάση τον τύπο k = ceil(n-1/m-1) το m ορίζεται από τον χρήστη.Το τελευταίο segment καθε πολυγώνου εκτός απο την τελευταία ομάδα απαιτείται να είναι γνησίως μονότονο,ενώ το πρώτο εκτός της πρώτης ομάδας απαιτείται αν είναι γνησιώς φθήνων.Εφαρμογή στην συνέχεια ενός εκ των αρχικών αλγορίθμων πολυγωνοποίησης(convex hull ή incremental) σε κάθε ομάδα σημείων,αποφυγή επεξεργασίας των άκρων των ομάδων καθώς μπορεί να προκληθεί σφάλμα κατά την συνχώνευση των υποομάδων.Εάν κατά την διαδικασία εκτέλεσης του incrental o αλγόριθμος αποτύχει να κρατήσει το marked segment τότε επιλέγουμε να εκτελεστεί ο convex hull για την συγκεκριμένη ομάδα.Στην συνέχεια εκτελούμε global transitions για κάθε υποπολύγωνο διατειρόντας τα ευθύγραμμα τμήματα συγχώνευσης.Για την συγχώνευσευση όλων των πολυγώνων ξεκινάμε από το lower hull ολων των πολυγώνων και ενώνουμε την κάθε ομάδα και μόλις φτάσουμε στο τέλος ενόνουμε τα uper hull των ομάδων πηγαίνοντας στην την φορά απο το τελός στην άρχη,στο τελευταίο στάδιο του merging γίνεται η διαγραφή των κοινών ακμών κάθε ομάδων με κοινό σημείο και η ένωση του κάτω μέρους του τριγώνου που προκύπτει.Τλος εφαρμόζουμε local transitions στο πολύγωνο που προκύπτει.
-
-
-Παρατηρήσεις:
-Χάρη στο subdivision πετυχαίνουμε καλύτερους χρόνους κατασκευής σε σχέση με την πρώτη εργασία,έχουμε επίσης κάνει optimise στην isSimple που ελέγχει εάν το πολύγωνο είναι απλό.
-Κατά την εκτέλεση του simulated anealing μπορεί να προκύψει πολύγωνο με μικρότερο εμβαδόν εάν δοθεί maximazation επιλογή απο τον χρήστη ή και το αντίστροφο αυτό μπορεί να αποφευχθεί είτε αυξάνοντας το L(που και πάλι δεν είναι εγγυημένο οτι θα έρθουν καλύτερα αποτελέσματα) ή κρατόντας το στιγμειότυπο του πολυγώνου κάθε φορά που έχει αυτή την στιγμή το μεγαλύτερο δυνατό εμβαδόν.
-Ο local search είναι πιό γρήγορος για λίγα σημεία ομως για πολλά (πάνω απο 200) αργεί αρκετά να δώσει απαντήσεις ειδικά για μικρο threshold, και μεγάλο K.
-
-Ο simulated annealing κάνει καλύτερες προσεγγίσεις στο εμβαδόν από την άλλη και είναι ικανοποιητικός ως προς τον χρόνο ειδικά εαν επιλεγεί το subdivision.Τα local transitions έχουν γρήγορα αποτελέσματα αλλά όχι τόσο optimized,τα global transitions είναι αρκετά πιο αργά σε σχέση με τον local αλλα τα αποτελέματα του είναι αρκετά πιο optimal.Τέλος ο spatial subdivision συνδιάζοντας global transition σε μικρά πολύγωνα και local transition στο τελικό πολύγωνο παρατειρούμε ένα αρκετά ικανοποιητικό αποτέλεσμα ως προς τον χρόνο και ως προς την προσέγγιση. 
-
-Μεταγλώττιση:
-
-• cgal_create_CMakeLists -s optimal_polygon
-• cmake -DCMAKE_BUILD_TYPE=Release .
-• make
-
-Εκτέλεση
-./optimal_polygon -i αρχειο_εισοδου -o αρχειο_εξοδου -algorithm αλγοριθμος_optimization(local_search or simulated_annealing) -L αριθμός -max ή -min -annealing μεθοδος_annealing(local ή global ή subdivision) -algorithm_initial αρχικός_αλγόριθμος(incremental ή convex_hull) -initialization μονο_για_τον_incremental (1a ή 1b ή 2a ή 2b. Ο subdivision μόνο με 1a και 1b) -m αριθμός -edge_selection (1 random , 2 min, 3 max, αν δεν δωθεί τότε εκτελεί οτι κάνει το optimisation)
-
-
-Παραδείγματα εκτέλεσης
-
-./optimal_polygon -i uniform-0000030-1.instance -o output.txt -algorithm local_search -L 3 -min -threshold 2.0 -algorithm_initial convex_hull
-Algorithm: local_search_min
-Area_initial: 802586
-Area: 550732
-ratio_initial: 0.377536
-ratio: 0.259064
-Construction time: 44
-
-
-./optimal_polygon -i uniform-0000500-1.instance -o output.txt -algorithm simulated_annealing -L 100000 -max  -annealing local -algorithm_initial incremental -initialization 1a
-Algorithm: simulated_annealing_max
-Area_initial: 606856524
-Area: 644944060
-ratio_initial: 0.698769
-ratio: 0.742625
-Construction time: 3020
-
-
-./optimal_polygon -i euro-night-0000300.instance -o output.txt -algorithm simulated_annealing -L 6000 -min -annealing global -algorithm_initial incremental -initialization 1a
-Algorithm: simulated_annealing_min
-Area_initial: 18620510
-Area: 12292822
-ratio_initial: 0.229772
-ratio: 0.15169
-Construction time: 18316
-
-
-./optimal_polygon -i uniform-0000100-1.instance -o output.txt -algorithm local_search -L 5 -max -threshold 2.0 -algorithm_initial incremental -initialization 1a
-Algorithm: local_search_max
-Area_initial: 23777634
-Area: 26522038
-ratio_initial: 0.713752
-ratio: 0.796133
-Construction time: 4474
-
-
-./optimal_polygon -i uniform-0000100-1.instance -o output.txt -algorithm simulated_annealing -L 10000 -max -annealing global -algorithm_initial incremental -initialization 1a
-Algorithm: simulated_annealing_max
-Area_initial: 23777634
-Area: 26191476
-ratio_initial: 0.713752
-ratio: 0.78621
-Construction time: 4448
-
-
-./optimal_polygon -i uniform-0000100-1.instance -o output.txt -algorithm simulated_annealing -L 10000 -max -annealing global -algorithm_initial incremental -initialization 1a -edge_selection 1
-Algorithm: simulated_annealing_max
-Area_initial: 18128506
-Area: 25923254
-ratio_initial: 0.544178
-ratio: 0.778159
-Construction time: 4077
-
-
-./optimal_polygon -i uniform-0000500-1.instance -o output.txt -algorithm simulated_annealing -L 6000 -max -annealing subdivision -algorithm_initial convex_hull -m 20
-Algorithm: simulated_annealing_max
-Area_initial: 559346838
-Area: 605628460
-ratio_initial: 0.644063
-ratio: 0.697355
-Construction time: 8061
-
-
-./optimal_polygon -i uniform-0000500-1.instance -o output.txt -algorithm simulated_annealing -L 6000 -max -annealing subdivision -algorithm_initial incremental -initialization 1a -m 20
-Algorithm: simulated_annealing_max
-Area_initial: 535270110
-Area: 608276158
-ratio_initial: 0.61634
-ratio: 0.700403
-Construction time: 7012
+8) Ο χρόνος εκτέλεσης του spatial subdivision ανεβαίνει γραμμικά λόγω του διαχωρισμού του σημειοσύνολου σε υποσύνολα σημείων με αποτέλεσμα ο αλγόριθμος να εκτελείται σε ίδιο αριθμό σημείων με την διαφορά οτι όσο μεγαλώνει το input size ο αριθμός των υποσυνόλων αυξάνεται.
 
