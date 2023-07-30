@@ -35,7 +35,7 @@ Incremental::Incremental(const std::vector<Point> &points, int edgeSelection, co
 
 
 // incremental algorithm MAIN method
-void Incremental::start(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff) {
+void Incremental::start(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime) {
 
   // Sort points in a spesific order
   this->sortPoints(points);
@@ -58,7 +58,7 @@ void Incremental::start(const std::chrono::_V2::system_clock::time_point startTi
   // Loop until there are no remaining points left
   while (remainingPoints.size() > 0) {
 
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
       throw cutOffAbort("Cut off time exceeded");
     }
 

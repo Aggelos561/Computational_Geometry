@@ -7,9 +7,9 @@
 #include <CGAL/Polygon_2_algorithms.h>
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/intersections.h>
+#include <cstdio>
 #include <iostream>
 #include <vector>
-
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
@@ -33,7 +33,7 @@ convexHull::convexHull(const std::vector<Point> &points, int edgeSelection, cons
 
 
 // convex hull algorithm MAIN method
-void convexHull::start(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff){
+void convexHull::start(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
 
   srand(time(NULL));
 
@@ -65,7 +65,7 @@ void convexHull::start(const std::chrono::_V2::system_clock::time_point startTim
 
   while(remainingPoints.size() > 0){
 
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+    if (measureTime &&  std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
       throw cutOffAbort("Cut off time exceeded");
     }
 

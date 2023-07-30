@@ -40,5 +40,5 @@ class Incremental: public Polygonization{
 	public:
 		Incremental(const std::vector<Point>&, int, const std::string&);
 		Incremental(const std::vector<Point>&, int, const std::string&, const Point&, bool);
-		void start(const std::chrono::_V2::system_clock::time_point , const std::chrono::milliseconds );
+		void start(const std::chrono::system_clock::time_point startTime = std::chrono::system_clock::time_point(), const std::chrono::milliseconds cutOff = std::chrono::milliseconds(0), const bool measureTime = false );
 };

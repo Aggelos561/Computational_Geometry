@@ -20,7 +20,6 @@
 #include "../include/convexHull.hpp"
 
 
-
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
 typedef CGAL::Polygon_2<K> Polygon_2;
@@ -93,7 +92,7 @@ std::vector<Segment_2> simulatedAnnealing::getLowerHull(const std::vector<Point>
 
 
 // Merging all subpolygons into one final polygon
-void simulatedAnnealing::mergePolygons(std::vector<Segment_2>& mergedPolygon, std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, ft& sumArea, const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff){
+void simulatedAnnealing::mergePolygons(std::vector<Segment_2>& mergedPolygon, std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, ft& sumArea, const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
 
   for (int i = 0; i < allPolygLines.size(); i++){
     
@@ -124,7 +123,7 @@ void simulatedAnnealing::mergePolygons(std::vector<Segment_2>& mergedPolygon, st
 
   for (int i = allPolygLines.size() - 1; i >= 0; i--){
 
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
       throw cutOffAbort("Cut off time exceeded");
     }
     
@@ -161,7 +160,7 @@ void simulatedAnnealing::mergePolygons(std::vector<Segment_2>& mergedPolygon, st
 
   for (int i = 0; i < mergedPolygon.size(); i++){
 
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
       throw cutOffAbort("Cut off time exceeded");
     }
 
@@ -280,11 +279,11 @@ void simulatedAnnealing::createSubsetPoints(std::vector<subTeam>& subPolPoints){
 }
 
 // Polygonization for every sub point
-void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, int edge_selection, const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff){
+void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, int edge_selection, const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
 
   for (int i = 0; i < subPolPoints.size(); i++){
 
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
       throw cutOffAbort("Cut off time exceeded");
     }
 
@@ -377,12 +376,12 @@ void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, s
 
 
 // Global Transitions for every sub polygon
-void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff){
+void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
   
   for (int i = 0; i < allPolygLines.size(); i++){
 
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
-      throw cutOffAbort("Cut off time exceeded");
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+     throw cutOffAbort("Cut off time exceeded");
     }
     
     polygonInstance polygon;    
@@ -406,28 +405,28 @@ void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints
 
 }
 
-void simulatedAnnealing::startSubdivision(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff){
-
+void simulatedAnnealing::startSubdivision(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
+  
   // Create subset teams
   std::vector<subTeam> subPolPoints;
   createSubsetPoints(subPolPoints);
 
-  if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+  if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
       throw cutOffAbort("Cut off time exceeded");
     }
 
   // Polygonization for every subset
   std::vector<polygonInstance> allPolygLines(subPolPoints.size());
-  subPolygonization(subPolPoints, allPolygLines, edgeSelection, startTime, cutOff);
+  subPolygonization(subPolPoints, allPolygLines, edgeSelection, startTime, cutOff, measureTime);
 
   for (const polygonInstance& polygon : allPolygLines){
     totalArea += polygon.area;
   }
 
-  mergePolygons(prevPolygLine, subPolPoints, allPolygLines, totalArea, startTime, cutOff);
+  mergePolygons(prevPolygLine, subPolPoints, allPolygLines, totalArea, startTime, cutOff, measureTime);
 
   // // Global transitions for every sub polygon
-  subGlobalTransitions(subPolPoints, allPolygLines, startTime, cutOff);
+  subGlobalTransitions(subPolPoints, allPolygLines, startTime, cutOff, measureTime);
 
   for (polygonInstance& polygon : allPolygLines){
     optimisedArea += polygon.area;
@@ -435,7 +434,7 @@ void simulatedAnnealing::startSubdivision(const std::chrono::_V2::system_clock::
 
  
   // Merge all subset polygons
-  mergePolygons(polygLine, subPolPoints, allPolygLines, optimisedArea, startTime, cutOff);
+  mergePolygons(polygLine, subPolPoints, allPolygLines, optimisedArea, startTime, cutOff, measureTime);
   
   // Local transitions for final polygon
   simulatedAnnealing annealing = simulatedAnnealing(points , polygLine, optimisedArea, calcRatio(polygLine, optimisedArea), 2 * this->L, this->mode, 1);

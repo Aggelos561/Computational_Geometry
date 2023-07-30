@@ -87,7 +87,7 @@ simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const s
 
 
 // Start Annealing
-void simulatedAnnealing::startAnnealing(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff){
+void simulatedAnnealing::startAnnealing(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
 
   srand(time(NULL));
 
@@ -111,7 +111,7 @@ void simulatedAnnealing::startAnnealing(const std::chrono::_V2::system_clock::ti
 
   while(T >= 0){
 
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
       throw cutOffAbort("Cut off time exceeded");
     }
 

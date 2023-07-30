@@ -40,15 +40,15 @@ void showCasedAlgos::runAlgorithm(const std::string& algorithm, const std::vecto
         auto start = std::chrono::high_resolution_clock::now();
 
         Incremental incremental = Incremental(points, mode, "1a");
-        incremental.start(start, cutOff);
+        incremental.start(start, cutOff, true);
 
         std::vector<Segment_2> polygonLine = incremental.getPolygonLine();
 
         simulatedAnnealing simulatedGlobal = simulatedAnnealing(points, incremental.getPolygonLine(), incremental.getArea(), incremental.getRatio(), processor.getSimGlobal_L(f.first), mode - 1, 2);
-        simulatedGlobal.startAnnealing(start, cutOff);
+        simulatedGlobal.startAnnealing(start, cutOff, true);
 
         simulatedAnnealing simulatedLocal = simulatedAnnealing(points, simulatedGlobal.getPolygonLine(), simulatedGlobal.getOptimisedArea(), simulatedGlobal.getOptimisedRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
-        simulatedLocal.startAnnealing(start, cutOff);
+        simulatedLocal.startAnnealing(start, cutOff, true);
 
         auto stop = std::chrono::high_resolution_clock::now();
 
@@ -63,7 +63,7 @@ void showCasedAlgos::runAlgorithm(const std::string& algorithm, const std::vecto
         auto start = std::chrono::high_resolution_clock::now();
         
         simulatedAnnealing simulatedSubdivision = simulatedAnnealing(points, processor.getSimSubDiv_L(f.first), mode, mode - 1, "1a", processor.getSimSubDiv_M(f.first), 1);
-        simulatedSubdivision.startSubdivision(start, cutOff);
+        simulatedSubdivision.startSubdivision(start, cutOff, true);
 
         auto stop = std::chrono::high_resolution_clock::now();
         duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
@@ -76,12 +76,12 @@ void showCasedAlgos::runAlgorithm(const std::string& algorithm, const std::vecto
         auto start = std::chrono::high_resolution_clock::now();
     
         Incremental incremental = Incremental(points, mode, "1a");
-        incremental.start(start, cutOff);
+        incremental.start(start, cutOff, true);
 
         std::vector<Segment_2> polygonLine = incremental.getPolygonLine();
 
         simulatedAnnealing simulatedLocal = simulatedAnnealing(points, incremental.getPolygonLine(), incremental.getArea(), incremental.getRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
-        simulatedLocal.startAnnealing(start, cutOff);
+        simulatedLocal.startAnnealing(start, cutOff, true);
 
         auto stop = std::chrono::high_resolution_clock::now();
         duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
@@ -97,12 +97,12 @@ void showCasedAlgos::runAlgorithm(const std::string& algorithm, const std::vecto
         try{
           
           convexHull convex = convexHull(points, mode);
-          convex.start(start, cutOff);
+          convex.start(start, cutOff, true);
 
           std::vector<Segment_2> polygonLine = convex.getPolygonLine();
 
           simulatedAnnealing simulatedLocal = simulatedAnnealing(points, convex.getPolygonLine(), convex.getArea(), convex.getRatio(), processor.getSimLocal_L(f.first), mode - 1, 1);
-          simulatedLocal.startAnnealing(start, cutOff);
+          simulatedLocal.startAnnealing(start, cutOff, true);
 
           auto stop = std::chrono::high_resolution_clock::now();
           duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

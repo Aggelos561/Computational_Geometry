@@ -40,5 +40,5 @@ class convexHull : public Polygonization{
     public:
         convexHull(const std::vector<Point>&, int );
         convexHull(const std::vector<Point>&, int ,const Segment_2& , const Segment_2&, int, int);
-        void start(const std::chrono::_V2::system_clock::time_point, const std::chrono::milliseconds);
+        void start(const std::chrono::system_clock::time_point startTime = std::chrono::system_clock::time_point(), const std::chrono::milliseconds cutOff = std::chrono::milliseconds(0), const bool measureTime = false);
 };
