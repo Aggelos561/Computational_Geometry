@@ -445,7 +445,7 @@ bool Polygonization::isSimple(const Changes& change, const std::vector<Segment_2
       if (result){
         if (const Point *p = boost::get<Point>(&*result)) {
 
-          if (*p == newPolygonSegment.source() || *p == newPolygonSegment.target()) {
+          if (*p == newSegment.source() || *p == newSegment.target()) {
             continue;
           } 
           else {
@@ -453,11 +453,11 @@ bool Polygonization::isSimple(const Changes& change, const std::vector<Segment_2
           }
         } 
         else {
-        return false;
+          return false;
         }
       }
     }
   }
-
+  
   return true;
 }

@@ -67,7 +67,7 @@ simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, int L, 
     this->optimisedRatio = 0;
     this->mode = mode; // 1 = min, 2 = max
     this->segmentImmunity = false;
-    this->m = m;
+    this->m = points.size() < m ? points.size() : m;
 
 }
 
@@ -87,7 +87,7 @@ simulatedAnnealing::simulatedAnnealing(const std::vector<Point>& points, const s
 
 
 // Start Annealing
-void simulatedAnnealing::startAnnealing(){
+void simulatedAnnealing::startAnnealing(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
 
   srand(time(NULL));
 
@@ -104,8 +104,16 @@ void simulatedAnnealing::startAnnealing(){
   ft convexHullArea = calcArea(convexHullSegments);
   ft energyPrev = energyCalc(convexHullArea, optimisedArea);
   
+  int pointsNumber = points.size();
+
+  std::vector<Segment_2> bestPolygon = polygLine;
+  ft bestArea = totalArea;
 
   while(T >= 0){
+
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+      throw cutOffAbort("Cut off time exceeded");
+    }
 
     // transition local or global based on parameter transition mode
     transitionStep transitionStep = transitionMode == 1 ? localTransition(polygLine, tree) : globalTransition(polygLine);
@@ -119,17 +127,32 @@ void simulatedAnnealing::startAnnealing(){
         polygLine = transitionStep.newPolygLine;
         optimisedArea += transitionStep.areaDiff;
 
+        if ((mode == 1 && optimisedArea < bestArea) || (mode == 2 && optimisedArea > bestArea)){
+          bestPolygon = transitionStep.newPolygLine;
+          bestArea = optimisedArea;
+        }
+
       }
     }
     else{
+      if (pointsNumber <= 20){
+        T = T - 1.0/((double)L * 0.7/pointsNumber);
+      }
+
+      if (transitionMode == 2 && pointsNumber > 10000){
+          T = T - 1.0/((double)L / 2.0);
+      }
+
       continue;
     }
 
-    
     T = T - 1.0/(double)L;
   }
 
+  polygLine = bestPolygon;
+  optimisedArea = bestArea;
   this->optimisedRatio = this->calcRatio(this->getConvexHull(this->points) ,this->optimisedArea);
+
 }
 
 
@@ -311,8 +334,6 @@ void simulatedAnnealing::replace(const Segment_2& prevPolygonPrevSeg, const Segm
 
 transitionStep simulatedAnnealing::localTransition(std::vector<Segment_2>& polygLine, const Tree& tree){
 
-  std::vector<Point> points = getPolyLinePoints(polygLine);
-
   int q_num = rand() % points.size();
 
   std::vector<Segment_2> polygLine2 = polygLine;
@@ -405,7 +426,7 @@ transitionStep simulatedAnnealing::globalTransition(std::vector<Segment_2>& poly
     int segmentIndex =  rand() % polygLine.size();
 
     kPoints = getPathK(polygLine, segmentIndex, k, kPairSequence);
-  
+
   } while(!isGlobalValidPath(polygLine, kPoints, e, kPairSequence));
 
   findGlobalChanges(possibleChanges, kPoints, e, kPairSequence);

@@ -31,12 +31,14 @@ class convexHull : public Polygonization{
         
         void insertBestPoint(const std::vector<pair>&, std::vector<Point>&,std::vector<Segment_2>&);
         
-        void findVisiblePoints(std::vector<visPoint>&, const Point&, const Segment_2&, const std::vector<Segment_2>& );
+        bool findVisiblePoints(std::vector<visPoint>&, const Point&, const Segment_2&, const std::vector<Segment_2>& );
 
         Point findBestPoint(const std::vector<visPoint>&);
+
+        static bool sortVisPointsAsc(const visPoint& a , const visPoint& b);
         
     public:
         convexHull(const std::vector<Point>&, int );
         convexHull(const std::vector<Point>&, int ,const Segment_2& , const Segment_2&, int, int);
-        void start();
+        void start(const std::chrono::system_clock::time_point startTime = std::chrono::system_clock::time_point(), const std::chrono::milliseconds cutOff = std::chrono::milliseconds(0), const bool measureTime = false);
 };

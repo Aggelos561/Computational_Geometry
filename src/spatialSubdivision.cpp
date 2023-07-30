@@ -20,7 +20,6 @@
 #include "../include/convexHull.hpp"
 
 
-
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
 typedef CGAL::Polygon_2<K> Polygon_2;
@@ -93,7 +92,7 @@ std::vector<Segment_2> simulatedAnnealing::getLowerHull(const std::vector<Point>
 
 
 // Merging all subpolygons into one final polygon
-void simulatedAnnealing::mergePolygons(std::vector<Segment_2>& mergedPolygon, std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, ft& sumArea){
+void simulatedAnnealing::mergePolygons(std::vector<Segment_2>& mergedPolygon, std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, ft& sumArea, const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
 
   for (int i = 0; i < allPolygLines.size(); i++){
     
@@ -123,6 +122,10 @@ void simulatedAnnealing::mergePolygons(std::vector<Segment_2>& mergedPolygon, st
   }
 
   for (int i = allPolygLines.size() - 1; i >= 0; i--){
+
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+      throw cutOffAbort("Cut off time exceeded");
+    }
     
     int indexStart;
     int indexEnd;
@@ -156,6 +159,11 @@ void simulatedAnnealing::mergePolygons(std::vector<Segment_2>& mergedPolygon, st
   }
 
   for (int i = 0; i < mergedPolygon.size(); i++){
+
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+      throw cutOffAbort("Cut off time exceeded");
+    }
+
     for (int j = 0; j < subPolPoints.size() - 1; j++){
 
       if (subPolPoints[j].markedSegments.second == mergedPolygon[i]){
@@ -271,10 +279,13 @@ void simulatedAnnealing::createSubsetPoints(std::vector<subTeam>& subPolPoints){
 }
 
 // Polygonization for every sub point
-void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, int edge_selection){
-
+void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, int edge_selection, const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
 
   for (int i = 0; i < subPolPoints.size(); i++){
+
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+      throw cutOffAbort("Cut off time exceeded");
+    }
 
     polygonInstance subPolygon;
 
@@ -290,7 +301,7 @@ void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, s
         }
 
         Incremental pol = initialization == "1a" ? Incremental(subPolPoints[i].points, edge_selection, "1a", subPolPoints[i].markedSegments.first.target(), markedSegmentEffect) : Incremental(subPolPoints[i].points, edge_selection, "1b", subPolPoints[i].markedSegments.second.source(), markedSegmentEffect);
-        pol.start();
+        pol.start(startTime, cutOff);
 
         bool leftSegmentFound = false, rightSegmentFound = false;
         for (const Segment_2& seg : pol.getPolygonLine()){
@@ -303,34 +314,55 @@ void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, s
         }
 
         if (i != 0 && i != subPolPoints.size() - 1 && (!leftSegmentFound || !rightSegmentFound)){
-          throw incerementalFailure("Marked Segment Not Found");
+          throw polygonizationFailure("Marked Segment Not Found");
         }
         if (i == 0 && !rightSegmentFound){
-          throw incerementalFailure("Marked Segment Not Found");
+          throw polygonizationFailure("Marked Segment Not Found");
         }
         if (i == subPolPoints.size() - 1 && !leftSegmentFound){
-          throw incerementalFailure("Marked Segment Not Found");
+          throw polygonizationFailure("Marked Segment Not Found");
         }
 
         subPolygon.polygon = pol.getPolygonLine();
         subPolygon.area = pol.getArea();
         allPolygLines[i] = subPolygon;
       } 
-      catch (incerementalFailure incFail) {
-        
-        convexHull pol = convexHull(subPolPoints[i].points, edge_selection, subPolPoints[i].markedSegments.first, subPolPoints[i].markedSegments.second, i, subPolPoints.size() - 1);
-        pol.start();
+      catch (polygonizationFailure incFail) {
+      
+        try{
+          convexHull pol = convexHull(subPolPoints[i].points, edge_selection, subPolPoints[i].markedSegments.first, subPolPoints[i].markedSegments.second, i, subPolPoints.size() - 1);
+          pol.start(startTime, cutOff);
 
-        subPolygon.polygon = pol.getPolygonLine();
-        subPolygon.area = pol.getArea();
-        allPolygLines[i] = subPolygon;
+          subPolygon.polygon = pol.getPolygonLine();
+          subPolygon.area = pol.getArea();
+          allPolygLines[i] = subPolygon;
+        }
+
+        catch(polygonizationFailure convexFail){
+          // if all the above failed then run convex with random segments until completes with marked segments inside
+          while(true){
+            try{
+              convexHull pol = convexHull(subPolPoints[i].points, 1, subPolPoints[i].markedSegments.first, subPolPoints[i].markedSegments.second, i, subPolPoints.size() - 1);
+              pol.start(startTime, cutOff);
+
+              subPolygon.polygon = pol.getPolygonLine();
+              subPolygon.area = pol.getArea();
+              allPolygLines[i] = subPolygon;
+              break;
+            }
+            catch(polygonizationFailure convexFail){
+              continue;
+            }
+          }
+        } 
+
       }
 
     }
     else if (this->subDAlgo == 2){
 
       convexHull pol = convexHull(subPolPoints[i].points, edge_selection, subPolPoints[i].markedSegments.first, subPolPoints[i].markedSegments.second, i, subPolPoints.size() - 1);
-      pol.start();
+      pol.start(startTime, cutOff);
 
       subPolygon.polygon = pol.getPolygonLine();
       subPolygon.area = pol.getArea();
@@ -344,10 +376,14 @@ void simulatedAnnealing::subPolygonization(std::vector<subTeam>& subPolPoints, s
 
 
 // Global Transitions for every sub polygon
-void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines){
+void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints, std::vector<polygonInstance>& allPolygLines, const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
   
   for (int i = 0; i < allPolygLines.size(); i++){
 
+    if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+     throw cutOffAbort("Cut off time exceeded");
+    }
+    
     polygonInstance polygon;    
 
     std::vector<Segment_2> markedSegments;
@@ -358,8 +394,9 @@ void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints
     if (i != allPolygLines.size() - 1)
       markedSegments.push_back(subPolPoints[i].markedSegments.second);
 
-    simulatedAnnealing annealing = simulatedAnnealing(points , allPolygLines[i].polygon, allPolygLines[i].area, calcRatio(allPolygLines[i].polygon, allPolygLines[i].area), this->L, this->mode, 2, markedSegments);
-    annealing.startAnnealing();
+    
+    simulatedAnnealing annealing = simulatedAnnealing(subPolPoints[i].points , allPolygLines[i].polygon, allPolygLines[i].area, calcRatio(allPolygLines[i].polygon, allPolygLines[i].area), this->L, this->mode, 2, markedSegments);
+    annealing.startAnnealing(startTime, cutOff);
 
     polygon.polygon = annealing.getPolygonLine();
     polygon.area = annealing.getOptimisedArea();
@@ -368,36 +405,40 @@ void simulatedAnnealing::subGlobalTransitions(std::vector<subTeam>& subPolPoints
 
 }
 
-void simulatedAnnealing::startSubdivision(){
-
+void simulatedAnnealing::startSubdivision(const std::chrono::_V2::system_clock::time_point startTime, const std::chrono::milliseconds cutOff, const bool measureTime){
+  
   // Create subset teams
   std::vector<subTeam> subPolPoints;
   createSubsetPoints(subPolPoints);
 
+  if (measureTime && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > cutOff){
+      throw cutOffAbort("Cut off time exceeded");
+    }
+
   // Polygonization for every subset
   std::vector<polygonInstance> allPolygLines(subPolPoints.size());
-  subPolygonization(subPolPoints, allPolygLines, edgeSelection);
+  subPolygonization(subPolPoints, allPolygLines, edgeSelection, startTime, cutOff, measureTime);
 
   for (const polygonInstance& polygon : allPolygLines){
     totalArea += polygon.area;
   }
 
-  mergePolygons(prevPolygLine, subPolPoints, allPolygLines, totalArea);
+  mergePolygons(prevPolygLine, subPolPoints, allPolygLines, totalArea, startTime, cutOff, measureTime);
 
   // // Global transitions for every sub polygon
-  subGlobalTransitions(subPolPoints, allPolygLines);
+  subGlobalTransitions(subPolPoints, allPolygLines, startTime, cutOff, measureTime);
 
-  for (const polygonInstance& polygon : allPolygLines){
+  for (polygonInstance& polygon : allPolygLines){
     optimisedArea += polygon.area;
   }
 
-
+ 
   // Merge all subset polygons
-  mergePolygons(polygLine, subPolPoints, allPolygLines, optimisedArea);
-
+  mergePolygons(polygLine, subPolPoints, allPolygLines, optimisedArea, startTime, cutOff, measureTime);
+  
   // Local transitions for final polygon
-  simulatedAnnealing annealing = simulatedAnnealing(points , polygLine, optimisedArea, calcRatio(polygLine, optimisedArea), this->L, this->mode, 1);
-  annealing.startAnnealing();
+  simulatedAnnealing annealing = simulatedAnnealing(points , polygLine, optimisedArea, calcRatio(polygLine, optimisedArea), 2 * this->L, this->mode, 1);
+  annealing.startAnnealing(startTime, cutOff);
   
   polygLine = annealing.getPolygonLine();
  
@@ -407,5 +448,4 @@ void simulatedAnnealing::startSubdivision(){
   
   this->ratio = calcRatio(convexHullSegments, this->totalArea);
   this->optimisedRatio = calcRatio(convexHullSegments, this->optimisedArea);
-
 }

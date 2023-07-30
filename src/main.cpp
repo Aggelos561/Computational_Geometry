@@ -1,6 +1,7 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <chrono>
 #include <iostream>
+#include <string>
 #include <vector>
 #include "../include/polygonization.hpp"
 #include "../include/convexHull.hpp"
@@ -8,42 +9,60 @@
 #include "../include/incremental.hpp"
 #include "../include/localSearch.hpp"
 #include "../include/simulatedAnnealing.hpp"
+#include "../include/preprocessor.hpp"
+#include "../include/showCasedAlgos.hpp"
 
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point;
-typedef K::Segment_2 Segment_2;
 typedef CGAL::Epick::FT ft;
 
 
+void runExecution(const std::string&, const std::string&, const std::string&, const std::string&, const std::string&, const std::string&, const int , const int, const int, const int, const int);
+void runScores(const std::string&, const std::string&, const bool&);
 
 
 int main(int argc, char **argv){
 
-  std::string nameOfFile;
-  std::string outputFile;
-  std::string algorithm_initial;
-  std::string algorithm;
-  int m;
-  std::string annealing;
-  int edge_selection;
-  std::string initialization;
+  std::string nameOfDirectory, nameOfFile, outputFile, algorithm, algorithm_initial, initialization, annealing;
+  int edge_selection_int, polygon_edge_selection, L, m;
+
   double threshold;
-  int L;
-  int polygonEdgeSelection;
-  std::string max_min;
-  
-  // Reading and parsing parameters
-  // bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, edge_selection, initialization, argc, argv);
-  bool parsed = dataio::getParameters(nameOfFile, outputFile, algorithm, algorithm_initial, initialization, edge_selection, polygonEdgeSelection,threshold, annealing, L, argc, argv,m);
-  
-  if (!parsed){
-    std::cout << "Input parameters invalid" << std::endl;
-    return 1;
+  bool preprocessEnabled, parsed;
+
+  std::string executionType = dataio::getRunType(argc, argv);
+
+  if (executionType == "EXECUTION"){
+    // Reading parameters from command line
+    parsed = dataio::getExecutionParameters(nameOfFile, outputFile, algorithm, algorithm_initial, initialization, polygon_edge_selection, edge_selection_int, threshold, annealing, L, argc, argv, m);
   }
 
-  
-  max_min = edge_selection == 2 ? "min" : "max";
+  else{
+    // Reading parameters from command line
+    parsed = dataio::getScoreParameters(nameOfDirectory, outputFile, preprocessEnabled, argc, argv);
+  }
+
+  // Checking if parameters are parsed correctly
+  if (!parsed){
+    std::cout << "Invalid Input Parameters" << std::endl;
+    return -1;
+  }
+
+  if (executionType == "EXECUTION"){
+    runExecution(nameOfFile, outputFile, algorithm_initial, algorithm, annealing, initialization, edge_selection_int, polygon_edge_selection, L, m, threshold);
+  }
+
+  else{
+    runScores(nameOfDirectory, outputFile, preprocessEnabled);
+  }
+
+  return 0;
+}
+
+
+void runExecution(const std::string& nameOfFile, const std::string& outputFile, const std::string& algorithm_initial, const std::string& algorithm, const std::string& annealing, const std::string& initialization, const int edge_selection, const int polygonEdgeSelection, const int L, const int m, const int threshold){
+
+  std::string max_min = edge_selection == 2 ? "min" : "max";
 
   // Reading points from the input file
   std::vector<Point> points = dataio::readPoints(nameOfFile);
@@ -70,7 +89,7 @@ int main(int argc, char **argv){
         ft areaNow = sim.getOptimisedArea();
         ft ratioNow = sim.getOptimisedRatio();
         
-        dataio::createResultsFile(sim.getPolygonLine(), areaNow, areaBefore, ratioNow, ratioBefore, duration,outputFile, algorithm, edge_selection, initialization,max_min);
+        dataio::createResultsFile(sim.getPolygonLine(), areaNow, areaBefore, ratioNow, ratioBefore, duration, outputFile, algorithm, edge_selection, initialization,max_min);
       }
       else if(annealing == "global"){
         Incremental pol = Incremental(points, polygonEdgeSelection, initialization);
@@ -89,7 +108,7 @@ int main(int argc, char **argv){
         ft areaNow = sim.getOptimisedArea();
         ft ratioNow = sim.getOptimisedRatio();
         
-        dataio::createResultsFile(sim.getPolygonLine(), areaNow, areaBefore, ratioNow, ratioBefore, duration,outputFile, algorithm, edge_selection, initialization,max_min);
+        dataio::createResultsFile(sim.getPolygonLine(), areaNow, areaBefore, ratioNow, ratioBefore, duration, outputFile, algorithm, edge_selection, initialization,max_min);
       }
       else{
         
@@ -224,6 +243,79 @@ int main(int argc, char **argv){
     }
 
   }
+}
 
-  return 0;
+
+
+// Run scores
+void runScores(const std::string& nameOfDirectory, const std::string& outputFile, const bool& preprocessEnabled){
+
+  // Finds files and stores the name of every file and points size of the spesific dir
+  std::vector<std::pair<int, std::string>> filesNPoints = dataio::findFiles(nameOfDirectory);
+  int previousPointsSize = filesNPoints[0].first;
+
+  std::vector<Point> points;
+  
+  int fileIndex = 0;
+  int scoreIndex = 0;
+  bool firstWrite = true;
+  
+  std::chrono::milliseconds cutOff;
+
+  // Vectors for scores
+  std::vector<std::pair<double, double>> scores(4);
+  std::vector<std::vector<double>> boundMinScores(4);
+  std::vector<std::vector<double>> boundMaxScores(4);
+
+  // Contruct inctance preprocessor
+  Preprocessor processor(filesNPoints, preprocessEnabled);
+  
+  // If enabled then do the preprocessing
+  if (preprocessEnabled){
+    showCasedAlgos::initPreprocess(points, processor, filesNPoints);
+  }
+  // Else just give the parameter L for every algorithm a spesific L parameter (depends on algorithm)
+  else{
+    processor.defaultInput();
+  }
+
+  // For every file in the given dir that was stores in the vector eariler
+  // --> execute the algorithms
+  // --> store scores
+  // --> if the input of spesific size is completed then write the scores to ouput file
+  // --> reset scores vectors
+
+  for (const std::pair<int, std::string>& f : filesNPoints){
+
+    // cut off
+    cutOff = std::chrono::milliseconds(500 * f.first);
+
+    fileIndex++;
+    scoreIndex = 0;
+
+    std::cout << "File: " << f.second << std::endl;
+    
+    showCasedAlgos::partialWrite(filesNPoints, scores, boundMinScores, boundMaxScores, f, firstWrite, previousPointsSize, outputFile, fileIndex, false);
+
+    points = dataio::readPoints(f.second);
+
+    showCasedAlgos::runAlgorithm("INC+GLOBAL+LOCAL", points, scores, boundMinScores, boundMaxScores, cutOff, scoreIndex, f, processor);
+    std::cout << "Passed INC+GLOBAL+LOCAL"  << std::endl;
+
+    showCasedAlgos::runAlgorithm("SUBDIVISION", points, scores, boundMinScores, boundMaxScores, cutOff, scoreIndex, f, processor);
+    std::cout << "Passed SUBDIVISION"  << std::endl;
+
+    showCasedAlgos::runAlgorithm("INC+LOCAL", points, scores, boundMinScores, boundMaxScores, cutOff, scoreIndex, f, processor);
+    std::cout << "Passed INC+LOCAL"  << std::endl;
+
+    showCasedAlgos::runAlgorithm("CONVEX+LOCAL", points, scores, boundMinScores, boundMaxScores, cutOff, scoreIndex, f, processor);
+    std::cout << "Passed CONVEX+LOCAL"  << std::endl;
+
+    if (fileIndex == filesNPoints.size())
+      showCasedAlgos::partialWrite(filesNPoints, scores, boundMinScores, boundMaxScores, f, firstWrite, f.first, outputFile, fileIndex, true);
+
+    previousPointsSize = f.first;
+
+  }
+  
 }

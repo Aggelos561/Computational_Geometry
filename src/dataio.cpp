@@ -1,8 +1,11 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
+#include <dirent.h>
+#include <iomanip>
 #include "../include/dataio.hpp"
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
@@ -11,8 +14,25 @@ typedef K::Segment_2 Segment_2;
 typedef CGAL::Epick::FT ft;
 
 
-// Get parameters
-bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int, int& polygon_edge_selection, double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m) {
+// Check if we need to exevute polygomization algorithm or scoring tables
+std::string dataio::getRunType(int argc, char** argv){
+
+  for(int i = 1; i < argc; i++){
+
+    std::string param = argv[i];
+
+    if(param == "-scores")
+      return "SCORES";
+
+  }
+
+  return "EXECUTION";
+
+}
+
+
+// Get execution type parameters
+bool dataio::getExecutionParameters(std::string& nameOfFile, std::string& outputFile, std::string& algorithm, std::string& algorithm_initial,std::string& initial, int& edge_selection_int, int& polygon_edge_selection, double& threshold,std::string& annealing,int& L, int argc, char** argv, int& m) {
   
   polygon_edge_selection  = -1;
   m = -1;
@@ -107,6 +127,78 @@ bool dataio::getParameters(std::string& nameOfFile, std::string& outputFile, std
 
 
 
+// Get scoring type parameters
+bool dataio::getScoreParameters(std::string& nameOfDirectory, std::string& outputFile, bool& preprocessEnabled, int argc, char** argv) {
+  
+  preprocessEnabled = false;
+  for(int i = 0; i < argc- 1; i++){
+
+    std::string param = (argv[i]);
+    std::string mode = (argv[i+1]);
+
+    if(param == "-i"){
+      nameOfDirectory = mode;
+    }
+    else if(param == "-o"){
+      outputFile = mode;
+    }
+    else if(mode == "-preprocess"){
+      preprocessEnabled = true;
+    }
+  }
+
+  return true;
+}
+
+
+std::vector<std::pair<int, std::string>> dataio::findFiles(const std::string& dirName){
+
+  std::vector<std::pair<int, std::string>> files;
+
+  DIR* directory = opendir(dirName.c_str());
+
+  if (directory == NULL){
+    std::cout << "Failed to open directory " << dirName << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+
+  struct dirent* entryDir;
+
+  while((entryDir = readdir(directory)) != NULL){
+    if (entryDir->d_type != DT_DIR){
+      
+      std::string fileName = dirName + entryDir->d_name;
+
+      
+      std::string firstLine;
+
+      std::ifstream pointsFile(fileName);
+      std::getline(pointsFile, firstLine);
+
+      std::stringstream streamString(firstLine);
+
+      std::getline(streamString, firstLine, '(');
+      std::getline(streamString, firstLine, ' ');
+
+      int numberOfPoints = atoi(firstLine.c_str());
+
+      files.push_back(std::pair<int, std::string>(numberOfPoints, dirName + entryDir->d_name));
+
+      pointsFile.close();
+
+    }
+  }
+
+  closedir(directory);
+
+  std::sort(files.begin(), files.end());
+
+  return files;
+
+}
+
+
+
 // Read from data.instance file
 std::vector<Point> dataio::readPoints(const std::string& name) {
 
@@ -186,6 +278,47 @@ void dataio::createResultsFile(const std::vector<Segment_2> &polygLine, const ft
   outdata << "ratio: " << ratio << std::endl;
 
   outdata << "Construction time: " << polygonizationDuration.count() << std::endl;
+
+  outdata.close();
+  
+}
+
+
+// Write resulta data into a spesific file
+void dataio::writeToOutputFile(const std::string& output, const std::vector<std::pair<double, double>>& scores, const std::vector<double>& minScores, const std::vector<double>& maxScores, int filePointsSize, bool initOutput) {
+
+  std::ofstream outdata;
+
+  if (initOutput)
+    outdata.open(output.c_str(), std::ofstream::out);
+  else
+    outdata.open(output.c_str(), std::ofstream::app);
+
+
+  if (!outdata) {
+    std::cout << "Error: file could not be opened" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  if (initOutput){
+    outdata  << std::setw(10) << "||" << std::setw(29) << "Incr+Global+Local" <<  std::setw(20) << "||" << std::setw(29) << "Subdivision" << std::setw(20) << "||" << std::setw(29) << "Incr+Local" << std::setw(20) << "||" << std::setw(29) << "Convex+Local" << std::setw(20) << "||" << std::endl;
+  
+    outdata  << std::setw(8) << "Size " << "||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound";
+   
+    for (int i = 0; i < 3; i++){
+      outdata << " ||" << std::setw(2) << " min score" << " | " << "max score" << " | " << "min bound" << " | " << "max bound";
+    }
+
+   outdata << " ||" << std::endl;
+
+  }
+  
+  outdata << std::setw(6) << filePointsSize << std::setw(5);
+  
+  for (int i = 0; i < scores.size(); i++)
+    outdata  << "  || " << std::setw(2) << std::fixed << std::setprecision(6) << scores[i].first << "  | " << scores[i].second << "  | " << minScores[i] << "  | " << maxScores[i];
+
+  outdata << "  || " << std::endl;
 
   outdata.close();
   

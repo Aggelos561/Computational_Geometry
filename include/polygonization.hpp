@@ -94,6 +94,7 @@ class Polygonization{
       bool looseSegCompare(const Segment_2&, const Segment_2&);
 
       bool isSimple(const Changes&, const std::vector<Segment_2>&);
+    
     public:
       Polygonization(const std::vector<Point>&, int);
       Polygonization(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&);
@@ -109,16 +110,28 @@ typedef struct subTeam {
   std::pair<Segment_2, Segment_2> markedSegments;
 } subTeam;
 
-class incerementalFailure : public std::exception {
+class polygonizationFailure : public std::exception {
   private:
     std::string message;
 
   public:
-    incerementalFailure(std::string  msg) : message(msg) {}
+    polygonizationFailure(std::string  msg) : message(msg) {}
     std::string what () {
         return message;
     }
-  };
+};
+
+class cutOffAbort : public std::exception {
+  private:
+    std::string message;
+
+  public:
+    cutOffAbort(std::string  msg) : message(msg) {}
+    std::string what () {
+        return message;
+    }
+};
+
 
 typedef struct polygonInstance {
   std::vector<Segment_2> polygon;

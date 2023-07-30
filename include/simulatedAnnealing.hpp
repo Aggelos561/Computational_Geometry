@@ -75,11 +75,11 @@ class simulatedAnnealing: public Polygonization{
 
         static bool lexOrderPoints(const Point&, const Point&);
 
-        void mergePolygons(std::vector<Segment_2>&, std::vector<subTeam>&, std::vector<polygonInstance>&, ft&);
+        void mergePolygons(std::vector<Segment_2>&, std::vector<subTeam>&, std::vector<polygonInstance>&, ft&, const std::chrono::_V2::system_clock::time_point , const std::chrono::milliseconds, const bool);
 
-        void subGlobalTransitions(std::vector<subTeam>&, std::vector<polygonInstance>&);
+        void subGlobalTransitions(std::vector<subTeam>&, std::vector<polygonInstance>&, const std::chrono::_V2::system_clock::time_point , const std::chrono::milliseconds, const bool);
 
-        void subPolygonization(std::vector<subTeam>&, std::vector<polygonInstance>&, int);
+        void subPolygonization(std::vector<subTeam>&, std::vector<polygonInstance>&, int, const std::chrono::_V2::system_clock::time_point , const std::chrono::milliseconds, const bool);
     
         void createSubsetPoints(std::vector<subTeam>&);
 
@@ -94,8 +94,8 @@ class simulatedAnnealing: public Polygonization{
         simulatedAnnealing(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, int, int);
         simulatedAnnealing(const std::vector<Point>&, int, int, int, const std::string&, int,int);
         simulatedAnnealing(const std::vector<Point>&, const std::vector<Segment_2>&, const ft&, const ft&, int, int, int, const std::vector<Segment_2>); 
-        void startAnnealing();
-        void startSubdivision();
+        void startAnnealing(const std::chrono::_V2::system_clock::time_point startTime = std::chrono::system_clock::time_point(), const std::chrono::milliseconds cutOff = std::chrono::milliseconds(0), const bool measureTime = false);
+        void startSubdivision(const std::chrono::system_clock::time_point startTime = std::chrono::system_clock::time_point(), const std::chrono::milliseconds cutOff = std::chrono::milliseconds(0), const bool measureTime = false);
         ft getOptimisedArea();
         ft getOptimisedRatio();
 };
