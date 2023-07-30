@@ -1,127 +1,108 @@
-                           -- Εργασια 3 --
-              Ανάπτυξη Λογισμικού Για Αλγοριθμικά Προβλήματα
-              
-Τελειοποίηση πολυγωνοποίησης σημειοσυνόλου βέλτιστης επιφάνειας, ανάπτυξη εφαρμογής 
-       για τη συγκριτική αξιολόγηση των αλγόριθμων πολυγωνοποίησης
+# Polygonization and Optimization Algorithms
 
+## Introduction
 
-Ομάδα 27
-Άγγελος Δωρόθεος Χατζόπουλος 1115201900217
-Γρηγόριος Μουλκιώτης 1115201900117
+This project aims to find the optimal polygonization of point sets using various algorithms. It provides implementations of incremental, convex hull, and subdivision polygonization algorithms, along with local search and simulated annealing optimization algorithms.
 
+## Compilation
 
-Δομή και αρχεία του project
+To compile the project, follow these steps in the `src/` directory:
 
-Directory include/:
-- polygonization.hpp: Βασικά methods για την υλοποίηση του incremental και convex hull polygonization.
-- convexHull.hpp: Class για την υλοποίηση του convex hull η οποία κάνει inherit απο το polygonization class.
-- incremental.hpp: Class για την υλοποίηση του incremental η οποία κάνει inherit απο το polygonization class.
-- dataio.hpp: Namespace για το διάβασμα και έλεγχο παραμέτρων εισόδου και γράψιμο output σε συγκεκριμένο αρχείο.
-- localSearch.hpp: Class για υλοποίηση αλγόριθμου localSearch.
-- simulatedAnnealing.hpp: Class για υλοποίηση local step, global step και spatial subdivision.
-- preprocessor.hpp: Namespace που χρησιμοποιείται για το preprocess του project 3 πρίν την εκτέλεση των αλγόριθμων.
-- showCasedAlgos.hpp: Namespace όπου υπάρχουν κάποιες συναρτήσεις για την εκτέλεση συγκεκριμέων αλγόριμων για το project 3 και για την αποθήκευση των δεδομένων (scores , bound scores) για το γράψιμο στο output.
+1. Generate the CMakeLists.txt for the 'evaluate' target:
+   ```
+   cgal_create_CMakeLists -s evaluate
+   ```
 
+2. Configure the build environment:
+   ```
+   cmake -DCMAKE_BUILD_TYPE=Release .
+   ```
 
-Directory src/:
-- polygonization.cpp: υλοποίηση των methods για την υλοποίηση του incremental και convex hull polygonization.
-- convexHull.cpp: υλοποίημένα methods για τον convex hull algorithm.
-- incremental.cpp: υλοποίημένα methods για τον incremental algorithm.
-- dataio.cpp: υλοποιήσεις συναρτήσεων για το input και output του προγράμματος.
-- localSearch.cpp: υλοποίημένα methods για τον local search optimization algorithm.
-- simulatedAnnealing.cpp: υλοποίημένα methods για local step, global step του simulated annealing.
-- spatialSubdivision.cpp: υλοποίημένα methods για spatial subdivision simulated annealing (ιδια κλάση με το global και local step).
-- preprocessor.cpp: συναρτήσεις για την εκτέλεση του preprocess το οποίο καλείται απο την main.
-- showCasedAlgos.cpp: συναρτήσεις για την εκτέλεση συγκεκριμένων αλγόριθμων για το project 3 και την αποθήκευση δεδομένων που θα γραφτούν στο output έπειτα.
-- main.cpp: στο project 3 βρίσκεται το main function που καλούνται το διάβασμα των parameters, το preprocessing (optinal) και η εκτέλεση των συγκεκριμένων αλγορίθων με την χρήση συναρτήσεων του namespace showCasedAlgos. Για κάθε input size που τελεειώνου όλοι οι αλγόριθμοι, γράφεται στο αρχείο output.
+3. Build the project:
+   ```
+   make
+   ```
 
+## Algorithm Execution
 
-Directory instances_test/:
-- Περιέχει όλα τα αρχεία εκτέλεσης των αλγόριμων για να παραχθούν οι πίνακες των scores με preprocessing και χωρις preprocessing
+To execute a specific algorithm and optimization, use the following command:
 
-Επιπλέον, τα αρχεία ResultswithPreprocessing.txt και ResultswithoutPreprocessing.txt περιέχουν τα scores μετά την εκτέλεση των αρχείων που βρίσκονται στο directory inctances_test/
+```bash
+$ ./evaluate -i (point set path) -o (output file) -algorithm (optimization_algorithm) -L (L_value) -max|-min -annealing (annealing_method) -algorithm_initial (initial_algorithm) -initialization (initialization_option) -m (subdivisions) -edge_selection (edge_selection_method)
+```
 
-Τρόπος μεταγλώττισης project
+### Command-line Parameters
 
-Στο directory src/ του project εκτελούνται οι εντολές:
+- `(point set path)`: `.instance` file to be processed.
+- `(output file)`: File to record the data and results
+- `optimization_algorithm`: The optimization algorithm to use ('local_search' or 'simulated_annealing').
+- `L_value`: The value of the parameter 'L' (depends on the algorithm).
+- `-max` or `-min`: Choose between maximizing or minimizing the objective function.
+- `annealing_method`: The annealing method for simulated annealing ('local', 'global', or 'subdivision').
+- `initial_algorithm`: The initial polygonization algorithm ('incremental' or 'convex_hull').
+- `initialization_option`: Applicable only for the incremental algorithm. Choose between '1a', '1b', '2a', or '2b'. Subdivision is only allowed with '1a' and '1b'.
+- `subdivisions`: The number of subdivisions (only relevant for subdivision simulated annealing).
+- `edge_selection_method`: The method for selecting initial edges (1 for random, 2 for minimum, 3 for maximum). If not provided, the optimization algorithm decides.
 
-1) cgal_create_CMakeLists -s evaluate
-2) cmake -DCMAKE_BUILD_TYPE=Release .
-3) make
+### Example Execution
 
+For example, to run the optimization algorithm 'simulated_annealing' with the following parameters:
 
-Τρόπος εκτέλεσης project
+- Input file: `uniform-0000100-1.instance`
+- Output file: `output.txt`
+- 'L' value: 10000
+- Maximize the objective function
+- Annealing method: 'global'
+- Initial polygonization algorithm: 'incremental' with initialization '1a'
+- Use random edge selection
 
-$ ./evaluate -i (point set path) -o (output file) -preprocess (optional)
+The command will be:
 
-  - (point set path) : Directory το οποίο θα περιέχει όλα τα αρχεία .inctance προς εκτέλεση
-  - (output file): αρχείο στο οποίο θα καταγραφούν τα δεδομένα (πίνακας αποτελεσμάτων)
-  - (optional): το συγκεκριμένο parameter είναι optional. Εάν εκτελεστεί με -preprocess πρώτα θα γίνει προεπεξεργασία με βάση τα αρχεία του input directory και μετά θα εκτελεστούν όλοι οι επιλεγμένοι αλγόριθμοι που αναλύονται παρακάτω.
+```bash
+$ ./evaluate -i ../instances_test/uniform-0000100-1.instance -o output.txt -algorithm simulated_annealing -L 10000 -max -annealing global -algorithm_initial incremental -initialization 1a -edge_selection 1
+```
 
+## Scoring with Preprocessing
 
-    
-Βεκτιστοποιηση των υλοποιησεων για μεγαλυτερη ταχυτητα και ακριβεια προσεγγισεων.
+To run the scoring tables with preprocessing enabled, use the following command:
 
-Πραγματοποιήσαμε βελτιστοποίηση των αλγορίθμων:
+```bash
+$ ./evaluate -i (point set path) -o (output file) -preprocess -scores
+```
 
-   1) Convex Hull: Μείωση περιττών ελέγχων για την εύρεση νέου σημείου και την εισαγωγή του στο πολύγωνο σε κάθε επανάληψη με αποτέλεσμα να μπορούμε να παράγουμε πολύγωνα απο μεγαλύτερα σημειοσύνολα εισόδου.
-   2) Simulated annealing-spatial Subdivsion: Σε αυτόν τον αλγόριθμο εαν αποτύχουν να κάνουν πολυγωνοποίηση ο Incremental τοτε θα τρέξει Convex με την επιλογή ακμών που του δώθηκε (min/max) και εάν και αυτος ο αλγόριθμος αποτύχει λόγω των περιορισμών στις δύο ακρειανές ακμές τότε θα εκτελεστεί ξανά Convex αυτήν την φορά με επιλογή τυχαίας ακμής μέχρι να ικανοποιηθούν οι περιορισμοί (να μην επιρεαστούν τα 2 ακριανά segments ώστε να μπορεί να γίνει merge έπειτα). Με την αλλαγή αυτή ο spatial subdivision μπορεί να εκτελέσει πολυγωνοποίηση και optimization χώρις να υπάρχει fail μέχρι και 100k σημέιων.
-   3) Simulated annealing-Local Transition: Για να αποφευχθούν ατέρμων βρόχοι σε πολύγωνα λίγων σημείων προστέθηκε η σταδιακή (μικρή) μείωση της θερμοκρασίας T ακόμα και αν δεν μπορεί να βρεί νεο simple πολύγωνο σε κάθε iteration.
-   
-  Επιπλέον, αφαιρέσαμε περριτό κώδικα όπως ορισμένους ελέγχους και κλήσεις συναρτήσεων που δεν χρησίμευαν πουθένα για την εκτέλεση των αλγορίθμων μειώνοντας έτσι το χρόνο εκτέλεσης σε όλους τους αλγόριθμους.
+### Command-line Parameters
 
+- `(point set path)`: Directory containing all the `.instance` files to be processed.
+- `(output file)`: File to record the data and results (result table).
+- `-preprocess`: This parameter is optional. If executed with `-preprocess`, heuristic algorithms will run on each file of the input directory, and an average for the algorithm parameter 'L' will be determined based on the point set size. For larger point sets (greater than 1000 points), the algorithm creates 2 subsets with random points and performs tests for 'L' to find an optimal value in a relatively short period of time.
 
+### Visualization
 
-Επιλογή αλγορίθμων
+The project includes a Python script `graph.py` for visualizing the resulting polygons. 
 
-Οι αλγόριθμοι που επιλέχτηκαν είναι οι εξής:
+## Results
 
-1) Incremntal with Global Trasitions and afterwards Local Transitions
-Ουσιαστικά σε αυτήν την εκτέλεση πολυγωνοποιούμε με τον incremental αλγόριθμο εν συνεχεία κάνουμε optimize με Global Trasitions και τέλος κάνουμε δεύτερο optimize με Local Transitions.
+The project generates two result files:
 
-2) Spatial Subdivision
-Σε αυτήν την εκτέλεση διασπάμε το σημειοσύνολο σε επιμέρους υποσύνολα και για καθένα υποσύνολο το πολυγωνοποιούμε αρχικά με incremental εάν αυτός αποτύχει τότε εκετελέιτε convex hull και εάν και αυτός αποτύχει τοτε πολυγωνοποιούμε με τυχαία επιλογή ακμών για τον convex hull μέχρις ότου τα 2 ακριανά segments βρίσκονται στην πολυγωνική γραμμή. Επίσης, όταν τρέχει σε κάθε υποπολύγωνο global transitions ακόμα και να μην ικανοποιείται η συνθήκη του να είναι simple μειώνεται η θερμοκρασία T ελάχιστα σε κάθε επανάληψη έτσι ώστε να αποφεύγουμε ατέρμων βρόγχους (Μόνο για μικρά σημειοσύνολα).
+1. `resultsWithoutPreprocess.txt`: Contains the scoring tables without any preprocessing.
+2. `resultsWithPreprocess.txt`: Contains the scoring tables after preprocessing if enabled using the `-preprocess` flag.
 
-3) Incremental polygonization with Local Transitions
-Σε αυτήν την επιλογή αρχικά πολυγωνοποιούμε με incremental polygonization και εν συνέχεια εφαρμόζουμε local Transitions για την βελτιστοποίηση του πολυγώνου.
+## Notes on Algorithm Performance
 
-4) Convex Hull with Local Transitions
-Σε αυτήν την επιλογή αρχικά πολυγωνοποιούμε με Convex Hull αλγόριθμο και εν συνεχεία κάνουμε optimization με Local Transitions.
+1. In most cases, the Subdivision algorithm yields better results for the minimum score compared to other algorithms.
 
-Τέλος, δοκιμάστηκε και ο αλγόριθμος local search optimization για σημειοσύνολα μεγέθους εως 800 σημείων και παρατηρήθηκε οτι ο χρόνος εκτέλεσης του αυξάνεται ραγδαία διότι για να εφαρμόσει οποιαδήποτε αλλαγή στο πολύγωνο πρέπει σε κάθε επανάληψη να βρεί όλες τις δυνατές αλλαγές που μπορεί να πραγματοποιήσει για εως και k paths και έπειτα να εφαρμόσει την καλύτερη. Ιδιαίτερα για μεγάλη τιμή παραμέτρου K ο αλγόριθμους αν και παρήγαγε αρκετά καλά αποτελέσματα ο χρόνος εκτέλεσης είναι μεγάλος και μπορεί να χρησιμοποιηθέι μόνο σε πολύγωνα με σχετικά μικρό αριθμό σημείων. Για τους παραπάνω λόγους δεν εφαρμόστηκε στις τελικές δοκιμές για τους πίνακες αποτελεσμάτων.
+2. For the maximum score, Spatial Subdivision and Convex+Local algorithms provide better results, with Convex+Local showing improvement as the number of points increases but failing to meet the cut-off time for inputs greater than or equal to 10,000 points.
 
+3. Subdivision exhibits the shortest execution time, while Convex+Local has the longest execution time.
 
-Preprocessing
+4. Incr+Global+Local and Incr+Local algorithms fall in between regarding execution time, with Incr+Global+Local outperforming in final results due to the addition of Global Transitions, which enhances the final area for almost every input.
 
-Καταρχήν, εάν δεν οριστεί από τα ορισματα να γίνει preprocessing θα αρχικοποιήσουμε την υπερπαράμετρο των αλγορίθμων L σε μια default τιμή ανάλογα το μέγεθος της εισόδου και ανάλογα τον optimization αλγόριθμο.
+5. All selected algorithms, except Convex+Local, manage to produce results within the cut-off time for inputs up to 100,000 points.
 
-Σε περίπτωση που οριστεί το preprocessing τότε εκτελούμε έναν αλγόριθμο μηχανικής μάθησης που τρέχει σε κάθε αρχείο του directory της εισόδου και βγάζει μέσο όρο για το L του αλγορίθμου ανάλογα το μέγεθος. Για σημειοσύνολα με μέγεθος μεγαλύτερο του 1000 τότε δημιουργεί 2 σημειοσύνολα με τυχαία σημεία απο το αρχικό και εκτελεί δοκιμές για L ώστε τελικά να βρεθέι optimal τιμή σε ενα σχετικά μικρό χρονικό διάστημα.
+6. Running algorithms with preprocessing generally yields better results, particularly in minimization cases, but also in many cases of maximization.
 
-Αναλυτικότερα, για να βρεθεί optimal L για τον subdivison, τον local step και global step εκετελούνται αρκετές δοκιμές στο πολύγωνο που παράγεται με τον incremental αλγόριθμο για maximization διότι έχει παρατηρηθέι οτι στο συγκεκριμένο mode είναι πιο δύσκολο να παραχθούν αποτελέσματα που να προσεγγίζουν το ολικό μέγιστο σε σχέση με το minimization. Άρα βρίσκονας optimal L για κάθε αλγόριθμο optimization για maximization, ο αλγόριθμος εγγυάται πως θα παράγει πολύ καλά προσεγγιστικά αποτελέσματα και για minimization.
+7. The local transitions of the simulated annealing, due to the small local changes and the use of a kd-tree for intersection checks, allow for larger values of 'L' compared to the global transitions.
 
+8. The execution time of Spatial Subdivision increases linearly due to dividing the point set into subsets, resulting in the algorithm being executed on the same number of points, but with an increasing number of subsets.
 
-
-Αποτελέσματα Δοκιμών
-
-1) Τα αποτελέσματα χωρίς preprocessing βρίσκονται στο αρχείο resultsWithoutPreprocess.txt  
-2) Τα αποτελέσματα με preprocessing βρίσκονται στο αρχείο resultsWithPreprocess.txt  
-3) Τα αρχεία δοκιμών για τους πίνακες αποτελεσμάτωτν βρίσκονται στο instances_test/ directory
-
-Απο τις παραπάνω δοκιμές παρατηρούμε οτι:
-
-1) Ο Subdivision παράγει στις περισσότερες περιπτώσεις καλύτερα αποτελέσματα για min score σε σχέση με τους υπόλοιπους αλγόριθμους.
-
-2) Για max score έχουμε καλύτερα αποτελέσματα με Spatial Subdivision και Convex+Local με τον Convex+Local να είναι καλύτερος όσο αυξάνονται τα σημεία αλλά να αποτυγχάνει να πετύχει τους χρόνο cut off για είσοδο μεγαλύτερη ή ίση των 10.000 σημείων.
-
-3) Ο subdivision καταφέρνει να έχει τον μικρότερο χρόνο εκτέλεσης ενώ ο Convex+Local τον μεγαλύτερο χρόνο εκτέλεσης.
-
-4) Οι αλγόριθμοι Incr+Global+Local και Incr+Local βρίσκονται στο ενδιάμεσο ως προς τον χρόνο εκτέλεσης με τον Incr+Global+Local να υπερτερεί στα τελικά αποτελέσματα καθώς προστίθενται ο παράγοντας Global Transitions που βελτιώνει σχεδόν σε κάθε input το τελικό area.
-
-5) Όλοι οι επιλεγμένοι αλγόριθμοι εκτός του Convex+Local καταφέρνουν να παράξουν αποτελέσματα στο χρονικό περιθόριο cut off για είσοδο εως και 100k σημείων.
-
-6) Με την εκτέλεση των αλγόριμων με preprocessing παρατηρούμε οτι στα περισσότερα σημειοσύνολα στον πίνακες αποτελεσμάτων παράγονται καλύτερα αποτελέσματα σε σχέση με την εκτέλεση τον αλγόριθμων με default επιλογές L κυρίως στο minimization αλλά και σε αρκετές περιπτώσεις και στο maximization.
-
-7) Ο local transitions του simulated annealing λόγω των τοπικών (μικρών) αλλαγών που κάνει και λόγω της χρήσης του kd-tree για τον ελεγχό των intersection, η τιμή του L μπορεί να είναι πολύ μεγαλύτερη σε σχέση με τον αλγόριθμο global transitions.
-
-8) Ο χρόνος εκτέλεσης του spatial subdivision ανεβαίνει γραμμικά λόγω του διαχωρισμού του σημειοσύνολου σε υποσύνολα σημείων με αποτέλεσμα ο αλγόριθμος να εκτελείται σε ίδιο αριθμό σημείων με την διαφορά οτι όσο μεγαλώνει το input size ο αριθμός των υποσυνόλων αυξάνεται.
-
+9. The simulated annealing algorithm provides better approximations for the area, while being satisfactory in terms of execution time, especially when combined with the Subdivision annealing. Local transitions yield faster results but less optimized, whereas global transitions are slower but produce more optimal results. The Spatial Subdivision combines global transitions on small polygons and local transitions on the final polygon, resulting in a satisfactory outcome in both time and approximation.
